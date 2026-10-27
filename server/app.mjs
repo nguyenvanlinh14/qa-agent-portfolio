@@ -10,7 +10,7 @@ import { randomUUID } from 'node:crypto';
 const PORT = Number(process.env.PORT ?? 4173);
 const ROOT = resolve(process.env.STATIC_DIR ?? 'dist');
 
-const USERS = { 'qa@demo.dev': 'Passw0rd!' };
+const USERS = { 'qa@demo.dev': 'Passw0rd!', 'dev@demo.dev': 'Passw0rd!' };
 const tokens = new Map(); // token -> email
 let todos = [];
 
