@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskFlow Demo · Sign in</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+  <main class="demo-shell">
+    <form class="demo-card" id="login-form" novalidate aria-labelledby="login-title">
+      <h1 id="login-title">TaskFlow</h1>
+      <p class="hint">Demo app under test. Use <code>qa@demo.dev</code> / <code>Passw0rd!</code></p>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required />
+      <p class="error" role="alert" id="login-error" hidden></p>
+      <button class="btn primary" type="submit">Sign in</button>
+    </form>
+  </main>
+  <script type="module">
+    import { login, currentUser } from './demo.js';
+    if (currentUser()) location.replace('todos.html');
+    const form = document.getElementById('login-form');
+    const error = document.getElementById('login-error');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      if (!email || !password) {
+        error.textContent = 'Email and password are required';
+        error.hidden = false;
+        return;
+      }
+      if (!login(email, password)) {
+        error.textContent = 'Invalid email or password';
+        error.hidden = false;
+        return;
+      }
+      location.assign('todos.html');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "qa-agent-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QA Automation portfolio: AI-agent-driven Playwright framework (POM, API, visual, CI reports) + a self-written curriculum (k6, Docker, CI/CD, test design patterns).",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "serve": "node server/app.mjs",
+    "pretest": "npm run build",
+    "test": "playwright test",
+    "test:ui": "playwright test --project=ui",
+    "test:api": "playwright test --project=api",
+    "test:visual": "playwright test --project=visual",
+    "test:update-snapshots": "playwright test --project=visual --update-snapshots",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit",
+    "k6:smoke": "k6 run k6/smoke.js",
+    "k6:load": "k6 run k6/load.js",
+    "ai:triage": "node scripts/ai-triage.mjs",
+    "oss:issues": "node scripts/find-good-first-issues.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^22.10.0",
+    "marked": "18.1.2",
+    "typescript": "^5.7.0"
+  }
+}
