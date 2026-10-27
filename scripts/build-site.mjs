@@ -77,6 +77,7 @@ function renderMarkdown(body) {
         return `<h${depth} id="${id}">${text}</h${depth}>\n`;
       },
       code({ text, lang }) {
+        if (lang === 'mermaid') return `<pre class="mermaid">${esc(text)}</pre>\n`;
         const cls = lang ? ` class="language-${esc(lang.split(/\s+/)[0])}"` : '';
         return `<pre><code${cls}>${esc(text)}</code></pre>\n`;
       },
@@ -104,6 +105,13 @@ const TOGGLE_JS = `<script>
       root.dataset.theme = dark ? 'light' : 'dark';
       try { localStorage.setItem('theme', root.dataset.theme); } catch {}
     });
+  </script>`;
+
+// Diagrams in lessons are drawn client-side only on pages that contain one.
+const MERMAID_JS = `<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+    const dark = (document.documentElement.dataset.theme ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'dark';
+    mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default' });
   </script>`;
 
 function pageShell({ title, description, content, depth = 1 }) {
@@ -136,6 +144,7 @@ function pageShell({ title, description, content, depth = 1 }) {
   </nav>
 ${content}
   ${TOGGLE_JS}
+  ${content.includes('class="mermaid"') ? MERMAID_JS : ''}
 </body>
 </html>
 `;
