@@ -1,0 +1,290 @@
+# Prototype for grafana/k6#3062 — validated here before proposing upstream.
+name: k6 install check
+
+# Checks that k6 can be installed from the published packages on a range of
+# systems, and that the installed binary reports the expected version.
+on:
+  schedule:
+    - cron: "23 4 * * 1" # every Monday, at 04:23 UTC
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version the installed k6 is expected to report (e.g. v1.4.0). Defaults to the latest grafana/k6 release.'
+        required: false
+        default: ''
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+env:
+  # The upstream workflow retries after a release (workflow_run); this
+  # prototype always fails fast, but keeps the same scripts.
+  MAX_ATTEMPTS: 1
+  RETRY_DELAY_SECONDS: 300
+
+jobs:
+  resolve-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve the expected k6 version
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          tag="${INPUT_VERSION}"
+          if [[ -z "${tag}" ]]; then
+            tag="$(curl -fsS \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/grafana/k6/releases/latest | jq -r .tag_name)"
+          fi
+
+          version="${tag#v}"
+          if ! [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'${tag}' is not a valid k6 version"
+            exit 1
+          fi
+          echo "Expected k6 version: ${version}"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+  linux:
+    name: linux (${{ matrix.image }})
+    needs: resolve-version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container: ${{ matrix.image }}
+    env:
+      EXPECTED_VERSION: ${{ needs.resolve-version.outputs.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:22.04
+            family: deb
+          - image: ubuntu:24.04
+            family: deb
+          - image: debian:12
+            family: deb
+          - image: fedora:latest
+            family: rpm
+          # Successor of CentOS
+          - image: rockylinux:9
+            family: rpm
+          - image: amazonlinux:2023
+            family: rpm
+    steps:
+      - name: Install k6 with apt
+        if: ${{ matrix.family == 'deb' }}
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          IMAGE: ${{ matrix.image }}
+        run: |
+          # set -e is ignored inside a function called from an `if`,
+          # so every command that can fail is checked explicitly.
+          install_k6() {
+            apt-get update || return 1
+            apt-get install -y ca-certificates curl gnupg || return 1
+            curl -fsSL https://dl.k6.io/key.gpg \
+              | gpg --dearmor --yes -o /usr/share/keyrings/k6-archive-keyring.gpg || return 1
+            echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+              > /etc/apt/sources.list.d/k6.list || return 1
+            apt-get update || return 1
+            apt-get install -y k6 || return 1
+
+            local output
+            output="$(k6 version)" || return 1
+            echo "${output}"
+            grep -Fq "k6 v${EXPECTED_VERSION} " <<< "${output}"
+          }
+
+          for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
+            echo "::group::Attempt ${attempt} of ${MAX_ATTEMPTS}"
+            if install_k6; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if ((attempt < MAX_ATTEMPTS)); then
+              echo "::warning::k6 ${EXPECTED_VERSION} was not installed, retrying in ${RETRY_DELAY_SECONDS}s"
+              sleep "${RETRY_DELAY_SECONDS}"
+            fi
+          done
+          echo "::error::k6 ${EXPECTED_VERSION} could not be installed with apt on ${IMAGE}"
+          exit 1
+
+      - name: Install k6 with dnf
+        if: ${{ matrix.family == 'rpm' }}
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: |
+          # set -e is ignored inside a function called from an `if`,
+          # so every command that can fail is checked explicitly.
+          install_k6() {
+            dnf install -y https://dl.k6.io/rpm/repo.rpm || return 1
+            # An older version installed by a previous attempt would not be upgraded.
+            if rpm -q k6 > /dev/null; then
+              dnf remove -y k6 || return 1
+            fi
+            # The repository metadata is cached for a day by default.
+            dnf install -y --refresh k6 || return 1
+
+            local output
+            output="$(k6 version)" || return 1
+            echo "${output}"
+            grep -Fq "k6 v${EXPECTED_VERSION} " <<< "${output}"
+          }
+
+          for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
+            echo "::group::Attempt ${attempt} of ${MAX_ATTEMPTS}"
+            if install_k6; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if ((attempt < MAX_ATTEMPTS)); then
+              echo "::warning::k6 ${EXPECTED_VERSION} was not installed, retrying in ${RETRY_DELAY_SECONDS}s"
+              sleep "${RETRY_DELAY_SECONDS}"
+            fi
+          done
+          echo "::error::k6 ${EXPECTED_VERSION} could not be installed with dnf on ${IMAGE}"
+          exit 1
+
+  windows-msi:
+    needs: resolve-version
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_VERSION: ${{ needs.resolve-version.outputs.version }}
+    steps:
+      - name: Install k6 with the MSI package
+        shell: pwsh
+        run: |
+          function Install-K6 {
+            $msi = Join-Path $env:RUNNER_TEMP 'k6.msi'
+            $log = Join-Path $env:RUNNER_TEMP 'k6-msi.log'
+            Invoke-WebRequest -Uri 'https://dl.k6.io/msi/k6-latest-amd64.msi' -OutFile $msi
+            $process = Start-Process msiexec.exe -Wait -PassThru -ArgumentList '/i', "`"$msi`"", '/qn', '/norestart', '/l*v', "`"$log`""
+            if ($process.ExitCode -ne 0) {
+              if (Test-Path $log) { Get-Content $log -Tail 50 }
+              throw "msiexec failed with exit code $($process.ExitCode)"
+            }
+
+            # Load the PATH set by the installer, as a new shell would do.
+            $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+            $output = (& k6 version) -join "`n"
+            Write-Host $output
+            if ($output -notlike "*k6 v$($env:EXPECTED_VERSION) *") {
+              throw "Expected k6 $($env:EXPECTED_VERSION)"
+            }
+          }
+
+          $maxAttempts = [int]$env:MAX_ATTEMPTS
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "::group::Attempt $attempt of $maxAttempts"
+            try {
+              Install-K6
+              Write-Host '::endgroup::'
+              exit 0
+            } catch {
+              Write-Host $_
+              Write-Host '::endgroup::'
+            }
+            if ($attempt -lt $maxAttempts) {
+              Write-Host "::warning::k6 $($env:EXPECTED_VERSION) was not installed, retrying in $($env:RETRY_DELAY_SECONDS)s"
+              Start-Sleep -Seconds ([int]$env:RETRY_DELAY_SECONDS)
+            }
+          }
+          Write-Host "::error::k6 $($env:EXPECTED_VERSION) could not be installed with the MSI package"
+          exit 1
+
+  docker:
+    needs: resolve-version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_VERSION: ${{ needs.resolve-version.outputs.version }}
+    steps:
+      - name: Run the Docker image
+        run: |
+          # set -e is ignored inside a function called from an `if`,
+          # so every command that can fail is checked explicitly.
+          run_k6() {
+            local output
+            output="$(docker run --rm "grafana/k6:${EXPECTED_VERSION}" version)" || return 1
+            echo "${output}"
+            grep -Fq "k6 v${EXPECTED_VERSION} " <<< "${output}"
+          }
+
+          for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
+            echo "::group::Attempt ${attempt} of ${MAX_ATTEMPTS}"
+            if run_k6; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if ((attempt < MAX_ATTEMPTS)); then
+              echo "::warning::grafana/k6:${EXPECTED_VERSION} did not work, retrying in ${RETRY_DELAY_SECONDS}s"
+              sleep "${RETRY_DELAY_SECONDS}"
+            fi
+          done
+          echo "::error::grafana/k6:${EXPECTED_VERSION} could not be run"
+          exit 1
+
+  # Updated by third parties (Homebrew, winget community repository) some time
+  # after a release, so upstream does not run these after a release or retry.
+  macos-homebrew:
+    needs: resolve-version
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_VERSION: ${{ needs.resolve-version.outputs.version }}
+    steps:
+      - name: Install k6 with Homebrew
+        run: |
+          brew update
+          brew install k6
+          output="$(k6 version)"
+          echo "${output}"
+          grep -Fq "k6 v${EXPECTED_VERSION} " <<< "${output}"
+
+  windows-winget:
+    needs: resolve-version
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      EXPECTED_VERSION: ${{ needs.resolve-version.outputs.version }}
+    steps:
+      # Not all Windows runner images include winget.
+      - name: Ensure winget is available
+        shell: pwsh
+        run: |
+          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Install-PackageProvider -Name NuGet -Force | Out-Null
+            Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
+            Repair-WinGetPackageManager -AllUsers
+          }
+          winget --version
+
+      - name: Install k6 with winget
+        shell: pwsh
+        run: |
+          winget install k6 --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+          if ($LASTEXITCODE -ne 0) {
+            throw "winget failed with exit code $LASTEXITCODE"
+          }
+
+          # Load the PATH set by the installer, as a new shell would do.
+          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+          $output = (& k6 version) -join "`n"
+          Write-Host $output
+          if ($output -notlike "*k6 v$($env:EXPECTED_VERSION) *") {
+            throw "Expected k6 $($env:EXPECTED_VERSION)"
+          }

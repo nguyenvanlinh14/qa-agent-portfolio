@@ -1,0 +1,30 @@
+name: OSS watch
+
+# Mirrors new replies on upstream issues listed in docs/oss/watch.json into `oss-watch` issues here,
+# so GitHub notifications (and the Claude session following this work) see them.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 */3 * * *'
+
+concurrency:
+  group: oss-watch
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    name: Mirror upstream replies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/oss-watch.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
