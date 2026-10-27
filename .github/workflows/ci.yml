@@ -148,6 +148,9 @@ jobs:
       # build copies playwright-report/ into dist/report/ and fills in the live numbers
       - run: npm run build
       - uses: actions/configure-pages@v5
+        with:
+          # Creates the Pages site (build_type=workflow) on the first deploy if it doesn't exist yet.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
