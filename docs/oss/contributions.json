@@ -1,0 +1,28 @@
+[
+  {
+    "repo": "grafana/k6",
+    "issue": 4260,
+    "title": "deriveBits: bit lengths not multiple of 8",
+    "kind": "fix",
+    "stage": "proposed",
+    "links": {
+      "issue": "https://github.com/grafana/k6/issues/4260",
+      "draft": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/k6-4260.md",
+      "evidence": null,
+      "pr": null
+    }
+  },
+  {
+    "repo": "grafana/k6",
+    "issue": 3062,
+    "title": "Test k6 installation in CI",
+    "kind": "ci",
+    "stage": "proposed",
+    "links": {
+      "issue": "https://github.com/grafana/k6/issues/3062",
+      "draft": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/k6-3062.md",
+      "evidence": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions/runs/40499430856",
+      "pr": null
+    }
+  }
+]
