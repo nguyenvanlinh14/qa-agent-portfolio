@@ -1,4 +1,4 @@
-// OSS scout: finds open, unassigned, unlinked "good first issue"-style tickets in the projects we
+// OSS scout: finds open, unassigned "good first issue"-style tickets in the projects we
 // follow, scores them and writes dist/data/oss-issues.json for the homepage (top 12).
 // With --detail it also writes reports/oss-candidates.json and docs/oss/candidates.md (+ job summary).
 // Best effort: it never fails the build. OSS_FIXTURE=<file.json> (array of GitHub search items,
@@ -62,14 +62,31 @@ async function search(repo, labels) {
     const items = JSON.parse(readFileSync(process.env.OSS_FIXTURE, 'utf8'));
     return items.filter((i) => i.repository_url?.endsWith(`/repos/${repo}`));
   }
-  const since = new Date(Date.now() - 365 * DAY).toISOString().slice(0, 10);
-  const q = `repo:${repo} label:${labels.map((l) => `"${l}"`).join(',')} is:issue is:open no:assignee -linked:pr updated:>=${since}`;
-  const url = `https://api.github.com/search/issues?${new URLSearchParams({ q, sort: 'updated', order: 'desc', per_page: String(PER_REPO) })}`;
+  // One plain query per label (OR-ed labels and -linked:pr silently matched nothing), then
+  // filter freshness and assignees client-side.
+  const since = Date.now() - 365 * DAY;
   const headers = { accept: 'application/vnd.github+json', 'user-agent': 'qa-agent-portfolio' };
   if (process.env.GITHUB_TOKEN) headers.authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(10_000) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return (await res.json()).items ?? [];
+  const byNumber = new Map();
+  let ok = 0;
+  for (const label of labels) {
+    const q = `repo:${repo} label:"${label}" is:issue is:open`;
+    const url = `https://api.github.com/search/issues?${new URLSearchParams({ q, sort: 'updated', order: 'desc', per_page: String(PER_REPO) })}`;
+    try {
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(10_000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      console.log(`oss-issues: ${repo} "${label}": ${data.total_count ?? 0} open`);
+      for (const i of data.items ?? []) byNumber.set(i.number, i);
+      ok++;
+    } catch (err) {
+      console.warn(`oss-issues: ${repo} "${label}" failed (${err.message})`);
+    }
+  }
+  if (!ok) throw new Error('all label queries failed');
+  return [...byNumber.values()].filter(
+    (i) => !i.pull_request && !(i.assignees?.length || i.assignee) && Date.parse(i.updated_at) >= since,
+  );
 }
 
 function toIssue(repo, i) {
