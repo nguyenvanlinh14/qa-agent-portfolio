@@ -70,6 +70,17 @@ async function events(item) {
       if (!human(c.user)) continue;
       out.push({ id: `c${c.id}`, user: c.user, assoc: c.author_association, at: c.created_at, url: c.html_url, what: `commented on \`${c.path}:${c.line ?? c.original_line ?? ''}\``, body: c.body });
     }
+    // CI on the PR head: one event per failed check, plus one when everything is green.
+    const pr = await gh(`${base}/pulls/${item.number}`);
+    const runs = (await gh(`${base}/commits/${pr.head.sha}/check-runs?per_page=100`)).check_runs ?? [];
+    const sha = pr.head.sha.slice(0, 7);
+    for (const r of runs.filter((r) => ['failure', 'timed_out', 'action_required'].includes(r.conclusion))) {
+      out.push({ id: `ci${sha}${r.id}`, user: { login: 'CI' }, at: r.completed_at ?? pr.updated_at, url: r.html_url, what: `check **${r.name}** ${r.conclusion} on ${sha}`, body: r.output?.title ?? '' });
+    }
+    const done = runs.length && runs.every((r) => r.status === 'completed');
+    if (done && runs.every((r) => ['success', 'skipped', 'neutral'].includes(r.conclusion))) {
+      out.push({ id: `cigreen${sha}`, user: { login: 'CI' }, at: pr.updated_at, url: `${issue.html_url}/checks`, what: `all ${runs.length} checks passed on ${sha} ✅`, body: '' });
+    }
     if (issue.pull_request.merged_at) {
       out.push({ id: `merged${item.number}`, user: { login: 'GitHub' }, at: issue.pull_request.merged_at, url: issue.html_url, what: 'merged the PR 🎉', body: '' });
     }
