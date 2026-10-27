@@ -28,21 +28,27 @@ jobs:
         run: node scripts/find-good-first-issues.mjs --detail
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Commit docs/oss/candidates.md
+      - name: Find and score paid bounties
+        run: node scripts/find-bounties.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit docs/oss reports
         run: |
-          if [ -n "$(git status --porcelain docs/oss/candidates.md)" ]; then
+          if [ -n "$(git status --porcelain docs/oss/candidates.md docs/oss/bounties.md)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add docs/oss/candidates.md
-            git commit -m "chore(oss): refresh candidate issues"
+            git add docs/oss/candidates.md docs/oss/bounties.md
+            git commit -m "chore(oss): refresh candidate issues and bounties"
             git push origin HEAD:main
           else
-            echo "docs/oss/candidates.md unchanged"
+            echo "docs/oss/candidates.md and docs/oss/bounties.md unchanged"
           fi
       - name: Upload candidates
         uses: actions/upload-artifact@v4
         with:
           name: oss-candidates
-          path: reports/oss-candidates.json
+          path: |
+            reports/oss-candidates.json
+            reports/bounties.json
           retention-days: 30
           if-no-files-found: ignore

@@ -392,6 +392,11 @@ if (existsSync(candidatesSrc)) {
   writeFileSync(join(DIST, 'lessons', 'oss-candidates.html'), lessonPage(readDoc(candidatesSrc, 'OSS candidates'), undefined, undefined));
 }
 
+const bountiesSrc = at('docs', 'oss', 'bounties.md');
+if (existsSync(bountiesSrc)) {
+  writeFileSync(join(DIST, 'lessons', 'oss-bounties.html'), lessonPage(readDoc(bountiesSrc, 'Paid OSS bounties'), undefined, undefined));
+}
+
 // Report: copy the Playwright HTML report, or leave a small placeholder page.
 if (existsSync(at('playwright-report', 'index.html'))) {
   cpSync(at('playwright-report'), join(DIST, 'report'), { recursive: true });
