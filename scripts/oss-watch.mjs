@@ -55,7 +55,8 @@ async function trackingIssue({ repo, number, title }) {
 async function events(item) {
   const base = `/repos/${item.repo}`;
   const issue = await gh(`${base}/issues/${item.number}`);
-  const human = (u) => u && u.type !== 'Bot' && u.login.toLowerCase() !== OWNER;
+  // Prow-style bots (volcano-sh-bot, k8s-ci-robot) are plain User accounts, so match their names too.
+  const human = (u) => u && u.type !== 'Bot' && !/(\[bot\]|-bot|-robot)$/i.test(u.login) && u.login.toLowerCase() !== OWNER;
   const out = (await all(`${base}/issues/${item.number}/comments`))
     .filter((c) => human(c.user))
     .map((c) => ({ id: String(c.id), user: c.user, assoc: c.author_association, at: c.created_at, url: c.html_url, what: 'commented', body: c.body }));
