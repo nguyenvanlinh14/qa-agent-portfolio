@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  test:
+    name: Playwright (ui + api + visual)
+    needs: typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Same image as docker/Dockerfile and update-snapshots.yml, so screenshots match pixel for pixel.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+    env:
+      HOME: /root
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      # pretest builds the site; Playwright starts the SUT through webServer
+      - name: Run tests
+        run: npm test
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Upload JSON / JUnit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: reports/
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: AI failure triage
+        if: failure()
+        run: node scripts/ai-triage.mjs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  k6:
+    name: k6 smoke
+    needs: typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Start the SUT and wait for /api/health
+        run: |
+          mkdir -p reports
+          node server/app.mjs > reports/sut.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173/api/health > /dev/null; then
+              echo "SUT is up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "SUT did not become healthy" >&2
+          cat reports/sut.log >&2
+          exit 1
+      - uses: grafana/setup-k6-action@v1
+      - name: k6 smoke test
+        run: k6 run k6/smoke.js
+        env:
+          BASE_URL: http://localhost:4173
+      - name: Upload k6 reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-reports
+          path: reports/k6-*
+          retention-days: 14
+          if-no-files-found: ignore
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: [test, k6]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Download Playwright HTML report
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+      - name: Download JSON / JUnit reports
+        uses: actions/download-artifact@v4
+        with:
+          name: test-reports
+          path: reports
+      - name: Download k6 reports
+        uses: actions/download-artifact@v4
+        with:
+          name: k6-reports
+          path: reports
+      - name: Fetch open-source good first issues
+        run: npm run oss:issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # build copies playwright-report/ into dist/report/ and fills in the live numbers
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,59 @@
+# Run the whole stack in containers:
+#   docker compose up --build --abort-on-container-exit --exit-code-from tests   # SUT + Playwright
+#   docker compose --profile perf run --rm k6                                    # k6 smoke against the SUT
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  image: qa-agent-portfolio:local
+
+services:
+  # System under test: portfolio site + demo REST API (server/app.mjs)
+  sut:
+    <<: *app
+    command: ["sh", "-c", "npm run build && node server/app.mjs"]
+    environment:
+      PORT: "4173"
+    expose:
+      - "4173"
+    ports:
+      - "4173:4173"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4173/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  # Playwright suite, pointed at the SUT container (webServer is skipped when BASE_URL is set)
+  tests:
+    <<: *app
+    command: ["npx", "playwright", "test"]
+    depends_on:
+      sut:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://sut:4173
+      CI: "1"
+    init: true
+    ipc: host
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./reports:/app/reports
+      - ./test-results:/app/test-results
+
+  # k6 smoke test (opt-in): docker compose --profile perf run --rm k6
+  k6:
+    image: grafana/k6:1.4.0
+    profiles: ["perf"]
+    depends_on:
+      sut:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://sut:4173
+    user: "0:0"
+    working_dir: /work
+    command: ["run", "/work/k6/smoke.js"]
+    volumes:
+      - ./k6:/work/k6:ro
+      - ./reports:/work/reports
