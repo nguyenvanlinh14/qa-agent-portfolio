@@ -230,7 +230,8 @@ jobs:
             $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
             $output = (& k6 version) -join "`n"
             Write-Host $output
-            if ($output -notlike "*k6 v$($env:EXPECTED_VERSION) *") {
+            # On Windows the binary reports itself as "k6.exe vX.Y.Z".
+            if ($output -notmatch "k6(\.exe)? v$([regex]::Escape($env:EXPECTED_VERSION)) ") {
               throw "Expected k6 $($env:EXPECTED_VERSION)"
             }
           }
@@ -305,7 +306,10 @@ jobs:
           brew install k6
           output="$(k6 version)"
           echo "${output}"
-          grep -Fq "k6 v${EXPECTED_VERSION} " <<< "${output}"
+          # Same as winget: a lagging formula is a warning, a broken install fails.
+          if ! grep -Fq "k6 v${EXPECTED_VERSION} " <<< "${output}"; then
+            echo "::warning title=Homebrew lags behind::Homebrew installed '$(head -n1 <<< "${output}")', latest release is v${EXPECTED_VERSION}"
+          fi
 
   windows-winget:
     needs: resolve-version
@@ -338,6 +342,8 @@ jobs:
           $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
           $output = (& k6 version) -join "`n"
           Write-Host $output
-          if ($output -notlike "*k6 v$($env:EXPECTED_VERSION) *") {
-            throw "Expected k6 $($env:EXPECTED_VERSION)"
+          # The winget community manifest is updated some time after a release: a lagging
+          # version is reported as a warning, a broken install still fails the job.
+          if ($output -notmatch "k6(\.exe)? v$([regex]::Escape($env:EXPECTED_VERSION)) ") {
+            Write-Host "::warning title=winget lags behind::winget installed '$(($output -split "`n")[0])', latest release is v$($env:EXPECTED_VERSION)"
           }
