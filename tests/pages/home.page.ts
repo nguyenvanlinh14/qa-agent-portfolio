@@ -17,6 +17,10 @@ export class HomePage extends BasePage {
   readonly ossBlock: Locator;
   readonly contributions: Locator;
   readonly contributionCards: Locator;
+  readonly services: Locator;
+  readonly serviceTiles: Locator;
+  readonly workCta: Locator;
+  readonly githubCta: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -33,6 +37,10 @@ export class HomePage extends BasePage {
     this.ossBlock = page.getByTestId('oss-issues');
     this.contributions = page.getByTestId('oss-contributions');
     this.contributionCards = page.getByTestId('contribution');
+    this.services = page.getByTestId('services');
+    this.serviceTiles = page.getByTestId('service-tile');
+    this.workCta = page.getByTestId('cta-work');
+    this.githubCta = page.getByTestId('cta-github');
   }
 
   /** The card for one contribution, found by its "owner/repo#number" label. */

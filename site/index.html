@@ -47,6 +47,7 @@
       <ul>
         <li><a href="#agents">Agents</a></li>
         <li><a href="#ci">Pipeline</a></li>
+        <li><a href="#services">Services</a></li>
         <li><a href="#lessons">Lessons</a></li>
         <li><a href="#oss">OSS</a></li>
       </ul>
@@ -172,6 +173,42 @@
               </div>
             </div>
           </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="services" data-testid="services">
+      <div class="wrap">
+        <h2>Services</h2>
+        <div class="tiles services">
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-pom" /></svg>
+            <b>Playwright framework setup</b>
+            <small>POM, fixtures, API + visual tests</small>
+            <div class="c-links"><a class="pill-link" href="{{REPO_URL}}/tree/main/tests" rel="noopener">tests/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-pipeline" /></svg>
+            <b>CI/CD for tests</b>
+            <small>GitHub Actions, Docker, reports on Pages</small>
+            <div class="c-links"><a class="pill-link" href="{{REPO_URL}}/tree/main/.github/workflows" rel="noopener">workflows/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-gauge" /></svg>
+            <b>Performance testing with k6</b>
+            <small>thresholds, CI gates</small>
+            <div class="c-links"><a class="pill-link" href="{{REPO_URL}}/tree/main/k6" rel="noopener">k6/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-agent" /></svg>
+            <b>AI agents in QA</b>
+            <small>Claude Code sub-agents, Playwright MCP, AI failure triage</small>
+            <div class="c-links"><a class="pill-link" href="{{REPO_URL}}/tree/main/.claude/agents" rel="noopener">agents/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="{{REPO_URL}}/blob/main/scripts/ai-triage.mjs" rel="noopener">ai-triage<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="cv.html" data-testid="cta-work">Work with me<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+          <a class="btn" href="https://github.com/nguyenvanlinh14" data-testid="cta-github">GitHub</a>
         </div>
       </div>
     </section>
