@@ -429,6 +429,70 @@ h2 small.lang {
 .lesson:hover .big { transform: scale(1.14) rotate(-6deg); color: var(--accent-2); }
 .lesson b { position: relative; font-size: 1.05rem; line-height: 1.25; letter-spacing: -0.01em; }
 
+/* ---------- OSS contributions ---------- */
+h3.mini {
+  margin: 30px 0 12px; font: 700 0.72rem var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+.contribs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.contribs:empty { display: none; }
+.contribs:empty + h3.mini { margin-top: 0; }
+.contrib {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 18px; min-width: 0;
+  padding: 20px 20px 18px; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s, border-color 0.28s;
+}
+.contrib::before {
+  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%);
+}
+.contrib:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--glow); }
+.contrib:hover::before { opacity: 1; }
+.contrib > * { position: relative; }
+.c-head { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.contrib .big {
+  width: 40px; height: 40px; padding: 8px; box-sizing: content-box; border-radius: 14px; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.c-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.c-id b { font: 700 1rem var(--mono); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.c-id small { color: var(--muted); font-size: 0.86rem; text-wrap: balance; }
+
+/* progress track: dots joined by a line, label under each dot */
+.track { list-style: none; margin: 0; padding: 0; display: flex; }
+.track li {
+  position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font: 600 0.62rem var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+}
+.track li::before {
+  content: ''; z-index: 1; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--muted); opacity: 0.8;
+}
+.track li::after {
+  content: ''; position: absolute; top: 6px; left: 50%; width: 100%; height: 2px; background: var(--border);
+}
+.track li:last-child::after { display: none; }
+.track li.done::before { background: var(--accent-2); border-color: var(--accent-2); opacity: 1; }
+.track li.done { color: var(--text); }
+.track li.done::after { background: var(--accent-2); }
+.track li.current { color: var(--text); }
+.track li.current::before {
+  background: var(--accent); border-color: var(--accent); opacity: 1;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+  animation: ring-pulse 2.2s ease-out infinite;
+}
+.contrib[data-stage='merged'] .track li:last-child::before { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-2) 25%, transparent); }
+
+.c-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill-link {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px 4px 12px; border-radius: 999px;
+  font: 700 0.74rem var(--mono); color: var(--text); background: var(--surface-2); border: 1px solid var(--border);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.pill-link .ic { width: 1em; height: 1em; opacity: 0.7; transition: transform 0.2s; }
+.pill-link:hover { text-decoration: none; border-color: var(--accent-2); color: var(--accent-2); }
+.pill-link:hover .ic { transform: translateX(3px); opacity: 1; }
+
 /* ---------- OSS chips ---------- */
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
 .chip {
@@ -516,6 +580,10 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); }
   70%, 100% { box-shadow: 0 0 0 9px transparent; }
 }
+@keyframes ring-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 9px transparent; }
+}
 @keyframes conn-x { to { background-position: 16px 0; } }
 @keyframes conn-y { to { background-position: 0 16px; } }
 @keyframes stage-lit {
@@ -575,6 +643,8 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .cta { gap: 8px; }
   .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .tiles, .lesson-grid { gap: 12px; }
+  .contribs { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .contrib { padding: 18px 16px 16px; }
   .tile { padding: 18px 16px; }
   .lesson { padding: 34px 10px 20px; }
   .lesson .big { width: 56px; height: 56px; }
@@ -594,5 +664,5 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .token-2 { offset-distance: 27%; }
   .n1 circle { stroke: var(--accent-2); }
   .n1 { filter: drop-shadow(0 0 8px var(--accent-2)); }
-  .tile:hover, .lesson:hover, .window:hover, .chip:hover, .btn:hover, .stat:hover, .lesson-nav a:hover { transform: none; }
+  .tile:hover, .lesson:hover, .window:hover, .chip:hover, .contrib:hover, .btn:hover, .stat:hover, .lesson-nav a:hover { transform: none; }
 }

@@ -15,6 +15,8 @@ export class HomePage extends BasePage {
   readonly pipeline: Locator;
   readonly lessonCards: Locator;
   readonly ossBlock: Locator;
+  readonly contributions: Locator;
+  readonly contributionCards: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -29,6 +31,21 @@ export class HomePage extends BasePage {
     this.pipeline = page.getByTestId('pipeline');
     this.lessonCards = page.getByTestId('lesson-card');
     this.ossBlock = page.getByTestId('oss-issues');
+    this.contributions = page.getByTestId('oss-contributions');
+    this.contributionCards = page.getByTestId('contribution');
+  }
+
+  /** The card for one contribution, found by its "owner/repo#number" label. */
+  contributionCard(repo: string, issue: number): Locator {
+    return this.contributionCards.filter({ hasText: `${repo}#${issue}` });
+  }
+
+  contributionTrackSteps(card: Locator): Locator {
+    return card.getByRole('listitem');
+  }
+
+  contributionLink(card: Locator, name: 'Issue' | 'Draft' | 'Run' | 'PR'): Locator {
+    return card.getByRole('link', { name, exact: true });
   }
 
   async hasHorizontalOverflow(): Promise<boolean> {

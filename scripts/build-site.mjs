@@ -1,5 +1,5 @@
 // Builds the static site: site/ -> dist/, renders docs/lessons/*.md with `marked`,
-// fills the {{placeholders}} in index.html (tests, lessons, report stats, OSS issues).
+// fills the {{placeholders}} in index.html (tests, lessons, report stats, OSS contributions + issues).
 // Never needs the network; every optional input (docs, report, config) may be missing.
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -218,6 +218,49 @@ function ossChips(issues) {
   }).join('\n          ');
 }
 
+// Contributions: docs/oss/contributions.json -> one card per entry with a 4-step progress track.
+const CONTRIB_STAGES = ['proposed', 'pr', 'review', 'merged'];
+const CONTRIB_STEPS = ['Comment', 'PR', 'Review', 'Merged'];
+const CONTRIB_ICONS = { fix: 'wrench', ci: 'pipeline', docs: 'book', feature: 'puzzle' };
+const isHttps = (u) => typeof u === 'string' && /^https:\/\//.test(u);
+
+function readContributions() {
+  try {
+    const file = at('docs', 'oss', 'contributions.json');
+    if (!existsSync(file)) return [];
+    const data = JSON.parse(readFileSync(file, 'utf8'));
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function contributionCards(entries) {
+  return entries
+    .filter((c) => c && SLUG_RE.test(c.repo ?? '') && Number.isInteger(c.issue) && c.issue > 0 && c.title)
+    .slice(0, 12)
+    .map((c) => {
+      const stage = CONTRIB_STAGES.includes(c.stage) ? c.stage : 'proposed';
+      const at_ = CONTRIB_STAGES.indexOf(stage);
+      const icon = CONTRIB_ICONS[c.kind] ?? 'git';
+      const steps = CONTRIB_STEPS.map((label, i) => {
+        const state = i < at_ || stage === 'merged' ? 'done' : i === at_ ? 'current' : 'todo';
+        return `<li class="${state}"${state === 'current' ? ' aria-current="step"' : ''}><span>${esc(label)}</span></li>`;
+      }).join('');
+      const links = c.links ?? {};
+      const pill = (label, url) =>
+        isHttps(url) ? `<a class="pill-link" href="${esc(url)}" rel="noopener">${label}<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>` : '';
+      const pills = [pill('Issue', links.issue), pill('Draft', links.draft), pill('Run', links.evidence), pill('PR', links.pr)].filter(Boolean).join('');
+      const ref = `${c.repo}#${c.issue}`;
+      return `<article class="contrib" data-testid="contribution" data-stage="${esc(stage)}">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-${icon}" /></svg><div class="c-id"><b>${esc(ref)}</b><small>${esc(truncate(String(c.title), 80))}</small></div></div>
+            <ol class="track" aria-label="${esc(ref)} progress">${steps}</ol>
+            <div class="c-links">${pills}</div>
+          </article>`;
+    })
+    .join('\n          ');
+}
+
 function countTests() {
   // Preferred: Playwright's own listing (setup project excluded). Fallback: regex over the specs.
   // --reporter=list keeps the json/junit reporters from overwriting reports/ with an empty listing.
@@ -377,6 +420,7 @@ const values = {
   LESSONS: lessons
     .map((l) => `<a class="lesson" href="lessons/${esc(l.slug)}.html" data-testid="lesson-card"><span class="num">${esc(l.num)}</span><svg class="big" aria-hidden="true"><use href="#i-${esc(l.icon)}"/></svg><b>${esc(l.short)}</b></a>`)
     .join('\n          '),
+  OSS_CONTRIBUTIONS: contributionCards(readContributions()),
   OSS_ISSUES: ossChips(savedOss ? readOssIssues(savedOss) : []),
   REPORT_PASSED: report.passed,
   REPORT_FAILED: report.failed,
