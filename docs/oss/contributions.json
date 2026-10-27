@@ -24,5 +24,31 @@
       "evidence": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions/runs/40499430856",
       "pr": null
     }
+  },
+  {
+    "repo": "volcano-sh/volcano",
+    "issue": 6171,
+    "title": "Unit tests for the Job state machine",
+    "kind": "fix",
+    "stage": "pr",
+    "links": {
+      "issue": "https://github.com/volcano-sh/volcano/issues/6171",
+      "draft": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/volcano-job-state-tests.md",
+      "evidence": null,
+      "pr": "https://github.com/volcano-sh/volcano/pull/6171"
+    }
+  },
+  {
+    "repo": "meshery/meshery",
+    "issue": 22619,
+    "title": "Replace waitForTimeout with a web-first assertion",
+    "kind": "fix",
+    "stage": "pr",
+    "links": {
+      "issue": "https://github.com/meshery/meshery/issues/22619",
+      "draft": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-userpref-no-sleep.md",
+      "evidence": null,
+      "pr": "https://github.com/meshery/meshery/pull/22619"
+    }
   }
 ]

@@ -1,6 +1,6 @@
 # kyverno/kyverno: unit test cho `pkg/cel/libs/gzip` (thư viện CEL `gzip.compress` / `gzip.decompress`)
 
-Trạng thái: **bản nháp, chưa liên hệ** (chưa fork, chưa mở issue/PR/comment). Base: `main` @ `205e736` (clone nông ngày 2026-10-27). Nhánh local: `wip/gzip-cel-lib-tests` (chưa commit, chưa push).
+Trạng thái: **PR [kyverno/kyverno#18317](https://github.com/kyverno/kyverno/pull/18317) đã bị đóng (2026-10-27)** — maintainer: dự án hiện *không nhận PR chỉ có unit test* vì thời gian chạy unit test đã là nút thắt; gợi ý hỏi trên Slack hoặc chọn issue có sẵn. Bài học: với Kyverno, hỏi trước trên Slack/issue rồi mới làm.
 Patch: `kyverno-gzip-lib-tests.patch` (1 file mới, +291/−0, không sửa code production).
 
 Lưu ý: không truy cập được GitHub issue/API từ sandbox, nên **chưa biết** có issue/PR trùng hay `good first issue` nào đang mở cho package này. Phải kiểm tra tracker trước khi làm tiếp (xem "Câu hỏi mở").
