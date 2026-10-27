@@ -43,7 +43,7 @@
     "issue": 22619,
     "title": "Replace waitForTimeout with a web-first assertion",
     "kind": "fix",
-    "stage": "pr",
+    "stage": "review",
     "links": {
       "issue": "https://github.com/meshery/meshery/issues/22619",
       "draft": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-userpref-no-sleep.md",
