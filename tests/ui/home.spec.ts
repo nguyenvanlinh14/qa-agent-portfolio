@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { loadContributions } from '../data';
+import { GITHUB_PROFILE_URL, loadContributions } from '../data';
 
 const contributions = loadContributions();
 
@@ -62,6 +62,26 @@ test.describe('Portfolio home', () => {
       if (c.links.evidence) await expect(run).toHaveAttribute('href', c.links.evidence);
       else await expect(run).toHaveCount(0);
     }
+  });
+
+  test('@smoke services section links to the CV', async ({ page, homePage }) => {
+    await expect(homePage.workCta).toHaveAttribute('href', 'cv.html');
+    await homePage.workCta.click();
+    await expect(page).toHaveURL(/\/cv\.html$/);
+  });
+
+  test('@regression services offers four tiles, each with an evidence link into the repo', async ({ homePage }) => {
+    await expect(homePage.serviceTiles).toHaveCount(4);
+    for (const tile of await homePage.serviceTiles.all()) {
+      await expect(tile.getByRole('link').first()).toHaveAttribute(
+        'href',
+        /^https:\/\/github\.com\/nguyenvanlinh14\/qa-agent-portfolio\/(tree|blob)\/main\//,
+      );
+    }
+  });
+
+  test('@regression services GitHub button points to the profile', async ({ homePage }) => {
+    await expect(homePage.githubCta).toHaveAttribute('href', GITHUB_PROFILE_URL);
   });
 
   test('@regression theme toggle flips html[data-theme]', async ({ page, homePage }) => {
