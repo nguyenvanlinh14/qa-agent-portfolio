@@ -37,6 +37,8 @@ GITHUB_TOKEN=$(gh auth token) npm run oss:issues
 cat dist/data/oss-issues.json | head
 ```
 
+Workflow [`oss-scout`](https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions/workflows/oss-scout.yml) chạy mỗi tuần (hoặc chạy tay) và cập nhật danh sách rút gọn [`docs/oss/candidates.md`](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/candidates.md), mỗi issue có điểm 0-100 để bạn (và agent) chọn nhanh. Điểm cao hơn khi issue mới cập nhật, ít comment (0 comment thấp hơn 1-5 comment một chút vì chưa ai xác nhận nó còn hợp lệ), có nhãn liên quan tới docs/test/types/CI; điểm bị trừ khi có nhãn như `stale`, `blocked`, `needs-investigation` hoặc mô tả quá dài. Điểm chỉ là gợi ý, vẫn phải kiểm tra theo tiêu chí bên dưới.
+
 Repo nên theo dõi (công cụ bạn dùng hằng ngày nên là nơi bạn đóng góp trước, vì bạn hiểu ngữ cảnh):
 
 - `microsoft/playwright`: test runner, reporters, tài liệu.
