@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskFlow Demo · Todos</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+  <main class="demo-shell">
+    <section class="demo-card wide" aria-labelledby="todos-title">
+      <header class="row">
+        <h1 id="todos-title">My todos</h1>
+        <span class="user" data-testid="current-user"></span>
+        <button class="btn" id="logout" type="button">Sign out</button>
+      </header>
+      <form id="new-todo" class="row">
+        <label for="todo-title" class="sr-only">New todo</label>
+        <input id="todo-title" placeholder="What needs testing?" maxlength="120" autocomplete="off" />
+        <button class="btn primary" type="submit">Add</button>
+      </form>
+      <nav class="filters" aria-label="Filter todos">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="active" aria-pressed="false">Active</button>
+        <button type="button" data-filter="done" aria-pressed="false">Done</button>
+      </nav>
+      <ul id="todo-list" aria-label="Todo list"></ul>
+      <p class="empty" id="empty" hidden>Nothing here yet. Add your first todo.</p>
+      <footer class="row muted"><span data-testid="remaining"></span></footer>
+    </section>
+  </main>
+  <script type="module">
+    import { currentUser, logout, loadTodos, saveTodos } from './demo.js';
+    const user = currentUser();
+    if (!user) location.replace('index.html');
+    document.querySelector('[data-testid=current-user]').textContent = user ?? '';
+
+    let todos = loadTodos();
+    let filter = 'all';
+    const list = document.getElementById('todo-list');
+    const empty = document.getElementById('empty');
+    const remaining = document.querySelector('[data-testid=remaining]');
+
+    function render() {
+      const visible = todos.filter((t) => filter === 'all' || (filter === 'done' ? t.done : !t.done));
+      list.replaceChildren(
+        ...visible.map((t) => {
+          const li = document.createElement('li');
+          li.className = t.done ? 'todo done' : 'todo';
+          li.dataset.id = t.id;
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          box.checked = t.done;
+          box.setAttribute('aria-label', `Toggle ${t.title}`);
+          box.addEventListener('change', () => { t.done = box.checked; commit(); });
+          const span = document.createElement('span');
+          span.textContent = t.title;
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'icon';
+          del.textContent = '✕';
+          del.setAttribute('aria-label', `Delete ${t.title}`);
+          del.addEventListener('click', () => { todos = todos.filter((x) => x !== t); commit(); });
+          li.append(box, span, del);
+          return li;
+        }),
+      );
+      empty.hidden = visible.length > 0;
+      const left = todos.filter((t) => !t.done).length;
+      remaining.textContent = `${left} item${left === 1 ? '' : 's'} left`;
+    }
+    function commit() { saveTodos(todos); render(); }
+
+    document.getElementById('new-todo').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('todo-title');
+      const title = input.value.trim();
+      if (!title) return;
+      todos.push({ id: crypto.randomUUID(), title, done: false });
+      input.value = '';
+      commit();
+    });
+    document.querySelectorAll('[data-filter]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        filter = btn.dataset.filter;
+        document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        render();
+      }),
+    );
+    document.getElementById('logout').addEventListener('click', () => { logout(); location.replace('index.html'); });
+    render();
+  </script>
+</body>
+</html>

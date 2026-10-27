@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linh Nguyen · AI-Agent QA Automation</title>
+  <meta name="description" content="QA Automation Engineer portfolio: Playwright framework built and maintained with AI agents (Claude Code, Playwright MCP, Playwright Test Agents) — POM, API, visual testing, CI reports." />
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="./">Linh<span>.</span>QA</a>
+      <ul>
+        <li><a href="#agents">AI Agents</a></li>
+        <li><a href="#framework">Framework</a></li>
+        <li><a href="#ci">CI &amp; Reports</a></li>
+        <li><a href="#lessons">Lessons</a></li>
+        <li><a href="#oss">Open Source</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="eyebrow" data-testid="hero-eyebrow">QA Automation Engineer · Agentic Testing</span>
+      <h1 data-testid="hero-title">I build test frameworks <span class="grad">with AI agents</span> — and keep them honest with CI.</h1>
+      <p class="lead">
+        Hi, I'm Linh. I design Playwright automation (UI, API, visual) and run it like a product:
+        reproducible in Docker, gated in CI, reported for humans. AI agents write the first draft,
+        heal broken locators and triage failures — I own the strategy, the review and the quality bar.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="report/" data-testid="cta-report">▶ Live test report</a>
+        <a class="btn" href="{{REPO_URL}}" data-testid="cta-repo">GitHub repo</a>
+        <a class="btn" href="demo/" data-testid="cta-demo">Demo app under test</a>
+      </div>
+      <div class="stats" data-testid="stats">
+        <div class="stat"><b>{{TEST_COUNT}}</b><span>automated tests</span></div>
+        <div class="stat"><b>3</b><span>test layers: UI · API · Visual</span></div>
+        <div class="stat"><b>{{LESSON_COUNT}}</b><span>self-written lessons</span></div>
+        <div class="stat"><b>4</b><span>AI agents in the workflow</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="agents">
+      <div class="wrap">
+        <h2>AI agents are part of the pipeline, not a gimmick</h2>
+        <p class="sub">Every layer of this repo was planned, generated, reviewed or triaged by an agent — with a human gate at each step.</p>
+        <div class="loop">
+          <div class="step"><h4>Plan</h4><p>Claude Code + Playwright MCP explores the app in a real browser and writes a Markdown test plan.</p></div>
+          <div class="step"><h4>Generate</h4><p>A <code>test-generator</code> sub-agent turns the plan into POM-based specs that follow <code>CLAUDE.md</code> rules.</p></div>
+          <div class="step"><h4>Review</h4><p>I review the diff. <code>@claude</code> in a PR runs a second review against the project checklist.</p></div>
+          <div class="step"><h4>Heal</h4><p>When UI changes, the <code>test-healer</code> agent re-inspects the DOM and proposes locator fixes — never weaker assertions.</p></div>
+          <div class="step"><h4>Triage</h4><p>On red CI, <code>ai-triage.mjs</code> sends failures to Claude and writes a root-cause summary to the job summary.</p></div>
+        </div>
+        <div class="grid" style="margin-top:20px">
+          <div class="card"><span class="tag">.claude/agents</span><h3>4 specialised sub-agents</h3><p>test-planner, test-generator, test-healer, flaky-triager — each with a narrow tool set and written guardrails.</p></div>
+          <div class="card"><span class="tag">.mcp.json</span><h3>Playwright MCP</h3><p>The agent drives a real browser via accessibility snapshots instead of guessing selectors from source.</p></div>
+          <div class="card"><span class="tag">CLAUDE.md</span><h3>Rules the agent must obey</h3><p>Locator priority, no <code>waitForTimeout</code>, one behaviour per test, data via factories, tags for every spec.</p></div>
+          <div class="card"><span class="tag">.github/workflows</span><h3>Agent in CI</h3><p>Failure triage on every red run, and <code>@claude</code> PR reviews via claude-code-action.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="framework">
+      <div class="wrap">
+        <h2>Playwright framework</h2>
+        <p class="sub">TypeScript · Page Object Model · custom fixtures · API client · visual regression · auth via storageState.</p>
+        <div class="grid">
+          <div class="card"><span class="tag">UI</span><h3>Page Object Model</h3><p><code>LoginPage</code>, <code>TodoPage</code>, <code>HomePage</code> injected through fixtures — specs read like user stories.</p></div>
+          <div class="card"><span class="tag">API</span><h3>Typed API client</h3><p>Auth, CRUD, negative and contract checks against the REST API — fast, no browser.</p></div>
+          <div class="card"><span class="tag">Visual</span><h3>Screenshot diffs</h3><p><code>toHaveScreenshot</code> with masked dynamic areas and Linux baselines updated by a CI workflow.</p></div>
+          <div class="card"><span class="tag">Data</span><h3>Builders &amp; factories</h3><p>Unique, readable test data; every test resets state through a test-only API hook.</p></div>
+        </div>
+        <pre class="code" style="margin-top:20px"><code>test('user can complete a todo @smoke', async ({ todoPage }) =&gt; {
+  await todoPage.goto();
+  await todoPage.add('Write k6 smoke test');
+  await todoPage.toggle('Write k6 smoke test');
+  await expect(todoPage.item('Write k6 smoke test')).toHaveClass(/done/);
+});</code></pre>
+      </div>
+    </section>
+
+    <section id="ci">
+      <div class="wrap">
+        <h2>CI &amp; reports</h2>
+        <p class="sub">GitHub Actions on every push and PR. The latest report from <code>main</code> is published with this site.</p>
+        <div class="grid">
+          <div class="card"><span class="tag">gate</span><h3>Typecheck → Tests → k6</h3><p>Parallel jobs; artifacts (HTML report, traces, JUnit) kept for 14 days.</p></div>
+          <div class="card"><span class="tag">report</span><h3><a href="report/">Playwright HTML report</a></h3><p>Traces, screenshots and videos for each failure, browsable online.</p></div>
+          <div class="card"><span class="tag">perf</span><h3>k6 smoke with thresholds</h3><p>p95 &lt; 300 ms and error rate &lt; 1% or the build fails.</p></div>
+          <div class="card"><span class="tag">deploy</span><h3>GitHub Pages</h3><p>Site + lessons + report rebuilt from the repo on every merge to main.</p></div>
+        </div>
+        <p class="sub" style="margin-top:18px" data-testid="build-info">Last build: {{BUILD_INFO}}</p>
+      </div>
+    </section>
+
+    <section id="lessons">
+      <div class="wrap">
+        <h2>Lessons (Vietnamese)</h2>
+        <p class="sub">My own curriculum, written with an AI pair and verified with runnable examples in this repo.</p>
+        <div class="grid" data-testid="lesson-list">
+          {{LESSONS}}
+        </div>
+      </div>
+    </section>
+
+    <section id="oss">
+      <div class="wrap">
+        <h2>Open source</h2>
+        <p class="sub">Good-first-issues in tools I use daily, refreshed at every build by <code>scripts/find-good-first-issues.mjs</code>. Workflow: agent reads the issue + codebase → drafts a fix and test → I review, run, and open the PR.</p>
+        <div class="issues" data-testid="oss-issues">
+          {{OSS_ISSUES}}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      Built from <a href="{{REPO_URL}}">{{REPO_SLUG}}</a> with GitHub Actions · Tested by its own Playwright suite ·
+      Pair-programmed with Claude Code.
+    </div>
+  </footer>
+</body>
+</html>
