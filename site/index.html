@@ -5,42 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Linh Nguyen · AI-Agent QA Automation</title>
   <meta name="description" content="QA Automation Engineer portfolio: Playwright framework built and maintained with AI agents (Claude Code, Playwright MCP, Playwright Test Agents) — POM, API, visual testing, CI reports." />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+  </script>
   <link rel="stylesheet" href="assets/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
 </head>
 <body>
+  <!-- Hand-drawn icon set, reused by tiles and lesson cards via <use href="#i-…"> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="g-brand" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="var(--accent)" /><stop offset="1" stop-color="var(--accent-2)" />
+      </linearGradient>
+    </defs>
+    <symbol id="i-agent" viewBox="0 0 48 48"><rect x="10" y="14" width="28" height="22" rx="7" /><circle cx="19" cy="25" r="2.6" class="f" /><circle cx="29" cy="25" r="2.6" class="f" /><path d="M24 14V8M20 8h8M6 22v8M42 22v8M19 31h10" /></symbol>
+    <symbol id="i-mcp" viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="28" rx="4" /><path d="M6 16h36" /><circle cx="11" cy="12.5" r="1" class="f" /><circle cx="15" cy="12.5" r="1" class="f" /><path d="M20 23l-5 4 5 4M28 23l5 4-5 4" /><path d="M18 41h12" /></symbol>
+    <symbol id="i-rules" viewBox="0 0 48 48"><path d="M12 6h18l8 8v28H12z" /><path d="M30 6v8h8" /><path d="M18 22l3 3 5-6M18 32l3 3 5-6" /><path d="M30 24h3M30 34h3" /></symbol>
+    <symbol id="i-ci" viewBox="0 0 48 48"><circle cx="12" cy="12" r="5" /><circle cx="12" cy="36" r="5" /><circle cx="36" cy="24" r="5" /><path d="M12 17v14M17 12c10 0 12 6 14 10M17 36c10 0 12-6 14-10" /></symbol>
+    <symbol id="i-pom" viewBox="0 0 48 48"><rect x="6" y="8" width="36" height="32" rx="4" /><path d="M6 16h36M18 16v24" /><path d="M23 23h13M23 29h13M23 35h8M10 22h4M10 28h4" /></symbol>
+    <symbol id="i-api" viewBox="0 0 48 48"><path d="M8 16h22M8 16l6-6M8 16l6 6" /><path d="M40 32H18M40 32l-6-6M40 32l-6 6" /><circle cx="38" cy="14" r="3" class="f" /><circle cx="10" cy="34" r="3" class="f" /></symbol>
+    <symbol id="i-eye" viewBox="0 0 48 48"><path d="M4 24s7-12 20-12 20 12 20 12-7 12-20 12S4 24 4 24z" /><circle cx="24" cy="24" r="6" /><circle cx="24" cy="24" r="2" class="f" /></symbol>
+    <symbol id="i-data" viewBox="0 0 48 48"><ellipse cx="24" cy="12" rx="14" ry="5" /><path d="M10 12v24c0 3 6 5 14 5s14-2 14-5V12" /><path d="M10 24c0 3 6 5 14 5s14-2 14-5" /></symbol>
+    <symbol id="i-gauge" viewBox="0 0 48 48"><path d="M8 34a16 16 0 1 1 32 0" /><path d="M24 34l9-11" /><circle cx="24" cy="34" r="3" class="f" /><path d="M12 22l2 1.5M36 22l-2 1.5M24 16v2.5" /></symbol>
+    <symbol id="i-docker" viewBox="0 0 48 48"><path d="M4 26h36c2 0 4-3 4-5-2 0-4 0-5 2-1-3-3-4-3-4l-2 4H4c0 9 7 15 18 15 9 0 15-4 18-12" /><rect x="10" y="19" width="5" height="5" /><rect x="16" y="19" width="5" height="5" /><rect x="22" y="19" width="5" height="5" /><rect x="16" y="13" width="5" height="5" /><rect x="22" y="13" width="5" height="5" /></symbol>
+    <symbol id="i-pipeline" viewBox="0 0 48 48"><rect x="4" y="18" width="10" height="12" rx="3" /><rect x="19" y="10" width="10" height="12" rx="3" /><rect x="19" y="26" width="10" height="12" rx="3" /><rect x="34" y="18" width="10" height="12" rx="3" /><path d="M14 24h2l3-8M16 24l3 8M29 16l3 8h2M29 32l3-8" /></symbol>
+    <symbol id="i-puzzle" viewBox="0 0 48 48"><path d="M10 14h8a4 4 0 1 1 8 0h8v8a4 4 0 1 1 0 8v8h-8a4 4 0 1 0-8 0h-8v-8a4 4 0 1 0 0-8z" /></symbol>
+    <symbol id="i-book" viewBox="0 0 48 48"><path d="M6 10c6-2 12-2 18 2 6-4 12-4 18-2v28c-6-2-12-2-18 2-6-4-12-4-18-2z" /><path d="M24 12v28" /></symbol>
+    <symbol id="i-git" viewBox="0 0 48 48"><circle cx="14" cy="10" r="4" /><circle cx="14" cy="38" r="4" /><circle cx="34" cy="18" r="4" /><path d="M14 14v20M34 22c0 8-8 8-16 12" /></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" class="f" /></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </svg>
+
   <nav class="nav" aria-label="Main">
     <div class="wrap">
       <a class="brand" href="./">Linh<span>.</span>QA</a>
       <ul>
-        <li><a href="#agents">AI Agents</a></li>
-        <li><a href="#framework">Framework</a></li>
-        <li><a href="#ci">CI &amp; Reports</a></li>
+        <li><a href="#agents">Agents</a></li>
+        <li><a href="#ci">Pipeline</a></li>
         <li><a href="#lessons">Lessons</a></li>
-        <li><a href="#oss">Open Source</a></li>
+        <li><a href="#oss">OSS</a></li>
       </ul>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
     </div>
   </nav>
 
   <header class="hero">
-    <div class="wrap">
-      <span class="eyebrow" data-testid="hero-eyebrow">QA Automation Engineer · Agentic Testing</span>
-      <h1 data-testid="hero-title">I build test frameworks <span class="grad">with AI agents</span> — and keep them honest with CI.</h1>
-      <p class="lead">
-        Hi, I'm Linh. I design Playwright automation (UI, API, visual) and run it like a product:
-        reproducible in Docker, gated in CI, reported for humans. AI agents write the first draft,
-        heal broken locators and triage failures — I own the strategy, the review and the quality bar.
-      </p>
-      <div class="cta">
-        <a class="btn primary" href="report/" data-testid="cta-report">▶ Live test report</a>
-        <a class="btn" href="{{REPO_URL}}" data-testid="cta-repo">GitHub repo</a>
-        <a class="btn" href="demo/" data-testid="cta-demo">Demo app under test</a>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow" data-testid="hero-eyebrow">QA Automation · Agentic Testing</span>
+        <h1 data-testid="hero-title">Agents write the tests. <span class="grad">I own the quality.</span></h1>
+        <div class="cta">
+          <a class="btn primary" href="report/" data-testid="cta-report"><svg class="ic"><use href="#i-play" /></svg>Live report</a>
+          <a class="btn" href="demo/" data-testid="cta-demo">Demo app</a>
+          <a class="btn" href="{{REPO_URL}}" data-testid="cta-repo">GitHub</a>
+        </div>
       </div>
+
+      <!-- The AI-agent test loop: five stages on a ring, a token travels around it. -->
+      <figure class="loop-art" data-testid="agent-loop" role="img" aria-label="AI agent test loop: Plan, Generate, Review, Heal, Triage">
+        <svg viewBox="0 0 400 400">
+          <defs>
+            <radialGradient id="g-core" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="var(--accent)" stop-opacity=".55" />
+              <stop offset="1" stop-color="var(--accent)" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="200" cy="200" r="190" fill="url(#g-core)" class="halo" />
+          <circle cx="200" cy="200" r="140" class="ring" />
+          <circle cx="200" cy="200" r="140" class="ring-flow" />
+          <circle cx="200" cy="200" r="96" class="ring-inner" />
+          <g class="core">
+            <circle cx="200" cy="200" r="54" class="core-bg" />
+            <path d="M176 202l16 16 33-38" class="core-check" />
+          </g>
+          <!-- nodes at 72° intervals, starting at 12 o'clock (r = 140) -->
+          <g class="node n1"><circle cx="200" cy="60" r="30" /><text x="200" y="65">Plan</text></g>
+          <g class="node n2"><circle cx="333" cy="157" r="30" /><text x="333" y="162">Gen</text></g>
+          <g class="node n3"><circle cx="282" cy="313" r="30" /><text x="282" y="318">Review</text></g>
+          <g class="node n4"><circle cx="118" cy="313" r="30" /><text x="118" y="318">Heal</text></g>
+          <g class="node n5"><circle cx="67" cy="157" r="30" /><text x="67" y="162">Triage</text></g>
+          <circle r="9" class="token" />
+          <circle r="5" class="token token-2" />
+        </svg>
+        <figcaption class="human-tag"><span></span>human gate</figcaption>
+      </figure>
+    </div>
+
+    <div class="wrap">
       <div class="stats" data-testid="stats">
-        <div class="stat"><b>{{TEST_COUNT}}</b><span>automated tests</span></div>
-        <div class="stat"><b>3</b><span>test layers: UI · API · Visual</span></div>
-        <div class="stat"><b>{{LESSON_COUNT}}</b><span>self-written lessons</span></div>
-        <div class="stat"><b>4</b><span>AI agents in the workflow</span></div>
+        <div class="stat"><b data-count="{{TEST_COUNT}}">{{TEST_COUNT}}</b><span>tests</span></div>
+        <div class="stat"><b data-count="3">3</b><span>layers</span></div>
+        <div class="stat"><b data-count="4">4</b><span>AI agents</span></div>
+        <div class="stat"><b data-count="{{LESSON_COUNT}}">{{LESSON_COUNT}}</b><span>lessons</span></div>
       </div>
     </div>
   </header>
@@ -48,62 +110,75 @@
   <main>
     <section id="agents">
       <div class="wrap">
-        <h2>AI agents are part of the pipeline, not a gimmick</h2>
-        <p class="sub">Every layer of this repo was planned, generated, reviewed or triaged by an agent — with a human gate at each step.</p>
-        <div class="loop">
-          <div class="step"><h4>Plan</h4><p>Claude Code + Playwright MCP explores the app in a real browser and writes a Markdown test plan.</p></div>
-          <div class="step"><h4>Generate</h4><p>A <code>test-generator</code> sub-agent turns the plan into POM-based specs that follow <code>CLAUDE.md</code> rules.</p></div>
-          <div class="step"><h4>Review</h4><p>I review the diff. <code>@claude</code> in a PR runs a second review against the project checklist.</p></div>
-          <div class="step"><h4>Heal</h4><p>When UI changes, the <code>test-healer</code> agent re-inspects the DOM and proposes locator fixes — never weaker assertions.</p></div>
-          <div class="step"><h4>Triage</h4><p>On red CI, <code>ai-triage.mjs</code> sends failures to Claude and writes a root-cause summary to the job summary.</p></div>
-        </div>
-        <div class="grid" style="margin-top:20px">
-          <div class="card"><span class="tag">.claude/agents</span><h3>4 specialised sub-agents</h3><p>test-planner, test-generator, test-healer, flaky-triager — each with a narrow tool set and written guardrails.</p></div>
-          <div class="card"><span class="tag">.mcp.json</span><h3>Playwright MCP</h3><p>The agent drives a real browser via accessibility snapshots instead of guessing selectors from source.</p></div>
-          <div class="card"><span class="tag">CLAUDE.md</span><h3>Rules the agent must obey</h3><p>Locator priority, no <code>waitForTimeout</code>, one behaviour per test, data via factories, tags for every spec.</p></div>
-          <div class="card"><span class="tag">.github/workflows</span><h3>Agent in CI</h3><p>Failure triage on every red run, and <code>@claude</code> PR reviews via claude-code-action.</p></div>
+        <h2>Agents in the loop</h2>
+        <div class="tiles">
+          <a class="tile" href="{{REPO_URL}}/tree/main/.claude/agents"><svg class="big"><use href="#i-agent" /></svg><b>4 sub-agents</b><small>plan · generate · heal · triage</small></a>
+          <a class="tile" href="{{REPO_URL}}/blob/main/.mcp.json"><svg class="big"><use href="#i-mcp" /></svg><b>Playwright MCP</b><small>real browser, no guessing</small></a>
+          <a class="tile" href="{{REPO_URL}}/blob/main/CLAUDE.md"><svg class="big"><use href="#i-rules" /></svg><b>CLAUDE.md</b><small>rules agents obey</small></a>
+          <a class="tile" href="{{REPO_URL}}/blob/main/scripts/ai-triage.mjs"><svg class="big"><use href="#i-ci" /></svg><b>AI triage</b><small>root cause on red CI</small></a>
         </div>
       </div>
     </section>
 
     <section id="framework">
       <div class="wrap">
-        <h2>Playwright framework</h2>
-        <p class="sub">TypeScript · Page Object Model · custom fixtures · API client · visual regression · auth via storageState.</p>
-        <div class="grid">
-          <div class="card"><span class="tag">UI</span><h3>Page Object Model</h3><p><code>LoginPage</code>, <code>TodoPage</code>, <code>HomePage</code> injected through fixtures — specs read like user stories.</p></div>
-          <div class="card"><span class="tag">API</span><h3>Typed API client</h3><p>Auth, CRUD, negative and contract checks against the REST API — fast, no browser.</p></div>
-          <div class="card"><span class="tag">Visual</span><h3>Screenshot diffs</h3><p><code>toHaveScreenshot</code> with masked dynamic areas and Linux baselines updated by a CI workflow.</p></div>
-          <div class="card"><span class="tag">Data</span><h3>Builders &amp; factories</h3><p>Unique, readable test data; every test resets state through a test-only API hook.</p></div>
+        <h2>Framework</h2>
+        <div class="tiles">
+          <a class="tile" href="{{REPO_URL}}/tree/main/tests/pages"><svg class="big"><use href="#i-pom" /></svg><b>Page Objects</b><small>UI · fixtures</small></a>
+          <a class="tile" href="{{REPO_URL}}/tree/main/tests/api"><svg class="big"><use href="#i-api" /></svg><b>API</b><small>typed client</small></a>
+          <a class="tile" href="{{REPO_URL}}/tree/main/tests/visual"><svg class="big"><use href="#i-eye" /></svg><b>Visual</b><small>pixel diffs</small></a>
+          <a class="tile" href="{{REPO_URL}}/tree/main/k6"><svg class="big"><use href="#i-gauge" /></svg><b>k6</b><small>p95 &lt; 300 ms</small></a>
         </div>
-        <pre class="code" style="margin-top:20px"><code>test('user can complete a todo @smoke', async ({ todoPage }) =&gt; {
-  await todoPage.goto();
-  await todoPage.add('Write k6 smoke test');
-  await todoPage.toggle('Write k6 smoke test');
-  await expect(todoPage.item('Write k6 smoke test')).toHaveClass(/done/);
-});</code></pre>
       </div>
     </section>
 
     <section id="ci">
       <div class="wrap">
-        <h2>CI &amp; reports</h2>
-        <p class="sub">GitHub Actions on every push and PR. The latest report from <code>main</code> is published with this site.</p>
-        <div class="grid">
-          <div class="card"><span class="tag">gate</span><h3>Typecheck → Tests → k6</h3><p>Parallel jobs; artifacts (HTML report, traces, JUnit) kept for 14 days.</p></div>
-          <div class="card"><span class="tag">report</span><h3><a href="report/">Playwright HTML report</a></h3><p>Traces, screenshots and videos for each failure, browsable online.</p></div>
-          <div class="card"><span class="tag">perf</span><h3>k6 smoke with thresholds</h3><p>p95 &lt; 300 ms and error rate &lt; 1% or the build fails.</p></div>
-          <div class="card"><span class="tag">deploy</span><h3>GitHub Pages</h3><p>Site + lessons + report rebuilt from the repo on every merge to main.</p></div>
+        <h2>Pipeline</h2>
+        <ol class="pipeline" data-testid="pipeline">
+          <li class="stage"><span class="dot"></span><b>Typecheck</b><small>tsc</small></li>
+          <li class="stage split">
+            <div class="lane"><span class="dot"></span><b>Tests</b><small>ui · api · visual</small></div>
+            <div class="lane"><span class="dot"></span><b>k6</b><small>smoke</small></div>
+          </li>
+          <li class="stage ai"><span class="dot"></span><b>AI triage</b><small>on failure</small></li>
+          <li class="stage"><span class="dot"></span><b>Deploy</b><small>Pages</small></li>
+        </ol>
+        <p class="build" data-testid="build-info">{{BUILD_INFO}}</p>
+
+        <div class="previews">
+          <a class="window" href="report/" data-testid="report-preview" aria-label="Open the Playwright HTML report">
+            <div class="chrome"><i></i><i></i><i></i><span>report/</span></div>
+            <div class="mini-report">
+              <div class="mr-head">
+                <span class="mr-pill ok">Passed <b>{{REPORT_PASSED}}</b></span>
+                <span class="mr-pill bad">Failed <b>{{REPORT_FAILED}}</b></span>
+                <span class="mr-pill flaky">Flaky <b>{{REPORT_FLAKY}}</b></span>
+              </div>
+              {{REPORT_ROWS}}
+            </div>
+          </a>
+          <a class="window" href="demo/" data-testid="demo-preview" aria-label="Open the demo app">
+            <div class="chrome"><i></i><i></i><i></i><span>demo/</span></div>
+            <div class="mini-demo" aria-hidden="true">
+              <div class="md-card">
+                <b>TaskFlow</b>
+                <span class="md-input"></span><span class="md-input"></span>
+                <span class="md-btn"></span>
+                <span class="md-row done"><i></i><em></em></span>
+                <span class="md-row"><i></i><em></em></span>
+                <span class="md-cursor"></span>
+              </div>
+            </div>
+          </a>
         </div>
-        <p class="sub" style="margin-top:18px" data-testid="build-info">Last build: {{BUILD_INFO}}</p>
       </div>
     </section>
 
     <section id="lessons">
       <div class="wrap">
-        <h2>Lessons (Vietnamese)</h2>
-        <p class="sub">My own curriculum, written with an AI pair and verified with runnable examples in this repo.</p>
-        <div class="grid" data-testid="lesson-list">
+        <h2>Lessons <small class="lang">VI</small></h2>
+        <div class="lesson-grid" data-testid="lesson-list">
           {{LESSONS}}
         </div>
       </div>
@@ -112,19 +187,52 @@
     <section id="oss">
       <div class="wrap">
         <h2>Open source</h2>
-        <p class="sub">Good-first-issues in tools I use daily, refreshed at every build by <code>scripts/find-good-first-issues.mjs</code>. Workflow: agent reads the issue + codebase → drafts a fix and test → I review, run, and open the PR.</p>
-        <div class="issues" data-testid="oss-issues">
+        <div class="chips" data-testid="oss-issues">
           {{OSS_ISSUES}}
         </div>
+        <a class="more" href="lessons/open-source-playbook.html">Playbook <svg class="ic"><use href="#i-arrow" /></svg></a>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="wrap">
-      Built from <a href="{{REPO_URL}}">{{REPO_SLUG}}</a> with GitHub Actions · Tested by its own Playwright suite ·
-      Pair-programmed with Claude Code.
+      <a href="{{REPO_URL}}"><svg class="ic"><use href="#i-git" /></svg>{{REPO_SLUG}}</a>
+      <span>Built by GitHub Actions · tested by its own suite</span>
     </div>
   </footer>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      document.querySelector('.theme-toggle').addEventListener('click', () => {
+        const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+        try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+      });
+
+      // Count stats up from 0 the first time they scroll into view. The final value is
+      // already in the HTML, so no-JS and reduced-motion visitors see the real number.
+      if (reduce || !('IntersectionObserver' in window)) return;
+      const counters = [...document.querySelectorAll('[data-count]')].filter((el) => /^\d+$/.test(el.dataset.count));
+      const io = new IntersectionObserver((entries) => {
+        for (const { isIntersecting, target } of entries) {
+          if (!isIntersecting) continue;
+          io.unobserve(target);
+          const end = Number(target.dataset.count);
+          const start = performance.now();
+          const tick = (now) => {
+            const p = Math.min(1, (now - start) / 1200);
+            target.textContent = String(Math.round(end * (1 - Math.pow(1 - p, 3))));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      });
+      counters.forEach((el) => io.observe(el));
+    })();
+  </script>
 </body>
 </html>
