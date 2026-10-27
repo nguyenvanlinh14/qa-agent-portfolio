@@ -20,13 +20,11 @@ Không có issue phù hợp.
 
 | Score | Issue | Title | Labels | Comments | Updated |
 |---:|---|---|---|---:|---|
-| 84 | [#3062](https://github.com/grafana/k6/issues/3062) | Test k6 installation in CI | `good first issue` `feature` `ci` `stale` | 3 | 2026-10-19 |
 | 82 | [#881](https://github.com/grafana/k6/issues/881) | HTTP/2 server push | `good first issue` `feature` `lower prio` `new-http` `triage` | 1 | 2026-08-18 |
 | 81 | [#4412](https://github.com/grafana/k6/issues/4412) | Optimize tests run speed (especially the functional tests) | `good first issue` `tests` `hacktoberfest` `triage` `area: browser` | 5 | 2026-09-23 |
 | 80 | [#4584](https://github.com/grafana/k6/issues/4584) | Support sigv4 to push metric to AWS managed prometheus | `good first issue` `hacktoberfest` `triage` `area: prometheusrw` | 2 | 2026-07-29 |
 | 79 | [#2764](https://github.com/grafana/k6/issues/2764) | Extend the \`metrics.TagSet\` API | `good first issue` `ux` `feature` `stale` | 4 | 2026-10-19 |
 | 74 | [#2296](https://github.com/grafana/k6/issues/2296) | a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ? | `enhancement` `help wanted` `feature` `js-compat` `stale` | 5 | 2026-10-19 |
-| 74 | [#4260](https://github.com/grafana/k6/issues/4260) | deriveBits: Implement support of non-multiples of 8 for lengths | `enhancement` `help wanted` `area: webcrypto` `stale` | 3 | 2026-10-19 |
 | 74 | [#1939](https://github.com/grafana/k6/issues/1939) | Log output as xk6 extension | `enhancement` `help wanted` `feature` `stale` | 4 | 2026-10-19 |
 | 74 | [#1210](https://github.com/grafana/k6/issues/1210) | Cookies not saved during NTLM auth negotiation | `bug` `help wanted` `refactor` `evaluation needed` `stale` | 4 | 2026-10-19 |
 | 74 | [#921](https://github.com/grafana/k6/issues/921) | Better metrics about sleep and group | `enhancement` `help wanted` `stale` | 2 | 2026-10-19 |
@@ -49,23 +47,6 @@ Không có issue phù hợp.
 Không có issue phù hợp.
 
 ## Top 10
-
-<details>
-<summary><b>84</b> · grafana/k6#3062: Test k6 installation in CI</summary>
-
-[Mở issue trên GitHub](https://github.com/grafana/k6/issues/3062)
-
-```text
-### Feature Description
-
-We've had reports of k6 failing to install on some systems (#854, #2608, #3055), so it would be good to have a CI job that runs after every release (whenever we publish packages to dl.k6.io) to ensure k6 installs smoothly on most modern systems. We could also schedule it periodically, to ensure our infrastructure around it is working properly.
-
-This should be relatively simple to automate for a few Linux distros (Ubuntu, Debian, Fedora, CentOS, etc.), and we can potentially consider doing it for macOS and Windows. For macOS we'd have to wait for the Homebrew package to be updated, so that could possibly be implemented as a trigger. And for Windows, the MSI installation can be scripted, so it should be possible to do this in CI.
-
-We should test several versions of e
-```
-
-</details>
 
 <details>
 <summary><b>82</b> · grafana/k6#881: HTTP/2 server push</summary>
@@ -167,34 +148,6 @@ and have to i
 </details>
 
 <details>
-<summary><b>74</b> · grafana/k6#4260: deriveBits: Implement support of non-multiples of 8 for lengths</summary>
-
-[Mở issue trên GitHub](https://github.com/grafana/k6/issues/4260)
-
-```text
-# What?
-
-While do have support of `deriveBits` operation (for the ECDH algorithm).
-
-However, the web platform test suite showed that the length argument could be a non-multiply of 8. In that case, we should implement the logic to support such values. 
-
-For now, we explicitly return an error if the length is a non-multiply of 8. see https://github.com/grafana/xk6-webcrypto/pull/79/commits/6c61c1b1d69b92c7a23ff0a989f4fd225a2fe907
-
-Below is a snippet that could be run in the browser. It works in Chrome, but errors in Firefox.
-
-## Related PRs:
-
-* https://github.com/grafana/xk6-webcrypto/pull/67
-* https://github.com/grafana/xk6-webcrypto/pull/79
-
-# Why?
-
-WebCrypto API defines it as possible to have a length that is non-multiply of 8.
-```
-
-</details>
-
-<details>
 <summary><b>74</b> · grafana/k6#1939: Log output as xk6 extension</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/1939)
@@ -242,6 +195,27 @@ I propose that we:
 2. Have the group know that there was n seconds of sleep in it's current execution - probably through some new methods on [lib.Group](https://github.com/loadimpact/k6/blob/9405ba29c68ced92c6b96974485d1541a8807f23/lib/models.go#L97-L122)
 3. Add new metric `group_sleep`? 
 4. Choose whether to remove the sleep time from the `group_duration` or add another metric that is the `group_duration` without the `group_sleep` or the reverse - have the `group_duration` be without the `group_sleep` but have another `full_group_duration` that includes the `group_sleep`
+```
+
+</details>
+
+<details>
+<summary><b>68</b> · grafana/k6#238: Support for QUIC protocol</summary>
+
+[Mở issue trên GitHub](https://github.com/grafana/k6/issues/238)
+
+```text
+Hi
+
+As discussed briefly in Slack, it'd be great to get support for the [QUIC](https://www.chromium.org/quic) transport protocol (currently an [IETF draft](https://tools.ietf.org/html/draft-hamilton-early-deployment-quic-00) though has a dedicated working group and very wide support so is extremely likely to be ratified before too long): 
+
+There's a potentially helpful QUIC lib for Go which is used by [Caddy](https://caddyserver.com/) - [quic-go](https://github.com/lucas-clemente/quic-go) (MIT license).
+
+QUIC is UDP-based so this might cause some issues/complexity and is worth calling out in docs as folks will need to ensure they allow udp:443 from load gen(s) to server(s)/LBs.
+
+Please let me know if you need any more info from me.
+
+Cheers
 ```
 
 </details>
