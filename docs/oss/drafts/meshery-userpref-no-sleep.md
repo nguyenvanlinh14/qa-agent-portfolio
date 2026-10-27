@@ -1,6 +1,6 @@
 # meshery/meshery: bỏ `waitForTimeout(2000)` trong `userpreference.spec.ts`
 
-Trạng thái: **bản nháp, chưa liên hệ** (chưa comment, chưa mở issue/PR, chưa push, chưa commit; thay đổi nằm uncommitted trên nhánh local `wip/userpref-no-sleep` trong `/home/user/meshery/meshery`).
+Trạng thái: **đã merge** — [meshery/meshery#22619](https://github.com/meshery/meshery/pull/22619) (approve bởi ianrwhitney, CI 16/16 xanh, merged 2026-10-27).
 
 Cơ sở: clone `--depth 1` của `meshery/meshery` tại commit `adf88a0c6185` (merge PR #22550, 2026-10-27). Mọi số liệu dưới đây là từ code ở commit đó. **Không truy cập được GitHub issue tracker từ sandbox**, nên chưa biết đã có issue/PR trùng hay chưa (xem "Câu hỏi mở").
 
