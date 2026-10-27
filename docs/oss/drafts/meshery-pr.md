@@ -21,7 +21,7 @@ after:  10 passed (+ setup), ~6.3 s per test
 
 Changing the expectation to `checked: wasChecked` makes the test fail, so the assertion is not vacuous. `prettier --check` and `eslint` pass on the touched file. Not run: the `chromium-meshery-provider` project (needs a remote token) and the full suite.
 
-AI assistance: I used Claude (an AI coding assistant) to help find and draft this change. I reviewed it and ran the spec myself as described above. The commit carries an `Assisted-by` trailer.
+AI assistance: I used Claude (an AI coding assistant) to help find and draft this change. I reviewed the change; the runs above were made in a sandbox with the assistant's help. The commit carries an `Assisted-by` trailer.
 
 **[Signed commits](https://github.com/meshery/meshery/blob/master/CONTRIBUTING.md#signing-off-on-commits-developer-certificate-of-origin)**
 - [x] Yes, I signed my commits.
