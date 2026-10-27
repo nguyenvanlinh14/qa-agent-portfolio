@@ -76,7 +76,25 @@ async function watch(item) {
   console.log(`oss-watch: ${item.repo}#${item.number}: ${todo.length} new comment(s) -> #${tracker.number}`);
 }
 
+// Pull requests the owner opened in other repositories are watched automatically.
+async function ownPullRequests() {
+  const q = `is:pr author:${OWNER} -user:${OWNER}`;
+  const data = await gh(`/search/issues?${new URLSearchParams({ q, sort: 'updated', per_page: '50' })}`);
+  return data.items.map((i) => ({
+    repo: i.repository_url.split('/repos/')[1],
+    number: i.number,
+    title: `PR: ${i.title}`,
+  }));
+}
+
 const list = JSON.parse(readFileSync(new URL('../docs/oss/watch.json', import.meta.url), 'utf8'));
+try {
+  for (const pr of await ownPullRequests()) {
+    if (!list.some((i) => i.repo === pr.repo && i.number === pr.number)) list.push(pr);
+  }
+} catch (err) {
+  console.error(`oss-watch: PR discovery failed: ${err.message}`);
+}
 let failed = 0;
 for (const item of list) {
   try {
