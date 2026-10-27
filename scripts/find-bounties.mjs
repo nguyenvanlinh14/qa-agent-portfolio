@@ -3,9 +3,15 @@
 // Best effort: it never fails the build (always exits 0). GitHub's global issue search is only reachable
 // from CI, so BOUNTY_FIXTURE=<dir> replaces the network for testing. The dir holds:
 //   search.json        array of GitHub search items (each with repository_url)
-//   repos.json         map "owner/repo" -> { stargazers_count, language, archived, topics }
+//   repos.json         map "owner/repo" -> { name, full_name, stargazers_count, created_at, fork, language, archived, topics }
+//   paid.json          (optional) map "owner/repo" -> total_count of issues labelled "💰 Rewarded"
 //   comments.json      map issue html_url -> array of comments ({ user: { login, type }, body })
 //   contributing.json  map "owner/repo" -> CONTRIBUTING.md text
+//
+// Pipeline (every optional network call stops once the time budget is spent):
+//   1. search (several queries)  2. repo info for ALL unique repos (cap 120) + hard legitimacy filter
+//   3. payout history for the top 30 repos by stars  4. comments for the top 60 issues (legitimacy + freshness)
+//   5. score, split off "crowded" issues (> 15 attempts), write the report.
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,48 +22,73 @@ const MD_OUT = join(ROOT, 'docs', 'oss', 'bounties.md');
 const FIXTURE = process.env.BOUNTY_FIXTURE ? resolve(process.env.BOUNTY_FIXTURE) : null;
 
 const DAY = 86_400_000;
-const MAX_AGE_DAYS = 120;
-const MAX_REPOS = 40; // repos we fetch info for
-const MAX_DETAIL = 40; // issues we fetch comments for (and keep)
-const TOP_TABLE = 25;
+const MAX_AGE_DAYS = 120; // issues not updated for this long are ignored
+const MAX_REPOS = 120; // repos we fetch info for
+const MIN_STARS = 200; // hard filter
+const MIN_REPO_AGE_DAYS = 180; // hard filter: younger repos are dropped
+const PAID_CHECK_REPOS = 30; // repos (by stars) whose payout history we look up
+const MAX_DETAIL = 60; // issues we fetch comments for
+const MAX_PER_REPO = 10; // ...at most this many per repo, so one big repo cannot fill the whole detail budget
+const CROWDED_ABOVE = 15; // more attempts than this -> "Crowded" list, not ranked
+const TOP_TABLE = 20;
 const TOP_DETAILS = 10;
+const TOP_CROWDED = 10;
 const SEARCH_GAP_MS = 2500; // search API: 30 req/min authenticated
+const API_GAP_MS = 200; // gap between the other REST calls
 const TIMEOUT_MS = 15_000;
-const DEADLINE_MS = 6 * 60_000; // stop optional calls after this, the job has a 10 minute timeout
+const DEADLINE_MS = 7 * 60_000; // stop optional calls after this, the job has a 10 minute timeout
+
+// "Bounty farms": repos that exist to farm attempts, recognised by name.
+const FARM_NAME = /bounty|bounties|hunter|hunters|livefire|airdrop/i;
+// Repos that pay outside GitHub (no "💰 Rewarded" label to count): value = where they pay.
+const OFF_PLATFORM = { 'Expensify/App': 'Upwork' };
 
 const BOUNTY = 'label:"💎 Bounty"';
 const QUERIES = [
-  `${BOUNTY} language:TypeScript`,
-  `${BOUNTY} language:JavaScript`,
-  `${BOUNTY} language:Go`,
-  `${BOUNTY} language:Python`,
-  `${BOUNTY} playwright`,
-  `${BOUNTY} test in:title,body`,
-  'label:bounty language:TypeScript',
-  'label:bounty language:Go',
-  'label:"bounty" playwright',
-].map((q) => `${q} is:issue is:open`);
+  ...[
+    `${BOUNTY} language:TypeScript`,
+    `${BOUNTY} language:JavaScript`,
+    `${BOUNTY} language:Go`,
+    `${BOUNTY} language:Python`,
+    `${BOUNTY} playwright`,
+    `${BOUNTY} test in:title,body`,
+    'label:bounty language:TypeScript',
+    'label:bounty language:Go',
+    'label:"bounty" playwright',
+  ].map((q) => `${q} is:issue is:open`),
+  // Expensify pays through Upwork; the amount is in the title ("[$250]"). Titles with HOLD are skipped later.
+  'repo:Expensify/App is:issue is:open label:External label:"Help Wanted"',
+  // Popular repos, so they are not drowned by the many small ones above. (If GitHub rejects `stars:` in issue
+  // search the query just fails, is logged and skipped.)
+  `${BOUNTY} stars:>500 is:issue is:open`,
+];
 
 const FIT_LANGS = new Set(['TypeScript', 'JavaScript', 'Go', 'Python']);
 const FIT_WORDS = /\b(?:test|tests|testing|playwright|e2e|ci|flaky|lint|linting|typescript|cli)\b/i;
 
-// Score 0-100 (higher = better bounty for a QA automation engineer):
-//   amount       0..35  35 * log10(1 + usd) / log10(1001), i.e. $1000 and above -> 35 ($100 ~ 23, $10 ~ 12); unknown -> 0
-//   competition  0..25  attempts 0 -> 25, 1 -> 18, 2-3 -> 10, 4+ -> 0 (unknown comments -> 10)
-//   freshness    0..15  15 * (1 - ageDays / 120) by updatedAt, floored at 0
-//   fit          0..20  +10 repo language is TypeScript/JavaScript/Go/Python,
-//                       +10 title/body/topics match test|playwright|e2e|ci|flaky|lint|typescript|cli
-//   penalties           -10 body longer than 6000 chars (hard to scope), -10 amount unknown
-//   (clamped to 0..100; the best possible item scores 95)
+// Score 0-100 (higher = better bounty for a QA automation engineer; the best possible item scores 100):
+//   amount       0..25  25 * log10(1 + min(usd, 1000)) / log10(1001), i.e. $1000+ -> 25 ($100 ~ 17, $10 ~ 9); unknown -> 0
+//   competition  0..30  attempts 0 -> 30, 1 -> 24, 2-3 -> 16, 4-8 -> 8, 9-15 -> 2, more -> 0 (unknown comments -> 8)
+//   legitimacy   0..25  stars: min(10, 10 * log10(stars) / log10(50000)); payout history: any "💰 Rewarded"
+//                       issue in the repo -> +10, 10 or more -> +15 (unknown / off-platform payer -> +0)
+//   freshness    0..10  10 * (1 - ageDays / 120) by updatedAt, floored at 0
+//   fit          0..10  +5 repo language is TypeScript/JavaScript/Go/Python,
+//                       +5 title/body/topics match test|playwright|e2e|ci|flaky|lint|typescript|cli
+//   penalties           -10 amount unknown, -5 body longer than 6000 chars (hard to scope),
+//                       -2 AI policy unknown (disclose = 0: fine; forbidden repos are dropped earlier)
+//   (clamped to 0..100)
+const legitimacy = (stars, paidCount) =>
+  Math.min(10, stars > 0 ? (10 * Math.log10(stars)) / Math.log10(50_000) : 0) + (paidCount >= 10 ? 15 : paidCount > 0 ? 10 : 0);
+const freshness = (updatedAt, now) => 10 * Math.max(0, 1 - Math.max(0, (now - Date.parse(updatedAt)) / DAY) / MAX_AGE_DAYS);
+
 function score(i, now = Date.now()) {
-  const amount = i.amount == null ? 0 : Math.min(35, (35 * Math.log10(1 + i.amount)) / Math.log10(1001));
+  const amount = i.amount == null ? 0 : (25 * Math.log10(1 + Math.min(i.amount, 1000))) / Math.log10(1001);
   const a = i.attempts;
-  const compete = a == null ? 10 : a === 0 ? 25 : a === 1 ? 18 : a <= 3 ? 10 : 0;
-  const age = Math.max(0, (now - Date.parse(i.updatedAt)) / DAY);
-  const fresh = 15 * Math.max(0, 1 - age / MAX_AGE_DAYS);
-  const fit = (FIT_LANGS.has(i.language) ? 10 : 0) + (FIT_WORDS.test(`${i.title}\n${i.body}\n${i.topics.join(' ')}`) ? 10 : 0);
-  const penalty = (i.bodyLength > 6000 ? 10 : 0) + (i.amount == null ? 10 : 0);
-  return Math.round(Math.min(100, Math.max(0, amount + compete + fresh + fit - penalty)));
+  const compete = a == null ? 8 : a === 0 ? 30 : a === 1 ? 24 : a <= 3 ? 16 : a <= 8 ? 8 : a <= 15 ? 2 : 0;
+  const legit = legitimacy(i.stars ?? 0, i.paidCount ?? 0);
+  const fit = (FIT_LANGS.has(i.language) ? 5 : 0) + (FIT_WORDS.test(`${i.title}\n${i.body}\n${i.topics.join(' ')}`) ? 5 : 0);
+  const penalty = (i.amount == null ? 10 : 0) + (i.bodyLength > 6000 ? 5 : 0) + (i.aiPolicy === 'unknown' ? 2 : 0);
+  return Math.round(Math.min(100, Math.max(0, amount + compete + legit + freshness(i.updatedAt, now) + fit - penalty)));
 }
 
 // ---------- text helpers ----------
@@ -90,14 +121,26 @@ const largest = (nums) => (nums.length ? Math.max(...nums) : null);
 
 const isBot = (c) => c.user?.type === 'Bot' || /\[bot\]$/i.test(c.user?.login ?? '') || /algora/i.test(c.user?.login ?? '');
 
-// Bounty amount: largest in a bounty-bot comment, else largest in the labels, else largest in the body
-// (body amounts only count next to a bounty/reward/paid word, to ignore "$1" in shell snippets).
-function findAmount(labels, body, comments) {
+// "[$250]" / "[HOLD for payment ...][$250]" in a title: the amount convention of Expensify and a few others.
+const titleAmount = (title) =>
+  largest(
+    [...String(title ?? '').matchAll(/\[\s*\$\s?(\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*\]/g)]
+      .map((m) => Number(m[1].replace(/,/g, '')))
+      .filter((n) => n >= 1 && n <= 100_000),
+  );
+
+// Bounty amount: largest in a bounty-bot comment, else largest in the labels, else a "[$N]" title, else largest
+// in the body (body amounts only count next to a bounty/reward/paid word, to ignore "$1" in shell snippets).
+// With titleFirst (repos that pay off-platform, e.g. Expensify) the title is the only trusted source.
+function findAmount(labels, body, comments, title, titleFirst = false) {
+  const fromTitle = titleAmount(title);
+  if (titleFirst) return fromTitle;
   const bot = comments.filter((c) => isBot(c) && /bounty|💎|reward/i.test(c.body ?? ''));
   const fromBots = largest(bot.flatMap((c) => amountsIn(c.body).map((a) => a.n)));
   if (fromBots != null) return fromBots;
   const fromLabels = largest(labels.flatMap((l) => amountsIn(l).map((a) => a.n)));
   if (fromLabels != null) return fromLabels;
+  if (fromTitle != null) return fromTitle;
   const text = stripBody(body);
   return largest(
     amountsIn(text)
@@ -107,8 +150,9 @@ function findAmount(labels, body, comments) {
 }
 
 const ATTEMPT = /\/attempt\b|\b(?:i'?d like to work on|i would like to work on|can i work on|could i work on|assign (?:it |this )?(?:to )?me)\b/i;
+const PROPOSAL = /^\s*#{0,4}\s*proposal\b/im; // Expensify: contributors post "## Proposal" comments
 const OPENED_PR = /\/claim\b|(?:\bPRs?\b|pull request)[^\n]{0,80}#\d+|#\d+[^\n]{0,80}(?:\bPRs?\b|pull request)/i;
-const REWARDED_LABEL = /rewarded|\bpaid\b|\bclaimed\b/i;
+const REWARDED_LABEL = /rewarded|\bpaid\b|\bclaimed\b/i; // case-insensitive: covers "💰 Rewarded" and variants
 const REWARDED_BOT =
   /\b(?:has|have) been (?:awarded|rewarded|paid)\b|\bbounty (?:has been |was |is )?(?:claimed|awarded|rewarded|paid)\b|🎉[^\n]*\b(?:awarded|rewarded)\b|\b(?:awarded|rewarded)\b[^\n]*\$\s?\d/i;
 
@@ -118,7 +162,7 @@ function findAttempts(comments) {
   for (const c of comments) {
     if (isBot(c)) continue;
     const body = c.body ?? '';
-    if (ATTEMPT.test(body) || OPENED_PR.test(body)) users.add(c.user?.login ?? `anon-${users.size}`);
+    if (ATTEMPT.test(body) || OPENED_PR.test(body) || PROPOSAL.test(body)) users.add(c.user?.login ?? `anon-${users.size}`);
   }
   return users.size;
 }
@@ -151,7 +195,14 @@ function aiPolicy(text) {
 const started = Date.now();
 const late = () => Date.now() - started > DEADLINE_MS;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const fixture = (name) => JSON.parse(readFileSync(join(FIXTURE, name), 'utf8'));
+const fixtures = new Map();
+const fixture = (name, optional = false) => {
+  if (!fixtures.has(name)) {
+    const file = join(FIXTURE, name);
+    fixtures.set(name, optional && !existsSync(file) ? {} : JSON.parse(readFileSync(file, 'utf8')));
+  }
+  return fixtures.get(name);
+};
 
 const headers = (accept = 'application/vnd.github+json') => {
   const h = { accept, 'user-agent': 'qa-agent-portfolio' };
@@ -159,10 +210,21 @@ const headers = (accept = 'application/vnd.github+json') => {
   return h;
 };
 
+// Pacing: search calls >= SEARCH_GAP_MS apart, other REST calls >= API_GAP_MS apart.
+const lastCall = { search: 0, api: 0 };
+async function pace(kind) {
+  const gap = kind === 'search' ? SEARCH_GAP_MS : API_GAP_MS;
+  const wait = lastCall[kind] + gap - Date.now();
+  if (wait > 0) await sleep(wait);
+  lastCall[kind] = Date.now();
+}
+
 // GET against the GitHub API; returns { status, body } (body = parsed JSON, or text when raw). One retry
 // when the API asks to wait a few seconds. Throws on network errors.
 async function gh(path, { raw = false } = {}) {
+  const kind = path.startsWith('/search/') ? 'search' : 'api';
   for (let attempt = 0; ; attempt++) {
+    await pace(kind);
     const res = await fetch(`https://api.github.com${path}`, {
       headers: headers(raw ? 'application/vnd.github.raw+json' : undefined),
       signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -181,8 +243,7 @@ async function searchAll() {
   if (FIXTURE) return { items: fixture('search.json'), ok: 1 };
   const byUrl = new Map();
   let ok = 0;
-  for (const [n, q] of QUERIES.entries()) {
-    if (n) await sleep(SEARCH_GAP_MS);
+  for (const q of QUERIES) {
     try {
       const params = new URLSearchParams({ q, sort: 'updated', order: 'desc', per_page: '50' });
       const { status, body } = await gh(`/search/issues?${params}`);
@@ -208,6 +269,21 @@ async function repoInfo(repo) {
   }
 }
 
+// Payout history: number of issues in the repo carrying Algora's "💰 Rewarded" label (GitHub matches labels
+// case-insensitively). null = unknown (out of time budget or request failed).
+async function paidFor(repo) {
+  if (FIXTURE) return fixture('paid.json', true)[repo] ?? 0;
+  if (late()) return null;
+  try {
+    const params = new URLSearchParams({ q: `repo:${repo} label:"💰 Rewarded" is:issue`, per_page: '1' });
+    const { body } = await gh(`/search/issues?${params}`);
+    return body && Number.isInteger(body.total_count) ? body.total_count : null;
+  } catch (err) {
+    console.warn(`bounties: payout lookup ${repo} failed (${err.message})`);
+    return null;
+  }
+}
+
 async function commentsFor(item, repo) {
   if (FIXTURE) return fixture('comments.json')[item.html_url] ?? [];
   if (late()) return null;
@@ -222,7 +298,7 @@ async function commentsFor(item, repo) {
 
 async function contributingFor(repo) {
   if (FIXTURE) return fixture('contributing.json')[repo] ?? null;
-  for (const file of ['CONTRIBUTING.md', '.github/CONTRIBUTING.md']) {
+  for (const file of ['CONTRIBUTING.md', '.github/CONTRIBUTING.md', 'contributingGuides/CONTRIBUTING.md']) {
     if (late()) return null;
     try {
       const { body } = await gh(`/repos/${repo}/contents/${file}`, { raw: true });
@@ -238,82 +314,135 @@ async function contributingFor(repo) {
 
 const repoOf = (item) => /\/repos\/([\w.-]+\/[\w.-]+)$/.exec(item.repository_url ?? '')?.[1] ?? null;
 
-// Cheap pre-score used to decide which issues deserve API calls: freshness (0..15) + bounty label (+10 / +5).
-function preScore(item, now) {
-  const labels = (item.labels ?? []).map((l) => l.name ?? '');
-  const age = Math.max(0, (now - Date.parse(item.updated_at)) / DAY);
-  return 15 * Math.max(0, 1 - age / MAX_AGE_DAYS) + (labels.some((l) => /💎/.test(l)) ? 10 : labels.some((l) => /bounty/i.test(l)) ? 5 : 0);
+// Why a repo is not trustworthy enough (null = fine). Needs repo info; without it we cannot vouch for the repo.
+function repoVerdict(repo, info, now) {
+  if (!info) return 'no repo info';
+  if (info.archived) return 'archived';
+  if (info.fork) return 'fork';
+  if ((info.stargazers_count ?? 0) < MIN_STARS) return `< ${MIN_STARS} stars`;
+  const created = Date.parse(info.created_at);
+  if (created > now - MIN_REPO_AGE_DAYS * DAY) return `younger than ${MIN_REPO_AGE_DAYS} days`;
+  if ([repo, info.name, info.full_name].some((n) => n && FARM_NAME.test(n))) return 'bounty farm';
+  return null;
 }
 
 async function collect(rawItems) {
   const now = Date.now();
   const since = now - MAX_AGE_DAYS * DAY;
+  const stats = { searched: 0, fresh: 0, repos: 0, afterRepoFilter: 0, detailed: 0, rewarded: 0, forbidden: 0, kept: 0, crowded: 0 };
+
+  // 1. fresh, unassigned issues (and Expensify's "[$N]" convention)
   const seen = new Set();
   const candidates = [];
   for (const item of rawItems) {
     const repo = repoOf(item);
     if (!repo || !item.html_url?.startsWith('https://github.com/') || seen.has(item.html_url)) continue;
     seen.add(item.html_url);
+    stats.searched++;
     if (item.pull_request || item.assignee || item.assignees?.length) continue;
     if (!(Date.parse(item.updated_at) >= since)) continue;
-    candidates.push({ item, repo, pre: preScore(item, now) });
-  }
-  candidates.sort((a, b) => b.pre - a.pre || b.item.updated_at.localeCompare(a.item.updated_at));
-
-  // Repo info, in pre-score order, for at most MAX_REPOS repos; the rest are left out.
-  const repos = new Map();
-  const usable = [];
-  for (const c of candidates) {
-    if (!repos.has(c.repo)) {
-      if (repos.size >= MAX_REPOS) continue;
-      repos.set(c.repo, await repoInfo(c.repo));
+    if (repo in OFF_PLATFORM) {
+      const title = String(item.title ?? '');
+      if (/\bHOLD\b/i.test(title) || titleAmount(title) == null) continue; // on hold, or no price in the title
     }
-    const info = repos.get(c.repo);
-    if (info?.archived) continue;
-    usable.push({ ...c, info });
+    candidates.push({ item, repo });
   }
-  console.log(`bounties: ${rawItems.length} search hits, ${candidates.length} fresh+unassigned, ${repos.size} repos, ${usable.length} usable`);
+  stats.fresh = candidates.length;
+
+  // 2. repo info for ALL unique repos (freshest first when over the cap), then the hard legitimacy filter
+  const freshest = new Map();
+  for (const { item, repo } of candidates) freshest.set(repo, Math.max(freshest.get(repo) ?? 0, Date.parse(item.updated_at)));
+  const repoList = [...freshest.entries()].sort((a, b) => b[1] - a[1]).map(([repo]) => repo);
+  const infos = new Map();
+  for (const repo of repoList.slice(0, MAX_REPOS)) infos.set(repo, await repoInfo(repo));
+  stats.repos = infos.size;
+  const dropReasons = new Map();
+  const goodRepos = new Map();
+  for (const [repo, info] of infos) {
+    const reason = repoVerdict(repo, info, now);
+    if (reason) dropReasons.set(reason, [...(dropReasons.get(reason) ?? []), repo]);
+    else goodRepos.set(repo, info);
+  }
+  for (const [reason, list] of dropReasons) console.log(`bounties: dropped ${list.length} repos (${reason}): ${list.slice(0, 8).join(', ')}${list.length > 8 ? ', ...' : ''}`);
+  const usable = candidates.filter((c) => goodRepos.has(c.repo)).map((c) => ({ ...c, info: goodRepos.get(c.repo) }));
+  stats.afterRepoFilter = usable.length;
+
+  // 3. payout history for the top repos by stars
+  const paid = new Map();
+  const byStars = [...goodRepos.entries()].sort((a, b) => (b[1].stargazers_count ?? 0) - (a[1].stargazers_count ?? 0));
+  for (const [repo] of byStars.filter(([r]) => !(r in OFF_PLATFORM)).slice(0, PAID_CHECK_REPOS)) paid.set(repo, await paidFor(repo));
+  console.log(`bounties: payout history for ${paid.size} repos, ${[...paid.values()].filter((n) => n > 0).length} with rewarded issues`);
+
+  // 4. comments for the top issues by pre-score = legitimacy + freshness (at most MAX_PER_REPO per repo)
+  for (const u of usable) u.pre = legitimacy(u.info.stargazers_count, paid.get(u.repo) ?? 0) + freshness(u.item.updated_at, now);
+  usable.sort((a, b) => b.pre - a.pre || b.item.updated_at.localeCompare(a.item.updated_at));
+  const perRepo = new Map();
+  const detail = [];
+  for (const u of usable) {
+    if (detail.length >= MAX_DETAIL) break;
+    const n = perRepo.get(u.repo) ?? 0;
+    if (n >= MAX_PER_REPO) continue;
+    perRepo.set(u.repo, n + 1);
+    detail.push(u);
+  }
 
   const policies = new Map();
   const kept = [];
-  let rewarded = 0;
-  let forbidden = 0;
-  for (const { item, repo, info } of usable.slice(0, MAX_DETAIL)) {
+  const crowded = [];
+  for (const { item, repo, info } of detail) {
+    stats.detailed++;
     const labels = (item.labels ?? []).map((l) => l.name ?? '');
     const comments = await commentsFor(item, repo);
     if (isRewarded(labels, comments ?? [])) {
-      rewarded++;
+      stats.rewarded++;
+      continue;
+    }
+    const attempts = comments ? findAttempts(comments) : null;
+    const base = {
+      repo,
+      number: item.number,
+      title: String(item.title ?? ''),
+      url: item.html_url,
+      amount: findAmount(labels, item.body, comments ?? [], item.title, repo in OFF_PLATFORM),
+      attempts,
+      stars: info.stargazers_count ?? null,
+      createdAt: info.created_at ?? null,
+      paidCount: paid.get(repo) ?? null,
+      paidVia: OFF_PLATFORM[repo] ?? null,
+      language: info.language ?? null,
+      updatedAt: item.updated_at,
+    };
+    if (attempts != null && attempts > CROWDED_ABOVE) {
+      crowded.push(base);
       continue;
     }
     if (!policies.has(repo)) policies.set(repo, aiPolicy(await contributingFor(repo)));
     const policy = policies.get(repo);
     if (policy === 'forbidden') {
-      forbidden++;
+      stats.forbidden++;
       continue;
     }
     const issue = {
-      repo,
-      number: item.number,
-      title: String(item.title ?? ''),
-      url: item.html_url,
-      amount: findAmount(labels, item.body, comments ?? []),
-      attempts: comments ? findAttempts(comments) : null,
+      ...base,
       aiPolicy: policy,
-      stars: info?.stargazers_count ?? null,
-      language: info?.language ?? null,
       labels,
-      updatedAt: item.updated_at,
       excerpt: excerpt(item.body),
       body: stripBody(item.body),
       bodyLength: String(item.body ?? '').length,
-      topics: info?.topics ?? [],
+      topics: info.topics ?? [],
     };
     issue.score = score(issue, now);
     kept.push(issue);
   }
-  console.log(`bounties: kept ${kept.length}, dropped ${rewarded} rewarded and ${forbidden} AI-forbidden`);
   kept.sort((a, b) => b.score - a.score || b.updatedAt.localeCompare(a.updatedAt));
-  return kept;
+  crowded.sort((a, b) => (b.amount ?? 0) - (a.amount ?? 0) || b.attempts - a.attempts);
+  stats.kept = kept.length;
+  stats.crowded = crowded.length;
+  console.log(
+    `bounties: searched ${stats.searched}, fresh+unassigned ${stats.fresh}, repos checked ${stats.repos}, after repo filter ${stats.afterRepoFilter}, ` +
+      `after comments ${stats.detailed} (dropped ${stats.rewarded} rewarded), kept ${stats.kept} (dropped ${stats.forbidden} AI-forbidden), crowded ${stats.crowded}`,
+  );
+  return { kept, crowded };
 }
 
 // ---------- output ----------
@@ -327,12 +456,18 @@ const cell = (s) =>
     .replace(/[|[\]`\\]/g, '\\$&');
 const day = (iso) => String(iso).slice(0, 10);
 const money = (n) => (n == null ? '?' : `$${n.toLocaleString('en-US')}`);
+const starsText = (n) => (n == null ? '?' : n >= 1000 ? `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1)}k` : String(n));
+// Payout history: count of "💰 Rewarded" issues; 0 is flagged; off-platform payers show where they pay.
+const paidText = (i) => (i.paidVia ? i.paidVia : i.paidCount == null ? '?' : i.paidCount === 0 ? '0 ⚠' : String(i.paidCount));
+const link = (i) => `[${cell(i.repo)}#${i.number}](${i.url})`;
 
-const HEAD = '| Score | Tiền | Issue | Title | Attempts | Language | AI | Updated |\n|---:|---:|---|---|---:|---|---|---|';
+const HEAD = '| Score | $ | Issue | Title | Attempts | ★ stars | Paid before | Lang | AI | Updated |\n|---:|---:|---|---|---:|---:|---:|---|---|---|';
 const row = (i) =>
-  `| ${i.score} | ${money(i.amount)} | [${cell(i.repo)}#${i.number}](${i.url}) | ${cell(i.title)} | ${i.attempts ?? '?'} | ${cell(i.language ?? '-')} | ${i.aiPolicy} | ${day(i.updatedAt)} |`;
+  `| ${i.score} | ${money(i.amount)} | ${link(i)} | ${cell(i.title)} | ${i.attempts ?? '?'} | ${starsText(i.stars)} | ${paidText(i)} | ${cell(i.language ?? '-')} | ${i.aiPolicy} | ${day(i.updatedAt)} |`;
+const CROWDED_HEAD = '| $ | Issue | Attempts |\n|---:|---|---:|';
+const crowdedRow = (i) => `| ${money(i.amount)} | ${link(i)} | ${i.attempts} |`;
 
-function markdown(all, date) {
+function markdown({ kept, crowded }, date) {
   const out = [
     '---',
     'title: Paid OSS bounties',
@@ -342,18 +477,24 @@ function markdown(all, date) {
     '',
     '# Paid OSS bounties',
     '',
-    `Trang này được tạo tự động bởi workflow oss-scout (\`scripts/find-bounties.mjs\`) vào ${date}. Script tìm các issue đang mở có nhãn bounty (ví dụ \`💎 Bounty\` của Algora), chưa ai nhận, cập nhật trong ${MAX_AGE_DAYS} ngày gần đây, rồi chấm điểm 0-100: tiền thưởng (tối đa 35, thang log), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 25), độ mới (tối đa 15) và độ phù hợp với QA automation (ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli: tối đa 20), trừ điểm nếu mô tả quá dài hoặc chưa rõ số tiền. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.`,
+    `Trang này được tạo tự động bởi workflow oss-scout (\`scripts/find-bounties.mjs\`) vào ${date}. Script tìm các issue đang mở có nhãn bounty (ví dụ \`💎 Bounty\` của Algora, hoặc \`[$250]\` trong tiêu đề của Expensify), chưa ai nhận, cập nhật trong ${MAX_AGE_DAYS} ngày gần đây. Trước khi chấm điểm, script lọc độ tin cậy của repo để loại các repo "bounty farm" (repo lập ra chỉ để câu lượt attempt): chỉ giữ repo có từ ${MIN_STARS}★ trở lên, được tạo cách đây ít nhất 6 tháng, không phải fork hay repo đã archive, tên repo không chứa bounty/hunter/livefire/airdrop. Lịch sử đã trả thưởng được tra bằng số issue có nhãn \`💰 Rewarded\` của repo (cột Paid before; \`0 ⚠\` nghĩa là chưa thấy bằng chứng repo từng trả tiền). Issue có hơn ${CROWDED_ABOVE} người attempt được tách sang mục Crowded, không xếp hạng. Điểm 0-100: tiền thưởng (tối đa 25, thang log, trần $1000), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 30), độ tin cậy của repo (tối đa 25: số sao và lịch sử trả thưởng), độ mới (tối đa 10), độ phù hợp với QA automation (tối đa 10: ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli), trừ điểm nếu chưa rõ số tiền, mô tả quá dài hoặc chưa rõ quy định AI. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.`,
     '',
-    '> Lưu ý: bounty rất cạnh tranh, số tiền và số lượt attempt có thể đã đổi từ lúc tạo trang. Hãy đọc kỹ CONTRIBUTING và luật của repo trước khi làm, luôn khai báo (disclose) khi có AI hỗ trợ, và đừng spam `/attempt`. Mục AI: `disclose` nghĩa là repo yêu cầu khai báo, `unknown` nghĩa là chưa tìm thấy quy định rõ ràng.',
+    '> Lưu ý: bounty rất cạnh tranh, số tiền và số lượt attempt có thể đã đổi từ lúc tạo trang. Hãy đọc kỹ CONTRIBUTING và luật của repo trước khi làm, luôn khai báo (disclose) khi có AI hỗ trợ, và đừng spam `/attempt`. Bộ lọc chỉ giảm rủi ro, không thay thế việc tự kiểm tra repo và người ra bounty. Mục AI: `disclose` nghĩa là repo yêu cầu khai báo, `unknown` nghĩa là chưa tìm thấy quy định rõ ràng. Mục Paid before: `Upwork` nghĩa là repo trả qua Upwork (không có nhãn để đếm), `?` nghĩa là chưa tra được.',
     '',
-    '## Top 25',
+    `## Top ${TOP_TABLE}`,
     '',
-    all.length ? `${HEAD}\n${all.slice(0, TOP_TABLE).map(row).join('\n')}` : 'Không có bounty phù hợp.',
+    kept.length ? `${HEAD}\n${kept.slice(0, TOP_TABLE).map(row).join('\n')}` : 'Không có bounty phù hợp.',
     '',
-    '## Top 10 chi tiết',
+    `## Crowded (>${CROWDED_ABOVE} attempts)`,
+    '',
+    crowded.length
+      ? `Quá đông người, không xếp hạng (hiện ${crowded.length} issue, chỉ liệt kê ${Math.min(crowded.length, TOP_CROWDED)} issue tiền cao nhất).\n\n${CROWDED_HEAD}\n${crowded.slice(0, TOP_CROWDED).map(crowdedRow).join('\n')}`
+      : 'Không có.',
+    '',
+    `## Top ${TOP_DETAILS} chi tiết`,
     '',
   ];
-  for (const i of all.slice(0, TOP_DETAILS)) {
+  for (const i of kept.slice(0, TOP_DETAILS)) {
     out.push(
       '<details>',
       `<summary><b>${i.score}</b> · ${money(i.amount)} · ${cell(i.repo)}#${i.number}: ${cell(i.title)}</summary>`,
@@ -369,14 +510,14 @@ function markdown(all, date) {
   return `${out.join('\n')}\n`;
 }
 
-function write(all, date) {
+function write(result, date) {
   mkdirSync(dirname(JSON_OUT), { recursive: true });
-  const items = all.map(({ body, bodyLength, topics, ...i }) => i);
-  writeFileSync(JSON_OUT, `${JSON.stringify({ generatedAt: new Date().toISOString(), items }, null, 2)}\n`);
+  const items = result.kept.map(({ body, bodyLength, topics, ...i }) => i);
+  writeFileSync(JSON_OUT, `${JSON.stringify({ generatedAt: new Date().toISOString(), items, crowded: result.crowded }, null, 2)}\n`);
   mkdirSync(dirname(MD_OUT), { recursive: true });
-  writeFileSync(MD_OUT, markdown(all, date));
+  writeFileSync(MD_OUT, markdown(result, date));
   if (process.env.GITHUB_STEP_SUMMARY) {
-    const top = all.slice(0, TOP_DETAILS);
+    const top = result.kept.slice(0, TOP_DETAILS);
     appendFileSync(
       process.env.GITHUB_STEP_SUMMARY,
       `## Bounty scout: top ${TOP_DETAILS}\n\n${top.length ? `${HEAD}\n${top.map(row).join('\n')}` : 'Không có bounty phù hợp.'}\n`,
@@ -388,8 +529,7 @@ function write(all, date) {
 async function main() {
   const { items, ok } = await searchAll();
   if (!ok) return console.warn('bounties: GitHub search unreachable, keeping the existing files');
-  const all = await collect(items);
-  write(all, new Date().toISOString().slice(0, 10));
+  write(await collect(items), new Date().toISOString().slice(0, 10));
 }
 
 try {
