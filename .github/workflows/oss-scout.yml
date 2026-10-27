@@ -1,0 +1,48 @@
+name: OSS scout
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2 * * 1' # weekly, Monday 02:17 UTC
+
+concurrency:
+  group: oss-scout
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scout:
+    name: Refresh candidate issues
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Find and score candidate issues
+        run: node scripts/find-good-first-issues.mjs --detail
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit docs/oss/candidates.md
+        run: |
+          if [ -n "$(git status --porcelain docs/oss/candidates.md)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add docs/oss/candidates.md
+            git commit -m "chore(oss): refresh candidate issues"
+            git push origin HEAD:main
+          else
+            echo "docs/oss/candidates.md unchanged"
+          fi
+      - name: Upload candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: oss-candidates
+          path: reports/oss-candidates.json
+          retention-days: 30
+          if-no-files-found: ignore
