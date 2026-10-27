@@ -1,0 +1,288 @@
+diff --git a/internal/js/modules/k6/webcrypto/elliptic_curve.go b/internal/js/modules/k6/webcrypto/elliptic_curve.go
+index b946fec0..c3ce91af 100644
+--- a/internal/js/modules/k6/webcrypto/elliptic_curve.go
++++ b/internal/js/modules/k6/webcrypto/elliptic_curve.go
+@@ -571,11 +571,27 @@ func (keyParams ECDHKeyDeriveParams) DeriveBits(privateKey *CryptoKey, length in
+ 		return nil, NewError(OperationError, err.Error())
+ 	}
+ 
+-	if len(b) < length/8 {
++	return truncateToBits(b, length)
++}
++
++// truncateToBits returns the first length bits of secret, as specified by the ECDH and X25519
++// "derive bits" operations. When length is not a multiple of 8, the result is ceil(length/8) bytes
++// long and the unused trailing bits of its last byte are set to zero.
++//
++// It returns an OperationError if length is negative or larger than the secret.
++func truncateToBits(secret []byte, length int) ([]byte, error) {
++	if length < 0 || length > len(secret)*8 {
+ 		return nil, NewError(OperationError, "length is too large")
+ 	}
+ 
+-	return b[:length/8], nil
++	result := make([]byte, (length+7)/8)
++	copy(result, secret)
++
++	if rem := length % 8; rem != 0 {
++		result[len(result)-1] &= byte(0xff << (8 - rem))
++	}
++
++	return result, nil
+ }
+ 
+ // The ECDSAParams represents the object that should be passed as the algorithm
+diff --git a/internal/js/modules/k6/webcrypto/pbkdf2.go b/internal/js/modules/k6/webcrypto/pbkdf2.go
+index 44041478..71b50527 100644
+--- a/internal/js/modules/k6/webcrypto/pbkdf2.go
++++ b/internal/js/modules/k6/webcrypto/pbkdf2.go
+@@ -130,8 +130,8 @@ func (keyParams PBKDF2Params) DeriveBits(
+ 		)
+ 	}
+ 
+-	if length%8 != 0 {
+-		return nil, NewError(InvalidAccessError, "provided length of key must be a multiple of 8")
++	if length < 0 || length%8 != 0 {
++		return nil, NewError(OperationError, "provided length of key must be a non-negative multiple of 8")
+ 	}
+ 
+ 	dk, err := pbkdf2.Key(hashFn, string(pk), keyParams.Salt, keyParams.Iterations, length/8)
+diff --git a/internal/js/modules/k6/webcrypto/subtle_crypto.go b/internal/js/modules/k6/webcrypto/subtle_crypto.go
+index cf9967df..e1ebc8fe 100644
+--- a/internal/js/modules/k6/webcrypto/subtle_crypto.go
++++ b/internal/js/modules/k6/webcrypto/subtle_crypto.go
+@@ -730,7 +730,8 @@ func getKeyInteractors(
+ // for the derivation function: for example, for PBKDF2 it might be a password, imported as a `CryptoKey`
+ // using `SubtleCrypto.ImportKey`.
+ //
+-// The `length` parameter is the number of bits to derive. The number should be a multiple of 8.
++// The `length` parameter is the number of bits to derive. ECDH and X25519 accept any length up to the size
++// of the shared secret, while PBKDF2 requires a multiple of 8.
+ func (sc *SubtleCrypto) DeriveBits(
+ 	algorithm sobek.Value,
+ 	baseKey sobek.Value,
+@@ -783,12 +784,8 @@ func (sc *SubtleCrypto) DeriveBits(
+ 				return nil, NewError(OperationError, "length can not be 0")
+ 			}
+ 
+-			// currently we don't support lengths that are not multiples of 8
+-			// https://github.com/grafana/xk6-webcrypto/issues/80
+-			if length%8 != 0 {
+-				return nil, NewError(OperationError, "currently only multiples of 8 are supported for length")
+-			}
+-
++			// Whether a length that is not a multiple of 8 is valid depends on the algorithm,
++			// so each BitsDeriver validates it on its own.
+ 			b, err := deriver.DeriveBits(privateKey, length)
+ 			if err != nil {
+ 				return b, err
+diff --git a/internal/js/modules/k6/webcrypto/tests/derive_bits_test.go b/internal/js/modules/k6/webcrypto/tests/derive_bits_test.go
+new file mode 100644
+index 00000000..1b9768db
+--- /dev/null
++++ b/internal/js/modules/k6/webcrypto/tests/derive_bits_test.go
+@@ -0,0 +1,133 @@
++package tests
++
++import (
++	"strconv"
++	"testing"
++
++	"github.com/stretchr/testify/assert"
++)
++
++// These cases cover the lengths accepted by deriveBits for ECDH and X25519, including lengths that
++// are not a multiple of 8, which the Web Platform Tests only exercise for the "8 * size - 11" case.
++func TestDeriveBitsLengths(t *testing.T) {
++	t.Parallel()
++
++	// deriveAll derives the full shared secret and a truncated one from the same key pair.
++	const deriveAll = `
++		const params = (name, namedCurve) => namedCurve ? { name, namedCurve } : name;
++		async function derive(name, namedCurve, length) {
++			const alice = await crypto.subtle.generateKey(params(name, namedCurve), true, ["deriveBits"]);
++			const bob = await crypto.subtle.generateKey(params(name, namedCurve), true, ["deriveBits"]);
++			const full = new Uint8Array(await crypto.subtle.deriveBits(
++				{ name, public: bob.publicKey }, alice.privateKey, FULL_BITS));
++			const part = new Uint8Array(await crypto.subtle.deriveBits(
++				{ name, public: bob.publicKey }, alice.privateKey, length));
++			return { full, part };
++		}
++	`
++
++	testCases := []struct {
++		name  string
++		curve string
++		algo  string
++		bits  int // size of the shared secret in bits
++	}{
++		{name: "ECDH P-256", algo: "ECDH", curve: "P-256", bits: 256},
++		{name: "ECDH P-384", algo: "ECDH", curve: "P-384", bits: 384},
++		{name: "ECDH P-521", algo: "ECDH", curve: "P-521", bits: 528},
++		{name: "X25519", algo: "X25519", bits: 256},
++	}
++
++	for _, tc := range testCases {
++		t.Run(tc.name+" non-multiple of 8 is a masked prefix of the secret", func(t *testing.T) {
++			t.Parallel()
++
++			// 8 * size - 11 is the case used by the Web Platform Tests; 1 and 7 cover the
++			// shortest results and 8 * size - 1 the longest non-multiple of 8.
++			for _, length := range []int{1, 7, 9, tc.bits - 11, tc.bits - 1} {
++				got := runAsync(t, deriveAll+`
++					const FULL_BITS = `+itoa(tc.bits)+`;
++					const length = `+itoa(length)+`;
++					const { full, part } = await derive("`+tc.algo+`", "`+tc.curve+`", length);
++					const bytes = Math.ceil(length / 8);
++					if (part.length !== bytes) return "length " + part.length + " != " + bytes;
++					for (let i = 0; i < bytes - 1; i++) {
++						if (part[i] !== full[i]) return "byte " + i + " differs";
++					}
++					const mask = (0xff << ((8 - (length % 8)) % 8)) & 0xff;
++					if (part[bytes - 1] !== (full[bytes - 1] & mask)) return "last byte is not masked";
++					return "ok";
++				`)
++				assert.Equal(t, "ok", got, "length %d", length)
++			}
++		})
++
++		t.Run(tc.name+" multiple of 8 is a prefix of the secret", func(t *testing.T) {
++			t.Parallel()
++
++			got := runAsync(t, deriveAll+`
++				const FULL_BITS = `+itoa(tc.bits)+`;
++				const { full, part } = await derive("`+tc.algo+`", "`+tc.curve+`", 16);
++				return part.length === 2 && part[0] === full[0] && part[1] === full[1];
++			`)
++			assert.Equal(t, "true", got)
++		})
++
++		t.Run(tc.name+" too long is rejected", func(t *testing.T) {
++			t.Parallel()
++
++			got := runAsync(t, `
++				const alice = await crypto.subtle.generateKey(`+jsParams(tc.algo, tc.curve)+`, true, ["deriveBits"]);
++				const bob = await crypto.subtle.generateKey(`+jsParams(tc.algo, tc.curve)+`, true, ["deriveBits"]);
++				await crypto.subtle.deriveBits({ name: "`+tc.algo+`", public: bob.publicKey }, alice.privateKey, `+itoa(tc.bits+1)+`);
++				return "derived";
++			`)
++			assert.Equal(t, "rejected: OperationError", got)
++		})
++	}
++
++	t.Run("zero length is rejected", func(t *testing.T) {
++		t.Parallel()
++
++		got := runAsync(t, `
++			const alice = await crypto.subtle.generateKey("X25519", true, ["deriveBits"]);
++			const bob = await crypto.subtle.generateKey("X25519", true, ["deriveBits"]);
++			await crypto.subtle.deriveBits({ name: "X25519", public: bob.publicKey }, alice.privateKey, 0);
++			return "derived";
++		`)
++		assert.Equal(t, "rejected: OperationError", got)
++	})
++
++	t.Run("negative length is rejected", func(t *testing.T) {
++		t.Parallel()
++
++		got := runAsync(t, `
++			const alice = await crypto.subtle.generateKey("X25519", true, ["deriveBits"]);
++			const bob = await crypto.subtle.generateKey("X25519", true, ["deriveBits"]);
++			await crypto.subtle.deriveBits({ name: "X25519", public: bob.publicKey }, alice.privateKey, -8);
++			return "derived";
++		`)
++		assert.Equal(t, "rejected: OperationError", got)
++	})
++
++	t.Run("PBKDF2 still requires a multiple of 8", func(t *testing.T) {
++		t.Parallel()
++
++		got := runAsync(t, `
++			const key = await crypto.subtle.importKey("raw", new Uint8Array([1, 2, 3]), "PBKDF2", false, ["deriveBits"]);
++			await crypto.subtle.deriveBits(
++				{ name: "PBKDF2", salt: new Uint8Array([4, 5, 6]), hash: "SHA-256", iterations: 1 }, key, 12);
++			return "derived";
++		`)
++		assert.Equal(t, "rejected: OperationError", got)
++	})
++}
++
++func jsParams(algo, curve string) string {
++	if curve == "" {
++		return `"` + algo + `"`
++	}
++	return `{ name: "` + algo + `", namedCurve: "` + curve + `" }`
++}
++
++func itoa(i int) string { return strconv.Itoa(i) }
+diff --git a/internal/js/modules/k6/webcrypto/tests/wpt-patches/WebCryptoAPI__derive_bits_keys__cfrg_curves_bits.js.patch b/internal/js/modules/k6/webcrypto/tests/wpt-patches/WebCryptoAPI__derive_bits_keys__cfrg_curves_bits.js.patch
+deleted file mode 100644
+index adcbfc04..00000000
+--- a/internal/js/modules/k6/webcrypto/tests/wpt-patches/WebCryptoAPI__derive_bits_keys__cfrg_curves_bits.js.patch
++++ /dev/null
+@@ -1,29 +0,0 @@
+-diff --git a/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.js b/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.js
+-index 8ab9db7bf..0cd6fabba 100644
+---- a/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.js
+-+++ b/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.js
+-@@ -76,14 +76,16 @@ function define_tests(algorithmName) {
+-           }, algorithmName + " short result");
+- 
+-           // Non-multiple of 8
+--          promise_test(function(test) {
+--              return subtle.deriveBits({name: algorithmName, public: publicKeys[algorithmName]}, privateKeys[algorithmName], 8 * sizes[algorithmName] - 11)
+--              .then(function(derivation) {
+--                  assert_true(equalBuffers(derivation, derivations[algorithmName], 8 * sizes[algorithmName] - 11), "Derived correct bits");
+--              }, function(err) {
+--                  assert_unreached("deriveBits failed with error " + err.name + ": " + err.message);
+--              });
+--          }, algorithmName + " non-multiple of 8 bits");
+-+          // TODO: once we have support of lengths that are not a multiple of 8 bits, uncomment this test
+-+          // https://github.com/grafana/xk6-webcrypto/issues/80
+-+          // promise_test(function(test) {
+-+          //     return subtle.deriveBits({name: algorithmName, public: publicKeys[algorithmName]}, privateKeys[algorithmName], 8 * sizes[algorithmName] - 11)
+-+          //     .then(function(derivation) {
+-+          //         assert_true(equalBuffers(derivation, derivations[algorithmName], 8 * sizes[algorithmName] - 11), "Derived correct bits");
+-+          //     }, function(err) {
+-+          //         assert_unreached("deriveBits failed with error " + err.name + ": " + err.message);
+-+          //     });
+-+          // }, algorithmName + " non-multiple of 8 bits");
+- 
+-           // Errors to test:
+- 
+diff --git a/internal/js/modules/k6/webcrypto/tests/wpt-patches/WebCryptoAPI__derive_bits_keys__ecdh_bits.js.patch b/internal/js/modules/k6/webcrypto/tests/wpt-patches/WebCryptoAPI__derive_bits_keys__ecdh_bits.js.patch
+deleted file mode 100644
+index f6877862..00000000
+--- a/internal/js/modules/k6/webcrypto/tests/wpt-patches/WebCryptoAPI__derive_bits_keys__ecdh_bits.js.patch
++++ /dev/null
+@@ -1,30 +0,0 @@
+-diff --git a/WebCryptoAPI/derive_bits_keys/ecdh_bits.js b/WebCryptoAPI/derive_bits_keys/ecdh_bits.js
+-index 36b29c20a..c9c413599 100644
+---- a/WebCryptoAPI/derive_bits_keys/ecdh_bits.js
+-+++ b/WebCryptoAPI/derive_bits_keys/ecdh_bits.js
+-@@ -65,15 +65,17 @@ function define_tests() {
+-                 });
+-             }, namedCurve + " short result");
+- 
+-+            // // TODO: once we have support of lengths that are not a multiple of 8 bits, uncomment this test
+-+            // https://github.com/grafana/xk6-webcrypto/issues/80
+-             // Non-multiple of 8
+--            promise_test(function(test) {
+--                return subtle.deriveBits({name: "ECDH", public: publicKeys[namedCurve]}, privateKeys[namedCurve], 8 * sizes[namedCurve] - 11)
+--                .then(function(derivation) {
+--                    assert_true(equalBuffers(derivation, derivations[namedCurve], 8 * sizes[namedCurve] - 11), "Derived correct bits");
+--                }, function(err) {
+--                    assert_unreached("deriveBits failed with error " + err.name + ": " + err.message);
+--                });
+--            }, namedCurve + " non-multiple of 8 bits");
+-+            // promise_test(function(test) {
+-+            //     return subtle.deriveBits({name: "ECDH", public: publicKeys[namedCurve]}, privateKeys[namedCurve], 8 * sizes[namedCurve] - 11)
+-+            //     .then(function(derivation) {
+-+            //         assert_true(equalBuffers(derivation, derivations[namedCurve], 8 * sizes[namedCurve] - 11), "Derived correct bits");
+-+            //     }, function(err) {
+-+            //         assert_unreached("deriveBits failed with error " + err.name + ": " + err.message);
+-+            //     });
+-+            // }, namedCurve + " non-multiple of 8 bits");
+- 
+-             // Errors to test:
+- 
