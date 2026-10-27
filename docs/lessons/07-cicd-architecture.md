@@ -133,7 +133,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: portfolio-site
       url: https://nguyenvanlinh14.github.io/qa-agent-portfolio/
     steps:
       - uses: actions/checkout@v4
