@@ -112,13 +112,12 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Pages serves the gh-pages branch, so deploying is a push: only this job may write.
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://nguyenvanlinh14.github.io/qa-agent-portfolio/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -147,13 +146,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # build copies playwright-report/ into dist/report/ and fills in the live numbers
       - run: npm run build
-      - uses: actions/configure-pages@v5
+      - name: Publish dist/ to the gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          # Creates the Pages site (build_type=workflow) on the first deploy if it doesn't exist yet.
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
+          commit_message: "deploy: ${{ github.sha }}"

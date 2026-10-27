@@ -134,7 +134,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://nguyenvanlinh14.github.io/qa-agent-portfolio/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -148,17 +148,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run build               # copy playwright-report/ vào dist/report/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with: { path: dist }
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: peaceiris/actions-gh-pages@v4   # push dist/ lên nhánh gh-pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true                   # nhánh gh-pages chỉ giữ 1 commit
 ```
+
+> Vì sao không dùng `actions/deploy-pages`? Cách đó cần bật Pages ở chế độ "GitHub Actions" (`build_type: workflow`), việc này cần quyền admin. Repo này phục vụ Pages từ nhánh `gh-pages`, nên deploy chỉ là một lần `git push` với `contents: write`.
 
 Các quyết định đáng chú ý:
 
 - **`concurrency` + `cancel-in-progress`**: tiết kiệm phút chạy khi bạn push liên tiếp. Với job ghi dữ liệu như `update-snapshots`, repo đặt `cancel-in-progress: false` để một lượt commit baseline đang dở không bị huỷ giữa chừng.
-- **`permissions` tối thiểu**: token mặc định chỉ đọc. Chỉ job deploy được `pages: write` và `id-token: write`. Nếu một action bên thứ ba bị xâm phạm, thiệt hại bị giới hạn.
+- **`permissions` tối thiểu**: token mặc định chỉ đọc. Chỉ job deploy được `contents: write` (để push nhánh `gh-pages`). Nếu một action bên thứ ba bị xâm phạm, thiệt hại bị giới hạn.
 - **`if: always()` ở upload-artifact**: artifact **quan trọng nhất khi test fail**. Mặc định step chỉ chạy khi các step trước thành công; thiếu điều kiện này bạn mất report đúng lúc cần nó. (`if: ${{ !cancelled() }}` cũng được, nếu bạn không muốn upload khi run bị huỷ.)
 - **`needs: [test, k6]`** ở deploy: chỉ publish khi mọi thứ xanh. Báo cáo công khai không bao giờ là báo cáo của một lần chạy đỏ.
 - **`timeout-minutes`**: một job treo không được phép ngốn hết hạn mức phút của bạn.

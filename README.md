@@ -147,7 +147,7 @@ Bonus: [Open-source playbook](docs/open-source-playbook.md) covers finding an is
 
 - `ANTHROPIC_API_KEY` (optional repository secret): enables AI triage on failing CI runs. Without it the step is skipped.
 - **Claude GitHub app** (optional): install it on the repo so `@claude` mentions work (`.github/workflows/claude.yml`).
-- **GitHub Pages**: Settings, Pages, Source = **GitHub Actions** (`build_type: workflow`). The `deploy` job publishes `dist/` on every push to `main`.
+- **GitHub Pages**: Settings, Pages, Source = **Deploy from a branch**, branch `gh-pages` / root. The `deploy` job builds `dist/` and pushes it to `gh-pages` on every green push to `main`.
 - **Visual baselines**: run the *Update visual snapshots* workflow once (Actions tab) after changing the UI. It regenerates the Linux
   screenshots in the same container CI uses and commits them to `main`.
 - No other secrets are needed. `GITHUB_TOKEN` is provided by Actions.
