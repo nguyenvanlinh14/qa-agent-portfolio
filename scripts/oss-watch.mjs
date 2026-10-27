@@ -78,9 +78,11 @@ async function watch(item) {
 
 // Pull requests the owner opened in other repositories are watched automatically.
 async function ownPullRequests() {
-  const q = `is:pr author:${OWNER} -user:${OWNER}`;
+  const q = `is:pr author:${OWNER}`;
   const data = await gh(`/search/issues?${new URLSearchParams({ q, sort: 'updated', per_page: '50' })}`);
-  return data.items.map((i) => ({
+  const foreign = data.items.filter((i) => !i.repository_url.toLowerCase().includes(`/repos/${OWNER}/`));
+  console.log(`oss-watch: search "${q}": ${data.total_count} PR(s), ${foreign.length} in other repositories`);
+  return foreign.map((i) => ({
     repo: i.repository_url.split('/repos/')[1],
     number: i.number,
     title: `PR: ${i.title}`,
