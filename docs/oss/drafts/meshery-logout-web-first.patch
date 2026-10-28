@@ -1,0 +1,42 @@
+From db982a01a32975fe3c640acefa3d5b7dd8e78d9f Mon Sep 17 00:00:00 2001
+From: Linh Nguyen Van <29197556+nguyenvanlinh14@users.noreply.github.com>
+Date: Wed, 28 Oct 2026 04:35:45 +0000
+Subject: [PATCH] test(e2e): use web-first URL assertions in logout spec
+
+After the mocked /user/logout redirect, the spec waited with
+page.waitForURL('/provider') and then read the URL once with
+expect(page.url()).toContain('/provider'). The second step is a
+point-in-time read of a plain string: it cannot retry, and it is
+weaker than needed because toContain also matches e.g. '/provider-foo'.
+
+Replace both with a single `await expect(page).toHaveURL('/provider')`,
+which auto-waits and retries until the URL matches (or the expect
+timeout elapses) and compares the whole URL. The test still verifies
+the same thing: logging out ends on /provider.
+
+The request.url() check on the awaited waitForRequest() result is left
+as is: it reads a value from an already resolved Request, so there is
+no race, and there is no web-first matcher for it.
+
+Assisted-by: Claude Code
+Signed-off-by: Linh Nguyen Van <29197556+nguyenvanlinh14@users.noreply.github.com>
+---
+ ui/tests/e2e/logout.spec.ts | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/ui/tests/e2e/logout.spec.ts b/ui/tests/e2e/logout.spec.ts
+index aaeae8690..464a83f34 100644
+--- a/ui/tests/e2e/logout.spec.ts
++++ b/ui/tests/e2e/logout.spec.ts
+@@ -26,7 +26,6 @@ test.describe('Logout Page Tests', () => {
+     const request = await waitForLogoutRequest;
+     expect(request.url()).toContain('/user/logout');
+ 
+-    await page.waitForURL('/provider');
+-    expect(page.url()).toContain(`/provider`);
++    await expect(page).toHaveURL('/provider');
+   });
+ });
+-- 
+2.43.0
+
