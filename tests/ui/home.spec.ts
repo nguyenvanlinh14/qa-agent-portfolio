@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { GITHUB_PROFILE_URL, LINKEDIN_PROFILE_URL, loadContributions } from '../data';
+import { GITHUB_PROFILE_URL, LANE_NAMES, LINKEDIN_PROFILE_URL, WORKFLOW_FIGURES, WORKFLOW_NAMES, loadContributions } from '../data';
 
 const contributions = loadContributions();
 
@@ -39,6 +39,40 @@ test.describe('Portfolio home', () => {
 
   test('@smoke at least 8 lesson cards are listed', async ({ homePage }) => {
     expect(await homePage.lessonCards.count()).toBeGreaterThanOrEqual(8);
+  });
+
+  test('@smoke agent workflow section shows the three workflows and links to the case study', async ({ page, homePage }) => {
+    await expect(homePage.workflowHeading).toBeVisible();
+    await expect(homePage.workflows).toHaveCount(WORKFLOW_NAMES.length);
+    for (const name of WORKFLOW_NAMES) await expect(homePage.workflow(name)).toBeVisible();
+    await expect(homePage.caseStudyCta).toHaveAttribute('href', 'case-study.html');
+    await homePage.caseStudyCta.click();
+    await expect(page).toHaveURL(/\/case-study\.html$/);
+  });
+
+  test('@regression each workflow has a QC lane and an Agent lane', async ({ homePage }) => {
+    for (const name of WORKFLOW_NAMES) {
+      const card = homePage.workflow(name);
+      await expect(homePage.lane(card, LANE_NAMES.qc)).toHaveCount(1);
+      await expect(homePage.lane(card, LANE_NAMES.agent)).toHaveCount(1);
+      await expect(card.getByRole('listitem')).not.toHaveCount(0);
+    }
+  });
+
+  test('@regression workflow stats show the project figures', async ({ homePage }) => {
+    await expect(homePage.workflowStats).toBeVisible();
+    for (const { label, value } of WORKFLOW_FIGURES) {
+      await expect(homePage.workflowStat(label)).toContainText(value);
+    }
+  });
+
+  test('@regression nav links to the workflow section', async ({ homePage }) => {
+    await expect(homePage.navWorkflowLink).toHaveAttribute('href', '#workflow');
+  });
+
+  test('@regression workflows sit side by side on desktop', async ({ homePage }) => {
+    await expect(homePage.workflows.first()).toBeVisible();
+    expect(new Set(await homePage.workflowTops()).size).toBe(1);
   });
 
   test('@regression stats block is visible', async ({ homePage }) => {
@@ -102,6 +136,14 @@ test.describe('Portfolio home', () => {
 });
 
 test.describe('Portfolio home on a phone', () => {
+  test('@regression workflows stack vertically at 375px', async ({ page, homePage }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await homePage.goto();
+    await expect(homePage.workflows.first()).toBeVisible();
+    expect(new Set(await homePage.workflowTops()).size).toBe(WORKFLOW_NAMES.length);
+    expect(await homePage.hasHorizontalOverflow()).toBe(false);
+  });
+
   test('@regression has no horizontal overflow at 375px', async ({ page, homePage }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await homePage.goto();

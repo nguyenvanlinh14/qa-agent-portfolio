@@ -13,4 +13,10 @@ export abstract class BasePage {
   get html(): Locator {
     return this.page.locator('html');
   }
+
+  async hasHorizontalOverflow(): Promise<boolean> {
+    return this.page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+  }
 }

@@ -4,6 +4,7 @@ import {
   FAKE_PHONE_NUMBERS,
   GITHUB_PROFILE_URL,
   LINKEDIN_PROFILE_URL,
+  MIN_CV_FREELANCE_ENGAGEMENTS,
   MIN_CV_ROLES,
   NOT_PHONE_TEXT,
   PHONE_PATTERN,
@@ -35,9 +36,41 @@ test.describe('CV page', () => {
     await expect(cvPage.profileLink(/github/i)).toHaveAttribute('href', GITHUB_PROFILE_URL);
   });
 
-  test('@regression Gameloft role lists its engagements', async ({ cvPage }) => {
+  test('@regression freelance role lists its engagements', async ({ cvPage }) => {
     await expect(cvPage.engagements.first()).toBeVisible();
-    await expect(cvPage.experience.getByRole('list', { name: /Engagements/ })).toBeVisible();
+    await expect(cvPage.experience.getByRole('list', { name: /Freelance engagements/ })).toBeVisible();
+    await expect.poll(() => cvPage.engagements.count()).toBeGreaterThanOrEqual(MIN_CV_FREELANCE_ENGAGEMENTS);
+    await expect(cvPage.experience).not.toContainText(/alongside Gameloft|evenings/);
+  });
+
+  test('@regression Picon Technology and Human Brain Global are one role', async ({ cvPage }) => {
+    const merged = cvPage.roleMentioning('Picon Technology', 'Human Brain Global');
+    await expect(merged).toHaveCount(1);
+    await expect(merged).toContainText('Apr 2025 – Present');
+    await expect(merged).toContainText('same owner');
+    await expect(cvPage.roles.filter({ hasText: 'Human Brain Global' })).toHaveCount(1);
+    await expect(cvPage.roles.filter({ hasText: 'Picon Technology' })).toHaveCount(1);
+    await expect(cvPage.experience).not.toContainText('Jun 2026 – Present');
+  });
+
+  test('@regression Gameloft DAD is an earlier role, not a freelance engagement', async ({ cvPage }) => {
+    const gameloft = cvPage.roles.filter({ hasText: 'Gameloft DAD' });
+    await expect(gameloft).toHaveCount(1);
+    await expect(gameloft).toContainText('Until 2019');
+    await expect(cvPage.engagements.filter({ hasText: 'Gameloft' })).toHaveCount(0);
+  });
+
+  test('@regression Workout Tracking engagement ends in Jan 2023', async ({ cvPage }) => {
+    await expect(cvPage.engagement('Workout Tracking')).toContainText('Jul 2022 – Jan 2023');
+  });
+
+  test('@regression CV no longer lists the removed engagement', async ({ cvPage }) => {
+    await expect(cvPage.cv).toBeVisible();
+    await expect(cvPage.cv).not.toContainText(/Conversation\s*HEALTH/i);
+  });
+
+  test('@regression experience links to the case study', async ({ cvPage }) => {
+    await expect(cvPage.caseStudyLink).toHaveAttribute('href', 'case-study.html');
   });
 
   test('@regression CV shows education and certifications', async ({ cvPage }) => {

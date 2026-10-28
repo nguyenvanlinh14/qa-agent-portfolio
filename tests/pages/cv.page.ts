@@ -16,6 +16,7 @@ export class CvPage extends BasePage {
   readonly openSource: Locator;
   readonly contact: Locator;
   readonly printButton: Locator;
+  readonly caseStudyLink: Locator;
   /** mailto: / tel: links have no role-based locator; the href prefix is the only way to find them. */
   readonly emailOrPhoneLinks: Locator;
 
@@ -32,6 +33,7 @@ export class CvPage extends BasePage {
     this.certifications = page.getByTestId('cv-certifications');
     this.openSource = page.getByTestId('cv-oss');
     this.contact = page.getByTestId('cv-contact');
+    this.caseStudyLink = this.experience.getByRole('link', { name: /case study/i });
     this.printButton = page.getByRole('button', { name: 'Download PDF' });
     this.emailOrPhoneLinks = page.locator('a[href^="mailto:" i], a[href^="tel:" i]');
   }
@@ -39,6 +41,16 @@ export class CvPage extends BasePage {
   /** A link in the CV header by its accessible name (the LinkedIn / GitHub profile links). */
   profileLink(name: string | RegExp): Locator {
     return this.profile.getByRole('link', { name });
+  }
+
+  /** The role block whose text mentions every given name, e.g. both companies of the merged role. */
+  roleMentioning(...names: string[]): Locator {
+    return names.reduce((roles, name) => roles.filter({ hasText: name }), this.roles);
+  }
+
+  /** A freelance engagement by its client name, e.g. "Workout Tracking". */
+  engagement(name: string): Locator {
+    return this.engagements.filter({ hasText: name });
   }
 
   skill(name: string): Locator {

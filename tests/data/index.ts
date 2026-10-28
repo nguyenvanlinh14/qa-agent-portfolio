@@ -3,3 +3,4 @@ export * from './todo-builder';
 export * from './contributions';
 export * from './privacy';
 export * from './profile';
+export * from './case-study';

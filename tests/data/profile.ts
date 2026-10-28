@@ -4,3 +4,6 @@ export const LINKEDIN_PROFILE_URL = 'https://www.linkedin.com/in/linh-nguyen-749
 
 /** The CV lists at least this many roles in its Experience section. */
 export const MIN_CV_ROLES = 3;
+
+/** The freelance role lists at least this many engagements (ERP, Mable, Sonic, Workout Tracking, Good to Great Schools). */
+export const MIN_CV_FREELANCE_ENGAGEMENTS = 5;

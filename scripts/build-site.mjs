@@ -1,5 +1,5 @@
 // Builds the static site: site/ -> dist/, renders docs/lessons/*.md with `marked`,
-// fills the {{placeholders}} in index.html and cv.html (tests, lessons, report stats, OSS contributions + issues).
+// fills the {{placeholders}} in index.html, cv.html and case-study.html (tests, lessons, report stats, OSS contributions + issues).
 // Never needs the network; every optional input (docs, report, config) may be missing.
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -433,8 +433,8 @@ const values = {
   REPORT_ROWS: report.rows,
 };
 
-// index.html and cv.html share the same {{placeholders}}; any left over fails the build.
-for (const name of ['index.html', 'cv.html']) {
+// index.html, cv.html and case-study.html share the same {{placeholders}}; any left over fails the build.
+for (const name of ['index.html', 'cv.html', 'case-study.html']) {
   const file = join(DIST, name);
   if (name !== 'index.html' && !existsSync(file)) continue;
   const html = readFileSync(file, 'utf8').replace(/\{\{(\w+)\}\}/g, (m, k) => (k in values ? String(values[k]) : m));
