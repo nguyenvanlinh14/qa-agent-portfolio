@@ -77,10 +77,15 @@ function renderMarkdown(body) {
         used.add(id);
         return `<h${depth} id="${id}">${text}</h${depth}>\n`;
       },
+      // GFM task-list boxes are read-only marks; give them a name so screen readers do not announce an unlabeled field.
+      checkbox({ checked }) {
+        return `<input type="checkbox" disabled${checked ? ' checked' : ''} aria-label="${checked ? 'Done' : 'To do'}"> `;
+      },
       code({ text, lang }) {
         if (lang === 'mermaid') return `<pre class="mermaid">${esc(text)}</pre>\n`;
         const cls = lang ? ` class="language-${esc(lang.split(/\s+/)[0])}"` : '';
-        return `<pre><code${cls}>${esc(text)}</code></pre>\n`;
+        // tabindex: a scrolling code block must be reachable with the keyboard (axe: scrollable-region-focusable).
+        return `<pre tabindex="0"><code${cls}>${esc(text)}</code></pre>\n`;
       },
     },
   });
@@ -419,6 +424,29 @@ if (existsSync(at('playwright-report', 'index.html'))) {
   </main>`;
   writeFileSync(join(DIST, 'report', 'index.html'), pageShell({ title: 'Test report', content, depth: 1 }).replace('lang="vi"', 'lang="en"'));
 }
+
+// Live run: the CI run's timeline (reporters/live-reporter.ts) is replayed by dist/live/; without it, sample-run.jsonl.
+if (existsSync(at('reports', 'live-events.jsonl'))) cpSync(at('reports', 'live-events.jsonl'), join(DIST, 'live', 'latest-run.jsonl'));
+// …and the screenshot the `page` fixture took after each UI test, shown in the dashboard's browser view.
+if (existsSync(at('reports', 'live-frames'))) cpSync(at('reports', 'live-frames'), join(DIST, 'live', 'frames'), { recursive: true });
+
+// k6: the web dashboard exported at the end of each run (K6_WEB_DASHBOARD_EXPORT) is the same view as the live one.
+mkdirSync(join(DIST, 'perf'), { recursive: true });
+const k6Dashboards = existsSync(at('reports')) ? readdirSync(at('reports')).filter((f) => /^k6-[\w-]+-dashboard\.html$/.test(f)).sort() : [];
+for (const f of k6Dashboards) cpSync(at('reports', f), join(DIST, 'perf', f));
+const perfContent = `  <main>
+    <div class="wrap">
+      <article class="doc">
+        <h1>k6 dashboards</h1>
+        <p>k6 shows this dashboard live while a test runs (<code>npm run k6:live</code>, http://127.0.0.1:5665) and exports the same view
+        as one HTML file at the end. CI exports the smoke run on every push to <code>main</code>.</p>
+        ${k6Dashboards.length
+          ? `<ul data-testid="k6-dashboards">${k6Dashboards.map((f) => `<li><a href="${esc(f)}">${esc(f.replace(/^k6-|-dashboard\.html$/g, ''))}</a></li>`).join('')}</ul>`
+          : `<p data-testid="k6-dashboards-empty">No dashboard yet: it is published by the next CI run on <code>main</code>.</p>`}
+      </article>
+    </div>
+  </main>`;
+writeFileSync(join(DIST, 'perf', 'index.html'), pageShell({ title: 'k6 dashboards', content: perfContent, depth: 1 }).replace('lang="vi"', 'lang="en"'));
 
 const listed = countTests();
 const report = reportParts(listed);

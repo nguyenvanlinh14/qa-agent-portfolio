@@ -1,0 +1,49 @@
+name: Performance (manual)
+
+# Stress / spike / load on demand. Each run exports the k6 web dashboard (the same view k6 shows live) and the
+# summary JSON as artifacts; download two summaries and compare them with `npm run k6:compare -- before.json after.json`.
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: Test type
+        type: choice
+        options: [stress, spike, load]
+        default: stress
+
+permissions:
+  contents: read
+
+jobs:
+  k6:
+    name: k6 ${{ inputs.type }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Start the SUT and wait for /api/health
+        run: |
+          mkdir -p reports
+          node server/app.mjs > reports/sut.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4173/api/health > /dev/null && exit 0; sleep 1; done
+          echo "SUT did not become healthy" >&2; exit 1
+      - uses: grafana/setup-k6-action@v1
+      - name: k6 ${{ inputs.type }}
+        run: k6 run k6/${{ inputs.type }}.js
+        env:
+          BASE_URL: http://localhost:4173
+          K6_WEB_DASHBOARD: 'true'
+          K6_WEB_DASHBOARD_EXPORT: reports/k6-${{ inputs.type }}-dashboard.html
+      - name: Upload k6 reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-${{ inputs.type }}-${{ github.run_number }}
+          path: reports/k6-*
+          retention-days: 30

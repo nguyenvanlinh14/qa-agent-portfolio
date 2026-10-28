@@ -1,0 +1,13 @@
+{"type": "begin", "t": 0, "total": 4, "workers": 2, "projects": ["ui", "api"], "startedAt": "2026-10-28T08:00:00.000Z"}
+{"type": "testBegin", "t": 120, "id": "a#0", "title": "Watchlist › @regression a removal survives a reload", "file": "tests/ui/watchlist.spec.ts", "project": "ui", "worker": 0, "retry": 0}
+{"type": "testBegin", "t": 130, "id": "b#0", "title": "POST /api/auth/login › @smoke valid credentials return 200 with a token", "file": "tests/api/auth.spec.ts", "project": "api", "worker": 1, "retry": 0}
+{"type": "step", "t": 400, "id": "a#0", "title": "remove FPT"}
+{"type": "testEnd", "t": 610, "id": "b#0", "status": "passed", "outcome": "expected", "duration": 480, "retry": 0}
+{"type": "testBegin", "t": 640, "id": "c#0", "title": "Market board › @regression sorting by %Chg puts the biggest gain first", "file": "tests/ui/board.spec.ts", "project": "ui", "worker": 1, "retry": 0}
+{"type": "testEnd", "t": 1900, "id": "a#0", "status": "failed", "outcome": "unexpected", "duration": 1780, "retry": 0, "error": "Error: expect(locator).toHaveCount(expected) failed — Expected: 0, Received: 1", "frame": "examples/frames/watchlist.jpg", "url": "http://localhost:4173/demo/watchlist.html?seed=42&frozen=1"}
+{"type": "testEnd", "t": 2100, "id": "c#0", "status": "failed", "outcome": "unexpected", "duration": 1460, "retry": 0, "error": "Error: Timed out 7000ms waiting for expect(locator).toHaveText(expected)"}
+{"type": "testBegin", "t": 2150, "id": "c#1", "title": "Market board › @regression sorting by %Chg puts the biggest gain first", "file": "tests/ui/board.spec.ts", "project": "ui", "worker": 1, "retry": 1}
+{"type": "testBegin", "t": 2200, "id": "d#0", "title": "Screener › @regression a saved alert can be removed", "file": "tests/ui/screener.spec.ts", "project": "ui", "worker": 0, "retry": 0}
+{"type": "testEnd", "t": 2260, "id": "d#0", "status": "skipped", "outcome": "skipped", "duration": 10, "retry": 0}
+{"type": "testEnd", "t": 3300, "id": "c#1", "status": "passed", "outcome": "flaky", "duration": 1150, "retry": 1, "frame": "examples/frames/board.jpg", "url": "http://localhost:4173/demo/board.html?seed=42&frozen=1"}
+{"type": "end", "t": 3400, "status": "failed", "duration": 3400}
