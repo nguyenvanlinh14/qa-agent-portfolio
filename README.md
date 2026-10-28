@@ -15,7 +15,7 @@ plans, generates, reviews and heals, with a human approving every step, built, t
 |---|---|
 | Portfolio site | https://nguyenvanlinh14.github.io/qa-agent-portfolio/ |
 | Latest Playwright report (from CI, every push to `main`) | https://nguyenvanlinh14.github.io/qa-agent-portfolio/report/ |
-| TaskFlow demo app (the app under test) | https://nguyenvanlinh14.github.io/qa-agent-portfolio/demo/ |
+| MarketFlow demo app (simulated VN30 board + screener, the app under test) | https://nguyenvanlinh14.github.io/qa-agent-portfolio/demo/ |
 | Lessons (Vietnamese) | https://nguyenvanlinh14.github.io/qa-agent-portfolio/#lessons |
 | Open-source playbook | https://nguyenvanlinh14.github.io/qa-agent-portfolio/lessons/open-source-playbook.html |
 
@@ -58,7 +58,7 @@ No agent merges anything by itself: planning, generated code, healed selectors a
 - **Environments:** Docker image based on `mcr.microsoft.com/playwright`, Docker Compose (SUT + tests + k6)
 - **CI/CD:** GitHub Actions (typecheck, tests, k6, Pages deploy), HTML/JSON/JUnit reports, artifacts
 - **AI:** Claude Code (agents, slash commands, `CLAUDE.md` rules), Playwright MCP, AI failure triage, `@claude` on PRs and issues
-- **System under test:** a zero-dependency Node server (`server/app.mjs`) with REST API plus the TaskFlow demo app
+- **System under test:** a zero-dependency Node server (`server/app.mjs`) with REST API plus the MarketFlow demo app (login, board, watchlist, screener, stock detail)
 
 ## Repo map
 
@@ -74,10 +74,10 @@ No agent merges anything by itself: planning, generated code, healed selectors a
 ├── k6/                    smoke.js, load.js
 ├── scripts/               build-site.mjs, ai-triage.mjs, find-good-first-issues.mjs
 ├── server/app.mjs         system under test: static site + REST API (port 4173)
-├── site/                  portfolio template, styles, TaskFlow demo
+├── site/                  portfolio template, styles, MarketFlow demo
 ├── specs/plans/           test plans written by the planner agent
 └── tests/
-    ├── pages/             BasePage, HomePage, LoginPage, TodoPage, LessonPage
+    ├── pages/             BasePage, HomePage, LoginPage, BoardPage, WatchlistPage, ScreenerPage, StockPage, LessonPage
     ├── fixtures/          test + expect extended with page objects and ApiClient
     ├── data/              TodoBuilder and factories
     ├── setup/             logs in once, saves storage state

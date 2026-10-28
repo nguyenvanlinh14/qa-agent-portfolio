@@ -6,6 +6,8 @@ icon: puzzle
 
 # Design patterns trong test automation
 
+> **Lưu ý:** demo app hiện là MarketFlow; các ví dụ `TodoPage` trong bài minh họa cùng những pattern đó.
+
 Test là code, và code test bị bỏ mặc sẽ thối rữa còn nhanh hơn code sản phẩm. Design pattern không phải để "cho đẹp"; mỗi pattern là một câu trả lời đã được kiểm chứng cho một nỗi đau cụ thể: locator lặp ở 40 chỗ, dữ liệu test rối như tơ vò, setup lặp đi lặp lại, hay mỗi test đăng nhập một kiểu. Bài này đi qua sáu pattern (POM, Screenplay, Builder, Factory, Fixture, Strategy), một anti-pattern (Singleton) và cách chọn giữa chúng, với code TypeScript gắn vào các thư mục thật của repo: [`tests/pages`](https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/pages), [`tests/data`](https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/data), [`tests/fixtures`](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts).
 
 ## Mục tiêu bài học

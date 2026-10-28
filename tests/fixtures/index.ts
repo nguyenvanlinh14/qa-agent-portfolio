@@ -1,12 +1,15 @@
 import { test as base, expect } from '@playwright/test';
 import { ApiClient } from './api-client';
 import { users } from '../data/factories';
-import { CaseStudyPage, CvPage, HomePage, LessonPage, LoginPage, TodoPage } from '../pages';
+import { BoardPage, CaseStudyPage, CvPage, HomePage, LessonPage, LoginPage, ScreenerPage, StockPage, WatchlistPage } from '../pages';
 
 interface Fixtures {
   homePage: HomePage;
   loginPage: LoginPage;
-  todoPage: TodoPage;
+  boardPage: BoardPage;
+  watchlistPage: WatchlistPage;
+  screenerPage: ScreenerPage;
+  stockPage: StockPage;
   lessonPage: LessonPage;
   cvPage: CvPage;
   caseStudyPage: CaseStudyPage;
@@ -21,7 +24,10 @@ interface Fixtures {
 export const test = base.extend<Fixtures>({
   homePage: async ({ page }, use) => use(new HomePage(page)),
   loginPage: async ({ page }, use) => use(new LoginPage(page)),
-  todoPage: async ({ page }, use) => use(new TodoPage(page)),
+  boardPage: async ({ page }, use) => use(new BoardPage(page)),
+  watchlistPage: async ({ page }, use) => use(new WatchlistPage(page)),
+  screenerPage: async ({ page }, use) => use(new ScreenerPage(page)),
+  stockPage: async ({ page }, use) => use(new StockPage(page)),
   lessonPage: async ({ page }, use) => use(new LessonPage(page)),
   cvPage: async ({ page }, use) => use(new CvPage(page)),
   caseStudyPage: async ({ page }, use) => use(new CaseStudyPage(page)),
