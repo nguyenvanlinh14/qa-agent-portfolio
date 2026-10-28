@@ -15,6 +15,14 @@
       const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
     } catch {}
   </script>
+  <!-- three.js + three-vrm for the 3D guide (assets/guide3d.js), copied into assets/vendor/ by the build; only fetched when the guide opens -->
+  <script type="importmap">
+    { "imports": {
+      "three": "./assets/vendor/three/three.module.js",
+      "three/addons/": "./assets/vendor/three/addons/",
+      "@pixiv/three-vrm": "./assets/vendor/three-vrm/three-vrm.module.min.js"
+    } }
+  </script>
   <link rel="stylesheet" href="assets/style.css" />
   <script src="assets/fx.js" defer></script>
   <script src="assets/guide.js" defer></script>

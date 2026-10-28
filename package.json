@@ -29,13 +29,17 @@
     "evidence": "npm run evidence:narrate && npm run evidence:record && npm run evidence:build",
     "evidence:dedupe": "node scripts/evidence/dedupe.mjs",
     "guide:voice": "node scripts/guide/voice.mjs",
+    "guide:model": "node scripts/guide/shrink-model.mjs",
+    "guide:portrait": "node scripts/guide/portrait.mjs",
     "oss:issues": "node scripts/find-good-first-issues.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
+    "@pixiv/three-vrm": "3.5.5",
     "@playwright/test": "1.64.1",
     "@types/node": "^22.10.0",
     "marked": "18.1.2",
+    "three": "0.186.1",
     "typescript": "^5.7.0"
   }
 }

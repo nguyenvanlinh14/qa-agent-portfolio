@@ -50,7 +50,12 @@
   launcher.setAttribute('aria-expanded', 'false');
   launcher.setAttribute('aria-controls', 'guide-panel');
   launcher.setAttribute('aria-label', 'Open the portfolio guide');
-  launcher.innerHTML = `${avatar('mini', '-60 -150 120 120')}<span class="g-launch-label">Tour</span>`;
+  // Two still portraits rendered from the 3D model (scripts/guide/portrait.mjs): the corner button blinks with CSS
+  // and runs no WebGL. If they fail to load, the neon head takes their place.
+  launcher.innerHTML = `<span class="g-face" aria-hidden="true"><img src="guide/tess-face.png" alt="" width="46" height="46" /><img class="g-face-blink" src="guide/tess-blink.png" alt="" width="46" height="46" /></span><span class="g-launch-label">Tour</span>`;
+  launcher.querySelector('.g-face img').addEventListener('error', () => {
+    launcher.querySelector('.g-face').outerHTML = avatar('mini', '-60 -150 120 120');
+  }, { once: true });
 
   const panel = document.createElement('section');
   panel.id = 'guide-panel';
@@ -69,6 +74,7 @@
       </div>
       <button type="button" class="g-icon" data-act="close" data-testid="guide-close" aria-label="Close the guide">✕</button>
     </header>
+    <div class="g-stage" data-testid="guide-stage" hidden></div>
     <div class="g-body">
       <p class="g-count" data-testid="guide-step-count"></p>
       <h3 class="g-title" data-testid="guide-step-title"></h3>
@@ -81,11 +87,14 @@
       <button type="button" class="g-icon" data-act="next" data-testid="guide-next" aria-label="Next stop">›</button>
       <button type="button" class="g-icon g-sound" data-act="sound" data-testid="guide-sound" aria-pressed="true" aria-label="Voice"></button>
     </div>
-    <nav class="g-stops" aria-label="Tour stops"><ol data-testid="guide-stops"></ol></nav>`;
+    <nav class="g-stops" aria-label="Tour stops"><ol data-testid="guide-stops"></ol></nav>
+    <p class="g-sign">Linh.NV</p>`;
 
   document.body.append(launcher, panel);
   const $ = (sel) => panel.querySelector(sel);
   const bigAvatar = $('.g-avatar.big');
+  const stage = $('.g-stage');
+  let tess3d = null, tess3dLoading = null;
   const progressBar = $('.g-progress i');
   const audio = new Audio();
   audio.preload = 'auto';
@@ -106,8 +115,30 @@
     started: 0,
     duration: 0,
     focused: null,
+    hinted: prefs.hinted === true,
   };
-  window.__guide = { get step() { return st.tour?.steps[st.index]?.id ?? null; }, get playing() { return st.playing; }, get lang() { return st.lang; } };
+  const savePrefs = () => save({ lang: st.lang, sound: st.sound, hinted: st.hinted });
+
+  /* -------------------------------------------------------------------- hint */
+
+  // "Click me" bubble next to the launcher, until the visitor has opened the tour or dismissed the bubble once.
+  const HINT = { en: '👋 Click me! A 1-minute tour of this portfolio', vi: '👋 Bấm vào mình nhé! Tour 1 phút qua portfolio' };
+  const hint = document.createElement('div');
+  hint.className = 'g-hint';
+  hint.dataset.testid = 'guide-hint';
+  hint.hidden = st.hinted;
+  hint.innerHTML = `<button type="button" class="g-hint-open" data-testid="guide-hint-open">${HINT[st.lang] ?? HINT.en}</button>
+    <button type="button" class="g-hint-close" data-testid="guide-hint-close" aria-label="Hide the tour hint">✕</button>`;
+  document.body.append(hint);
+  launcher.classList.toggle('is-hinting', !st.hinted);
+  function dismissHint() {
+    st.hinted = true;
+    hint.hidden = true;
+    launcher.classList.remove('is-hinting');
+    savePrefs();
+  }
+
+  window.__guide ={ get step() { return st.tour?.steps[st.index]?.id ?? null; }, get playing() { return st.playing; }, get lang() { return st.lang; }, get has3d() { return !!tess3d; } };
 
   const ready = Promise.all([
     fetch('guide/tour.json').then((r) => r.json()),
@@ -131,6 +162,7 @@
   function frame(now) {
     const lvl = reduceQuery.matches ? 0 : level(now);
     bigAvatar.style.setProperty('--lvl', lvl.toFixed(3));
+    tess3d?.set(lvl, st.playing);
     const p = st.duration ? Math.min(1, (st.sound && audio.duration ? audio.currentTime * 1000 : now - st.started) / st.duration) : 0;
     progressBar.style.transform = `scaleX(${p})`;
     raf = st.open ? requestAnimationFrame(frame) : 0;
@@ -146,6 +178,15 @@
       ctx.createMediaElementSource(audio).connect(analyser);
       analyser.connect(ctx.destination);
     } catch { analyser = null; }
+  }
+
+  // The 3D bust (assets/guide3d.js) replaces the neon avatar once it has loaded. Until then, or when it cannot load
+  // (no WebGL, no network for three.js), the neon avatar stays and the tour works the same.
+  function load3d() {
+    tess3dLoading ??= import('./guide3d.js')
+      .then((m) => { stage.hidden = false; return m.mount(stage, { reduceMotion: () => reduceQuery.matches }); })
+      .then((t) => { tess3d = t; panel.classList.add('has-3d'); if (st.open) t.start(); })
+      .catch(() => { stage.hidden = true; });
   }
 
   const readMs = (text) => Math.max(3500, text.split(/\s+/).length * 380);
@@ -241,6 +282,7 @@
   }
 
   async function open() {
+    if (!st.hinted) dismissHint();
     await ready;
     st.open = true;
     panel.hidden = false;
@@ -254,11 +296,14 @@
     go(st.index);
     $('[data-act="play"]').focus();
     if (!raf) raf = requestAnimationFrame(frame);
+    load3d();
+    tess3d?.start();
   }
 
   function close() {
     st.open = false;
     setPlaying(false);
+    tess3d?.stop();
     st.focused?.removeAttribute('data-guide-focus');
     st.focused = null;
     panel.hidden = true;
@@ -270,12 +315,14 @@
   /* ------------------------------------------------------------------ events */
 
   launcher.addEventListener('click', open);
+  hint.querySelector('.g-hint-open').addEventListener('click', open);
+  hint.querySelector('.g-hint-close').addEventListener('click', () => { dismissHint(); launcher.focus(); });
   panel.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn || btn.disabled) return;
     if (btn.dataset.lang) {
       st.lang = btn.dataset.lang;
-      save({ lang: st.lang, sound: st.sound });
+      savePrefs();
       renderText();
       speak();
       return;
@@ -291,7 +338,7 @@
         break;
       case 'sound':
         st.sound = !st.sound;
-        save({ lang: st.lang, sound: st.sound });
+        savePrefs();
         renderControls();
         speak();
         break;

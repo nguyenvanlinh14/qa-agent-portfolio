@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { GUIDE_CLIPS, GUIDE_FIRST, GUIDE_LANGS, GUIDE_LAST, GUIDE_NAME, GUIDE_SECOND, GUIDE_STEPS, guideCount } from '../data/guide';
+import { GUIDE_CLIPS, GUIDE_FIRST, GUIDE_HINT, GUIDE_LANGS, GUIDE_LAST, GUIDE_NAME, GUIDE_SECOND, GUIDE_STEPS, guideCount } from '../data/guide';
 
 test.describe('Portfolio guide (Tess)', () => {
   test.use({ locale: 'en-US' });
@@ -54,6 +54,11 @@ test.describe('Portfolio guide (Tess)', () => {
   test.describe('with a Vietnamese browser', () => {
     test.use({ locale: 'vi-VN' });
 
+    test('@regression the hint is in Vietnamese', async ({ guidePage }) => {
+      await guidePage.goto();
+      await expect(guidePage.hintOpen).toHaveText(GUIDE_HINT.vi);
+    });
+
     test('@regression the tour starts in Vietnamese', async ({ guidePage }) => {
       await guidePage.goto();
       await guidePage.open();
@@ -99,6 +104,32 @@ test.describe('Portfolio guide (Tess)', () => {
     await guidePage.open();
     await page.keyboard.press('Escape');
     await expect(guidePage.panel).toBeHidden();
+  });
+
+  test('@regression a first visit shows the click-me hint, and clicking it starts the tour', async ({ guidePage }) => {
+    await guidePage.goto();
+    await expect(guidePage.hintOpen).toHaveText(GUIDE_HINT.en);
+    await guidePage.hintOpen.click();
+    await expect(guidePage.panel).toBeVisible();
+    await expect(guidePage.hint).toBeHidden();
+  });
+
+  test('@regression a dismissed hint stays hidden after a reload', async ({ page, guidePage }) => {
+    await guidePage.goto();
+    await guidePage.hintClose.click();
+    await expect(guidePage.hint).toBeHidden();
+    await page.reload();
+    await expect(guidePage.launcher).toBeVisible();
+    await expect(guidePage.hint).toBeHidden();
+  });
+
+  test('@regression once the tour has been opened the hint does not come back', async ({ page, guidePage }) => {
+    await guidePage.goto();
+    await guidePage.open();
+    await guidePage.close.click();
+    await page.reload();
+    await expect(guidePage.launcher).toBeVisible();
+    await expect(guidePage.hint).toBeHidden();
   });
 
   test('@regression the #tour link opens the guide on load', async ({ guidePage }) => {
