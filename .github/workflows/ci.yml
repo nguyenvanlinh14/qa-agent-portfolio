@@ -146,7 +146,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # build copies playwright-report/ into dist/report/ and fills in the live numbers
       - run: npm run build
+      # With SITE_DEPLOY_TOKEN the site goes to the public user-site repo (this repo can then be private),
+      # under /qa-agent-portfolio/ so the published URL stays the same; without it, to this repo's gh-pages.
+      - name: Check for the public site token
+        id: target
+        env:
+          SITE_DEPLOY_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN }}
+        run: echo "external=$([ -n "$SITE_DEPLOY_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Stage the user-site tree
+        if: steps.target.outputs.external == 'true'
+        run: |
+          mkdir -p site-out
+          cp -r dist site-out/qa-agent-portfolio
+          touch site-out/.nojekyll
+          cat > site-out/index.html <<'HTML'
+          <!doctype html><meta charset="utf-8"><title>Linh Nguyen · QA Automation</title>
+          <meta http-equiv="refresh" content="0; url=qa-agent-portfolio/"><link rel="canonical" href="qa-agent-portfolio/">
+          <a href="qa-agent-portfolio/">Portfolio</a>
+          HTML
+      - name: Publish to nguyenvanlinh14.github.io
+        if: steps.target.outputs.external == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.SITE_DEPLOY_TOKEN }}
+          external_repository: nguyenvanlinh14/nguyenvanlinh14.github.io
+          publish_branch: main
+          publish_dir: ./site-out
+          force_orphan: true
+          commit_message: "deploy: build of the portfolio (source is private)"
       - name: Publish dist/ to the gh-pages branch
+        if: steps.target.outputs.external != 'true'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
