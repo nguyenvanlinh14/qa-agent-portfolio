@@ -10,6 +10,7 @@
     try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
   </script>
   <link rel="stylesheet" href="assets/style.css" />
+  <script src="assets/fx.js" defer></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
 </head>
 <body>
@@ -175,9 +176,15 @@
               watchlist, rules (as drafts only), condition presets, datasets, chat threads, scheduled notifications, member
               packages and the profile name. I never kill a long run midway, because the restore would not run.
             </p>
-            <ol class="flow" aria-label="Mutate and restore sequence">
-              <li>Change data</li><li>Run the flow</li><li>Restore in <code>finally</code></li><li>Assert the restore</li>
-            </ol>
+            <div class="bp-panel bp-flow" data-style="blueprint" data-testid="flow-figure">
+              <svg class="bp-dim" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true">
+                <path class="bp-stroke" pathLength="1" d="M0 7H1000" />
+                <path class="bp-tick" d="M0.5 1V13M1000 1V13M500 3.5V10.5" />
+              </svg>
+              <ol class="flow" aria-label="Mutate and restore sequence">
+                <li>Change data</li><li>Run the flow</li><li>Restore in <code>finally</code></li><li>Assert the restore</li>
+              </ol>
+            </div>
           </div>
 
           <div class="tech">
@@ -187,35 +194,57 @@
               URL and a label: <b>ENV · tenant · role · time (JST)</b>. Red means PROD, blue means TEST.
             </p>
             <div class="stamps" data-testid="stamp-mock">
-              <figure class="stamp-fig">
-                <svg viewBox="0 0 460 200" role="img" aria-labelledby="stamp-test-t">
+              <figure class="stamp-fig bp-panel" data-style="blueprint">
+                <svg viewBox="-34 -34 540 252" role="img" aria-labelledby="stamp-test-t">
                   <title id="stamp-test-t">Mock of a TEST screenshot with a blue stamped bar</title>
-                  <rect class="m-bg" width="460" height="200" />
-                  <rect class="m-bar" width="460" height="44" />
-                  <circle cx="18" cy="22" r="5" fill="#ff5f57" /><circle cx="36" cy="22" r="5" fill="#febc2e" /><circle cx="54" cy="22" r="5" fill="#28c840" />
-                  <rect class="m-pill" x="76" y="11" width="366" height="22" rx="11" />
-                  <text class="m-url" x="92" y="26">https://tenant-a.example/…</text>
-                  <rect class="m-stamp-test" y="44" width="460" height="30" />
-                  <text class="m-label" x="14" y="64">TEST · tenant A · Owner · 10:42 JST</text>
-                  <rect class="m-line" x="20" y="98" width="150" height="10" rx="5" />
-                  <rect class="m-line" x="20" y="118" width="240" height="8" rx="4" />
-                  <rect class="m-block" x="20" y="142" width="420" height="44" rx="8" />
+                  <rect class="m-bg bp-stroke" pathLength="1" width="460" height="200" />
+                  <rect class="m-bar bp-stroke" pathLength="1" width="460" height="44" />
+                  <circle class="bp-stroke" pathLength="1" cx="18" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="36" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="54" cy="22" r="5" />
+                  <rect class="m-pill bp-stroke" pathLength="1" x="76" y="11" width="366" height="22" rx="11" />
+                  <text class="m-url bp-fade" x="92" y="27">https://tenant-a.example/…</text>
+                  <rect class="m-stamp-test bp-stroke" pathLength="1" y="44" width="460" height="30" />
+                  <text class="m-label bp-fade" x="14" y="64">TEST · tenant A · Owner · 10:42 JST</text>
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="98" width="150" height="10" rx="5" />
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="118" width="240" height="8" rx="4" />
+                  <rect class="m-block bp-stroke" pathLength="1" x="20" y="142" width="420" height="44" rx="8" />
+                  <!-- blueprint marks: width / height dimensions, two numbered call-outs, sheet tag -->
+                  <g class="bp-note" aria-hidden="true">
+                    <path class="bp-stroke" pathLength="1" d="M0 -16H460" /><path class="bp-tick" d="M0 -22V-10M460 -22V-10" />
+                    <text class="bp-fade" x="230" y="-22" text-anchor="middle">460</text>
+                    <path class="bp-stroke" pathLength="1" d="M-16 0V200" /><path class="bp-tick" d="M-22 0H-10M-22 200H-10" />
+                    <text class="bp-fade" transform="rotate(-90)" x="-100" y="-22" text-anchor="middle">200</text>
+                    <path class="bp-leader bp-tick" d="M446 22H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="22" r="9" /><text class="bp-fade" x="484" y="26" text-anchor="middle">A</text>
+                    <path class="bp-leader bp-tick" d="M462 59H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="59" r="9" /><text class="bp-fade" x="484" y="63" text-anchor="middle">B</text>
+                    <text class="bp-fade" x="0" y="212">FIG 1</text>
+                    <text class="bp-fade" x="460" y="212" text-anchor="end">1:1</text>
+                  </g>
                 </svg>
                 <figcaption>Mock, TEST: placeholder text, not a real page.</figcaption>
               </figure>
-              <figure class="stamp-fig">
-                <svg viewBox="0 0 460 200" role="img" aria-labelledby="stamp-prod-t">
+              <figure class="stamp-fig bp-panel" data-style="blueprint">
+                <svg viewBox="-34 -34 540 252" role="img" aria-labelledby="stamp-prod-t">
                   <title id="stamp-prod-t">Mock of a PROD screenshot with a red stamped bar</title>
-                  <rect class="m-bg" width="460" height="200" />
-                  <rect class="m-bar" width="460" height="44" />
-                  <circle cx="18" cy="22" r="5" fill="#ff5f57" /><circle cx="36" cy="22" r="5" fill="#febc2e" /><circle cx="54" cy="22" r="5" fill="#28c840" />
-                  <rect class="m-pill" x="76" y="11" width="366" height="22" rx="11" />
-                  <text class="m-url" x="92" y="26">https://tenant-b.example/…</text>
-                  <rect class="m-stamp-prod" y="44" width="460" height="30" />
-                  <text class="m-label" x="14" y="64">PROD · tenant B · Member · 14:05 JST</text>
-                  <rect class="m-line" x="20" y="98" width="190" height="10" rx="5" />
-                  <rect class="m-line" x="20" y="118" width="200" height="8" rx="4" />
-                  <rect class="m-block" x="20" y="142" width="420" height="44" rx="8" />
+                  <rect class="m-bg bp-stroke" pathLength="1" width="460" height="200" />
+                  <rect class="m-bar bp-stroke" pathLength="1" width="460" height="44" />
+                  <circle class="bp-stroke" pathLength="1" cx="18" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="36" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="54" cy="22" r="5" />
+                  <rect class="m-pill bp-stroke" pathLength="1" x="76" y="11" width="366" height="22" rx="11" />
+                  <text class="m-url bp-fade" x="92" y="27">https://tenant-b.example/…</text>
+                  <rect class="m-stamp-prod bp-stroke" pathLength="1" y="44" width="460" height="30" />
+                  <text class="m-label bp-fade" x="14" y="64">PROD · tenant B · Member · 14:05 JST</text>
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="98" width="190" height="10" rx="5" />
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="118" width="200" height="8" rx="4" />
+                  <rect class="m-block bp-stroke" pathLength="1" x="20" y="142" width="420" height="44" rx="8" />
+                  <!-- blueprint marks: width / height dimensions, two numbered call-outs, sheet tag -->
+                  <g class="bp-note" aria-hidden="true">
+                    <path class="bp-stroke" pathLength="1" d="M0 -16H460" /><path class="bp-tick" d="M0 -22V-10M460 -22V-10" />
+                    <text class="bp-fade" x="230" y="-22" text-anchor="middle">460</text>
+                    <path class="bp-stroke" pathLength="1" d="M-16 0V200" /><path class="bp-tick" d="M-22 0H-10M-22 200H-10" />
+                    <text class="bp-fade" transform="rotate(-90)" x="-100" y="-22" text-anchor="middle">200</text>
+                    <path class="bp-leader bp-tick" d="M446 22H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="22" r="9" /><text class="bp-fade" x="484" y="26" text-anchor="middle">A</text>
+                    <path class="bp-leader bp-tick" d="M462 59H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="59" r="9" /><text class="bp-fade" x="484" y="63" text-anchor="middle">B</text>
+                    <text class="bp-fade" x="0" y="212">FIG 2</text>
+                    <text class="bp-fade" x="460" y="212" text-anchor="end">1:1</text>
+                  </g>
                 </svg>
                 <figcaption>Mock, PROD: placeholder text, not a real page.</figcaption>
               </figure>

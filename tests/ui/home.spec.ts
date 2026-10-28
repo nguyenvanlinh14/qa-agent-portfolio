@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { GITHUB_PROFILE_URL, LANE_NAMES, LINKEDIN_PROFILE_URL, WORKFLOW_FIGURES, WORKFLOW_NAMES, loadContributions } from '../data';
+import { BLUEPRINT_STYLE, GITHUB_PROFILE_URL, ISO_LAYERS, LANE_NAMES, LINKEDIN_PROFILE_URL, WORKFLOW_FIGURES, WORKFLOW_NAMES, loadContributions } from '../data';
 
 const contributions = loadContributions();
 
@@ -149,5 +149,91 @@ test.describe('Portfolio home on a phone', () => {
     await homePage.goto();
     await expect(homePage.heroTitle).toBeVisible();
     expect(await homePage.hasHorizontalOverflow()).toBe(false);
+  });
+});
+
+test.describe('Portfolio home: hero particles', () => {
+  test('@regression particles canvas is decorative and ignores the pointer', async ({ homePage }) => {
+    await homePage.goto();
+    await expect(homePage.particles).toHaveAttribute('aria-hidden', 'true');
+    await expect(homePage.particles).toHaveCSS('pointer-events', 'none');
+  });
+
+  test('@regression particles canvas is sized to the hero', async ({ homePage }) => {
+    await homePage.goto();
+    await expect(homePage.hero).toBeVisible();
+    await expect.poll(() => homePage.particlesFitHero()).toBe(true);
+  });
+
+  test('@regression particles animate while motion is allowed', async ({ homePage }) => {
+    await homePage.goto();
+    await expect.poll(async () => (await homePage.particlesState())?.frames ?? 0).toBeGreaterThan(3);
+    expect(await homePage.particlesState()).toMatchObject({ running: true, mode: 'live' });
+  });
+
+  test('@regression with reduced motion particles draw one static frame and run no loop', async ({ page, homePage }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await homePage.goto();
+    await expect.poll(() => homePage.particlesState()).toMatchObject({ running: false, mode: 'static', frames: 0 });
+  });
+
+  test('@regression the static particle frame has painted pixels', async ({ page, homePage }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await homePage.goto();
+    await expect.poll(() => homePage.particlesPaintedPixels()).toBeGreaterThan(0);
+  });
+
+  test('@regression the static particle frame is identical on every load', async ({ page, homePage }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await homePage.goto();
+    await expect.poll(() => homePage.particlesPaintedPixels()).toBeGreaterThan(0);
+    const first = await homePage.particlesBitmap();
+    await page.reload();
+    await expect.poll(() => homePage.particlesPaintedPixels()).toBeGreaterThan(0);
+    expect(await homePage.particlesBitmap() === first, 'canvas bitmaps differ between loads').toBe(true);
+  });
+});
+
+test.describe('Portfolio home: framework isometric stack', () => {
+  test('@regression framework shows an isometric stack with four layers', async ({ homePage }) => {
+    await homePage.goto();
+    await expect(homePage.isoStack).toBeVisible();
+    await expect(homePage.isoLayers).toHaveCount(ISO_LAYERS.length);
+    for (const name of ISO_LAYERS) await expect(homePage.isoLayer(name)).toHaveCount(1);
+  });
+
+  test('@regression the stack separates into its exploded view on scroll-in', async ({ homePage }) => {
+    await homePage.goto();
+    await homePage.isoStack.scrollIntoViewIfNeeded();
+    await expect(homePage.isoStack).toHaveClass(/\bin\b/);
+  });
+
+  test('@regression with reduced motion the stack is a static exploded view', async ({ page, homePage }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await homePage.goto();
+    await homePage.isoStack.scrollIntoViewIfNeeded();
+    await expect(homePage.isoStack).not.toHaveClass(/iso-pre/);
+    await expect(homePage.isoPackets.first()).toHaveCSS('animation-name', 'none');
+  });
+});
+
+test.describe('Portfolio home: blueprint workflow', () => {
+  test('@regression workflow section has the blueprint style', async ({ homePage }) => {
+    await homePage.goto();
+    await expect(homePage.workflowSection).toHaveAttribute('data-style', BLUEPRINT_STYLE);
+    await expect(homePage.blueprintPanel).toBeVisible();
+  });
+
+  test('@regression blueprint strokes are drawn in once the swimlane scrolls into view', async ({ homePage }) => {
+    await homePage.goto();
+    await homePage.blueprintPanel.scrollIntoViewIfNeeded();
+    await expect(homePage.blueprintStrokes.first()).toHaveCSS('stroke-dashoffset', '0px');
+  });
+
+  test('@regression with reduced motion the blueprint is fully drawn from the start', async ({ page, homePage }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await homePage.goto();
+    await expect(homePage.blueprintPanel).not.toHaveClass(/bp-pre/);
+    await expect(homePage.blueprintStrokes.first()).toHaveCSS('animation-name', 'none');
   });
 });
