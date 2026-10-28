@@ -11,6 +11,9 @@ export class CaseStudyPage extends BasePage {
   readonly stats: Locator;
   readonly workflowTables: Locator;
   readonly stampMocks: Locator;
+  readonly stampFigures: Locator;
+  /** Drawn-in strokes are SVG shapes without any accessible name. */
+  readonly stampStrokes: Locator;
   readonly note: Locator;
   /** mailto: / tel: links have no role-based locator; the href prefix is the only way to find them. */
   readonly emailOrPhoneLinks: Locator;
@@ -26,6 +29,8 @@ export class CaseStudyPage extends BasePage {
     this.stats = page.getByTestId('case-stats');
     this.workflowTables = this.article.getByRole('table');
     this.stampMocks = page.getByTestId('stamp-mock');
+    this.stampFigures = this.stampMocks.getByRole('figure');
+    this.stampStrokes = this.stampMocks.locator('.bp-stroke');
     this.note = page.getByTestId('case-note');
     this.emailOrPhoneLinks = page.locator('a[href^="mailto:" i], a[href^="tel:" i]');
     this.rasterImages = this.article.locator('img');

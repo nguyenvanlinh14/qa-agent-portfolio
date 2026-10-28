@@ -1,6 +1,14 @@
 import type { Locator, Page } from '@playwright/test';
 import { BasePage } from './base.page';
 
+/** The tiny hook assets/fx.js exposes on window so a spec can tell a static frame from a running loop. */
+export interface ParticlesState {
+  running: boolean;
+  mode: 'live' | 'static';
+  frames: number;
+  count: number;
+}
+
 export class HomePage extends BasePage {
   readonly path = '/';
 
@@ -28,6 +36,13 @@ export class HomePage extends BasePage {
   readonly workflowStats: Locator;
   readonly caseStudyCta: Locator;
   readonly navWorkflowLink: Locator;
+  readonly hero: Locator;
+  readonly particles: Locator;
+  readonly isoStack: Locator;
+  readonly isoLayers: Locator;
+  readonly isoPackets: Locator;
+  readonly blueprintPanel: Locator;
+  readonly blueprintStrokes: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -54,6 +69,15 @@ export class HomePage extends BasePage {
     this.workflows = this.workflowSection.getByTestId('workflow');
     this.workflowStats = this.workflowSection.getByTestId('workflow-stats');
     this.caseStudyCta = page.getByTestId('cta-case-study');
+    this.hero = page.getByRole('banner');
+    this.particles = page.getByTestId('hero-particles');
+    this.isoStack = page.getByTestId('iso-stack');
+    this.isoLayers = this.isoStack.getByTestId('iso-layer');
+    // The packets are plain <g> elements inside an aria-hidden SVG: no role, label or test id applies.
+    this.isoPackets = this.isoStack.locator('.pkt');
+    this.blueprintPanel = this.workflowSection.getByTestId('blueprint-panel');
+    // Drawn-in strokes are SVG paths without any accessible name.
+    this.blueprintStrokes = this.blueprintPanel.locator('.bp-stroke');
     this.navWorkflowLink = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Workflow', exact: true });
   }
 
@@ -88,5 +112,52 @@ export class HomePage extends BasePage {
   /** Top edge (px) of every workflow card, to tell side-by-side from stacked. */
   async workflowTops(): Promise<number[]> {
     return this.workflows.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)));
+  }
+
+  /** One layer of the isometric stack, found by its label. */
+  isoLayer(name: string): Locator {
+    return this.isoLayers.filter({ hasText: name });
+  }
+
+  /** The hook from assets/fx.js; null when the script did not run. */
+  async particlesState(): Promise<ParticlesState | null> {
+    return this.page.evaluate(() => (window as unknown as { __particles?: ParticlesState }).__particles ?? null);
+  }
+
+  /** True when the canvas box equals the hero box (within 1px) and its backing store matches that box at the capped DPR. */
+  async particlesFitHero(): Promise<boolean> {
+    return this.page.evaluate(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas.particles');
+      const hero = canvas?.parentElement;
+      if (!canvas || !hero) return false;
+      const c = canvas.getBoundingClientRect();
+      const h = hero.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const close = (a: number, b: number) => Math.abs(a - b) <= 1;
+      return (
+        close(c.width, h.width) &&
+        close(c.height, h.height) &&
+        close(canvas.width, h.width * dpr) &&
+        close(canvas.height, h.height * dpr)
+      );
+    });
+  }
+
+  /** Number of canvas pixels that are not fully transparent. */
+  async particlesPaintedPixels(): Promise<number> {
+    return this.page.evaluate(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas.particles');
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return 0;
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let painted = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) painted++;
+      return painted;
+    });
+  }
+
+  /** The canvas bitmap as a data URL, to compare two loads pixel for pixel. */
+  async particlesBitmap(): Promise<string> {
+    return this.page.evaluate(() => document.querySelector<HTMLCanvasElement>('canvas.particles')?.toDataURL() ?? '');
   }
 }

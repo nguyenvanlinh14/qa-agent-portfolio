@@ -10,6 +10,7 @@
     try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
   </script>
   <link rel="stylesheet" href="assets/style.css" />
+  <script src="assets/fx.js" defer></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
 </head>
 <body>
@@ -60,6 +61,7 @@
   </nav>
 
   <header class="hero">
+    <canvas class="particles" aria-hidden="true" data-testid="hero-particles"></canvas>
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <span class="eyebrow" data-testid="hero-eyebrow">QA Automation · 5+ yrs · Agentic Testing</span>
@@ -124,15 +126,19 @@
       </div>
     </section>
 
-    <section id="workflow" data-testid="agent-workflow">
+    <section id="workflow" data-testid="agent-workflow" data-style="blueprint">
       <div class="wrap">
         <h2>Agents in production</h2>
-        <div class="swim" role="group" aria-label="Who does what in three QA workflows">
+        <div class="swim bp-panel" data-testid="blueprint-panel" role="group" aria-label="Who does what in three QA workflows">
+          <svg class="bp-dim" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true">
+            <path class="bp-stroke" pathLength="1" d="M0 7H1000" />
+            <path class="bp-tick" d="M0.5 1V13M1000 1V13M500 3.5V10.5" />
+          </svg>
           <div class="band qc" aria-hidden="true"></div>
           <div class="band agent" aria-hidden="true"></div>
           <p class="swim-label qc" aria-hidden="true"><span></span>QC<br />decides</p>
           <p class="swim-label agent" aria-hidden="true"><span></span>Agent<br />does</p>
-            <article class="wf" data-testid="workflow" aria-label="Workflow A: Build the suite">
+            <article class="wf" data-testid="workflow" data-sheet="A-01" aria-label="Workflow A: Build the suite">
               <header class="wf-head"><span class="wf-id" aria-hidden="true">A</span><h3>Build the suite</h3><small>per feature</small></header>
               <div class="sw-lane qc">
                 <p class="sw-lane-tag">QC — decides</p>
@@ -144,8 +150,8 @@
                 </ol>
               </div>
               <div class="hand" aria-hidden="true">
-                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path d="M5 20l7 9 7-9" /></svg>
-                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path d="M5 16l7-9 7 9" /></svg>
+                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path class="bp-stroke" pathLength="1" d="M5 20l7 9 7-9" /></svg>
+                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path class="bp-stroke" pathLength="1" d="M5 16l7-9 7 9" /></svg>
               </div>
               <div class="sw-lane agent">
                 <p class="sw-lane-tag">Agent — does</p>
@@ -157,7 +163,7 @@
                 </ol>
               </div>
             </article>
-            <article class="wf" data-testid="workflow" aria-label="Workflow B: Test cycle">
+            <article class="wf" data-testid="workflow" data-sheet="B-02" aria-label="Workflow B: Test cycle">
               <header class="wf-head"><span class="wf-id" aria-hidden="true">B</span><h3>Test cycle</h3><small>each cycle</small></header>
               <div class="sw-lane qc">
                 <p class="sw-lane-tag">QC — decides</p>
@@ -167,8 +173,8 @@
                 </ol>
               </div>
               <div class="hand" aria-hidden="true">
-                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path d="M5 20l7 9 7-9" /></svg>
-                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path d="M5 16l7-9 7 9" /></svg>
+                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path class="bp-stroke" pathLength="1" d="M5 20l7 9 7-9" /></svg>
+                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path class="bp-stroke" pathLength="1" d="M5 16l7-9 7 9" /></svg>
               </div>
               <div class="sw-lane agent">
                 <p class="sw-lane-tag">Agent — does</p>
@@ -183,7 +189,7 @@
                 </ol>
               </div>
             </article>
-            <article class="wf" data-testid="workflow" aria-label="Workflow C: Release">
+            <article class="wf" data-testid="workflow" data-sheet="C-03" aria-label="Workflow C: Release">
               <header class="wf-head"><span class="wf-id" aria-hidden="true">C</span><h3>Release</h3><small>each release</small></header>
               <div class="sw-lane qc">
                 <p class="sw-lane-tag">QC — decides</p>
@@ -193,8 +199,8 @@
                 </ol>
               </div>
               <div class="hand" aria-hidden="true">
-                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path d="M5 20l7 9 7-9" /></svg>
-                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path d="M5 16l7-9 7 9" /></svg>
+                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path class="bp-stroke" pathLength="1" d="M5 20l7 9 7-9" /></svg>
+                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path class="bp-stroke" pathLength="1" d="M5 16l7-9 7 9" /></svg>
               </div>
               <div class="sw-lane agent">
                 <p class="sw-lane-tag">Agent — does</p>
@@ -227,11 +233,69 @@
     <section id="framework">
       <div class="wrap">
         <h2>Framework</h2>
-        <div class="tiles">
-          <a class="tile" href="{{REPO_URL}}/tree/main/tests/pages"><svg class="big"><use href="#i-pom" /></svg><b>Page Objects</b><small>UI · fixtures</small></a>
-          <a class="tile" href="{{REPO_URL}}/tree/main/tests/api"><svg class="big"><use href="#i-api" /></svg><b>API</b><small>typed client</small></a>
-          <a class="tile" href="{{REPO_URL}}/tree/main/tests/visual"><svg class="big"><use href="#i-eye" /></svg><b>Visual</b><small>pixel diffs</small></a>
-          <a class="tile" href="{{REPO_URL}}/tree/main/k6"><svg class="big"><use href="#i-gauge" /></svg><b>k6</b><small>p95 &lt; 300 ms</small></a>
+        <div class="fw">
+          <!-- Isometric layer stack: four slabs (UI, API, Visual, k6, bottom to top in the DOM), test packets climb through them. -->
+          <figure class="iso" data-testid="iso-stack" role="img" aria-label="Test layers stacked: UI, API, Visual, k6">
+            <svg viewBox="0 0 300 340" aria-hidden="true">
+              <defs>
+                <path id="iso-top" d="M110 -50 L210 0 L110 50 L10 0 Z" />
+                <path id="iso-rim" d="M110 -36 L196 0 L110 36 L24 0 Z" />
+                <path id="iso-left" d="M10 0 L110 50 V66 L10 16 Z" />
+                <path id="iso-right" d="M110 50 L210 0 V16 L110 66 Z" />
+                <g id="iso-pkt">
+                  <path class="pl" d="M-7 -2.5 L0 1 V8 L-7 4.5 Z" />
+                  <path class="pr" d="M7 -2.5 L0 1 V8 L7 4.5 Z" />
+                  <path class="pt" d="M0 -6 L7 -2.5 L0 1 L-7 -2.5 Z" />
+                </g>
+              </defs>
+              <ellipse class="ground" cx="110" cy="318" rx="112" ry="22" />
+              <g class="slab k6" data-testid="iso-layer" style="--i: 3; --gd: 0.43s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="258" /><use href="#iso-right" class="sr" y="258" /><use href="#iso-top" class="st" y="258" />
+                  <use href="#iso-rim" class="rim" y="258" /><use href="#iso-top" class="glow" y="258" />
+                  <circle class="pip" cx="110" cy="294" r="2.2" /><circle class="pip" cx="92" cy="285" r="2.2" /><circle class="pip" cx="128" cy="285" r="2.2" />
+                  <path class="lead" d="M213 266 H224" />
+                  <g class="lbl"><use href="#i-gauge" x="228" y="256" width="15" height="15" /><text x="248" y="268">k6</text></g>
+                </g>
+              </g>
+              <g class="slab visual" data-testid="iso-layer" style="--i: 2; --gd: 1.52s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="192" /><use href="#iso-right" class="sr" y="192" /><use href="#iso-top" class="st" y="192" />
+                  <use href="#iso-rim" class="rim" y="192" /><use href="#iso-top" class="glow" y="192" />
+                  <circle class="pip" cx="110" cy="228" r="2.2" /><circle class="pip" cx="92" cy="219" r="2.2" /><circle class="pip" cx="128" cy="219" r="2.2" />
+                  <path class="lead" d="M213 200 H224" />
+                  <g class="lbl"><use href="#i-eye" x="228" y="190" width="15" height="15" /><text x="248" y="202">Visual</text></g>
+                </g>
+              </g>
+              <g class="slab api" data-testid="iso-layer" style="--i: 1; --gd: 2.61s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="126" /><use href="#iso-right" class="sr" y="126" /><use href="#iso-top" class="st" y="126" />
+                  <use href="#iso-rim" class="rim" y="126" /><use href="#iso-top" class="glow" y="126" />
+                  <circle class="pip" cx="110" cy="162" r="2.2" /><circle class="pip" cx="92" cy="153" r="2.2" /><circle class="pip" cx="128" cy="153" r="2.2" />
+                  <path class="lead" d="M213 134 H224" />
+                  <g class="lbl"><use href="#i-api" x="228" y="124" width="15" height="15" /><text x="248" y="136">API</text></g>
+                </g>
+              </g>
+              <g class="slab ui" data-testid="iso-layer" style="--i: 0; --gd: 3.7s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="60" /><use href="#iso-right" class="sr" y="60" /><use href="#iso-top" class="st" y="60" />
+                  <use href="#iso-rim" class="rim" y="60" /><use href="#iso-top" class="glow" y="60" />
+                  <circle class="pip" cx="110" cy="96" r="2.2" /><circle class="pip" cx="92" cy="87" r="2.2" /><circle class="pip" cx="128" cy="87" r="2.2" />
+                  <path class="lead" d="M213 68 H224" />
+                  <g class="lbl"><use href="#i-pom" x="228" y="58" width="15" height="15" /><text x="248" y="70">UI</text></g>
+                </g>
+              </g>
+              <path class="axis" d="M110 306 V12" />
+              <g class="pkt" style="--p: -50px; --pd: 0s"><use href="#iso-pkt" x="110" y="296" /></g>
+              <g class="pkt" style="--p: -170px; --pd: -2.4s"><use href="#iso-pkt" x="110" y="296" /></g>
+            </svg>
+          </figure>
+          <div class="tiles">
+            <a class="tile" href="{{REPO_URL}}/tree/main/tests/pages"><svg class="big"><use href="#i-pom" /></svg><b>Page Objects</b><small>UI · fixtures</small></a>
+            <a class="tile" href="{{REPO_URL}}/tree/main/tests/api"><svg class="big"><use href="#i-api" /></svg><b>API</b><small>typed client</small></a>
+            <a class="tile" href="{{REPO_URL}}/tree/main/tests/visual"><svg class="big"><use href="#i-eye" /></svg><b>Visual</b><small>pixel diffs</small></a>
+            <a class="tile" href="{{REPO_URL}}/tree/main/k6"><svg class="big"><use href="#i-gauge" /></svg><b>k6</b><small>p95 &lt; 300 ms</small></a>
+          </div>
         </div>
       </div>
     </section>

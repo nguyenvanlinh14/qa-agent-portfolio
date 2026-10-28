@@ -4,3 +4,4 @@ export * from './contributions';
 export * from './privacy';
 export * from './profile';
 export * from './case-study';
+export * from './animation';

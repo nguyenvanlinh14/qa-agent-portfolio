@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures';
 import {
+  BLUEPRINT_STYLE,
   CASE_STUDY_CONTEXT,
   CASE_STUDY_NOTE,
   CASE_STUDY_SECTIONS,
@@ -44,6 +45,18 @@ test.describe('Case study page', () => {
     await expect(caseStudyPage.stampMocks).toBeVisible();
     await expect(caseStudyPage.stampMocks).toContainText(/TEST · tenant A · \w+ · \d{2}:\d{2} JST/);
     await expect(caseStudyPage.stampMocks).toContainText(/PROD · tenant B · \w+ · \d{2}:\d{2} JST/);
+  });
+
+  test('@regression evidence stamp mocks are drawn as blueprint figures', async ({ caseStudyPage }) => {
+    await expect(caseStudyPage.stampFigures).toHaveCount(2);
+    for (const figure of await caseStudyPage.stampFigures.all()) {
+      await expect(figure).toHaveAttribute('data-style', BLUEPRINT_STYLE);
+    }
+  });
+
+  test('@regression blueprint stamp mocks are drawn in once they scroll into view', async ({ caseStudyPage }) => {
+    await caseStudyPage.stampMocks.scrollIntoViewIfNeeded();
+    await expect(caseStudyPage.stampStrokes.first()).toHaveCSS('stroke-dashoffset', '0px');
   });
 
   test('@regression results show the headline numbers', async ({ caseStudyPage }) => {

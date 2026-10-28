@@ -1,6 +1,7 @@
 import { test, expect } from '../fixtures';
 
 test.describe('Visual regression', () => {
+  // The hero particles are deterministic under this project's reducedMotion (fixed-seed static frame), so no mask is needed.
   test('@regression home hero matches the baseline', async ({ page, homePage }) => {
     await homePage.goto();
     await page.evaluate(() => document.fonts.ready);
