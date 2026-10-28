@@ -6,6 +6,8 @@ icon: pom
 
 # Playwright + Page Object Model
 
+> **Lưu ý:** demo app hiện là MarketFlow; các ví dụ `TodoPage` trong bài minh họa cùng những pattern đó.
+
 ## Mục tiêu bài học
 
 Sau bài này bạn sẽ:

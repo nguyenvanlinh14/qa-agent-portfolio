@@ -1,6 +1,6 @@
 ---
 description: Heal a failing spec by fixing locators only (assertions are never changed)
-argument-hint: <path to spec, e.g. tests/ui/todos.spec.ts>
+argument-hint: <path to spec, e.g. tests/ui/board.spec.ts>
 ---
 
 Heal this spec: $ARGUMENTS

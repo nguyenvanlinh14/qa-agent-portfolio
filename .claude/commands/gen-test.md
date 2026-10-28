@@ -1,6 +1,6 @@
 ---
 description: Plan and generate Playwright tests for a feature (planner -> human approval -> generator)
-argument-hint: <feature, e.g. "todo filtering">
+argument-hint: <feature, e.g. "screener filters">
 ---
 
 Generate tests for this feature: $ARGUMENTS
