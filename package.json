@@ -28,6 +28,7 @@
     "evidence:build": "node scripts/evidence/build-video.mjs evidence/scripts/watchlist-remove-not-saved.json",
     "evidence": "npm run evidence:narrate && npm run evidence:record && npm run evidence:build",
     "evidence:dedupe": "node scripts/evidence/dedupe.mjs",
+    "guide:voice": "node scripts/guide/voice.mjs",
     "oss:issues": "node scripts/find-good-first-issues.mjs"
   },
   "devDependencies": {

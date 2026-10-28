@@ -10,3 +10,6 @@ reports/
 
 # Evidence pipeline working files (narration clips, raw video, timeline); the published video lives in site/evidence/
 evidence/out/
+
+# Playwright MCP browser snapshots and screenshots
+.playwright-mcp/

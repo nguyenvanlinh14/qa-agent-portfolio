@@ -1,0 +1,100 @@
+{
+  "name": "Tess",
+  "role": { "en": "Portfolio guide", "vi": "Trợ lý portfolio" },
+  "voices": {
+    "en": { "name": "Aoede" },
+    "vi": { "name": "Aoede" }
+  },
+  "steps": [
+    {
+      "id": "intro",
+      "target": ".hero",
+      "title": { "en": "Hi there", "vi": "Xin chào" },
+      "say": {
+        "en": "Hi, I'm Tess, the guide to this portfolio. In about a minute I'll show you how Linh uses AI agents to build and maintain a Playwright test suite, and where you can watch it run.",
+        "vi": "Xin chào, mình là Tess, trợ lý của portfolio này. Trong khoảng một phút, mình sẽ cho bạn thấy Linh dùng AI agent để xây dựng và bảo trì bộ test Playwright như thế nào, và bạn có thể xem nó chạy ở đâu."
+      }
+    },
+    {
+      "id": "reels",
+      "target": "#reels",
+      "title": { "en": "Reels", "vi": "Reels" },
+      "say": {
+        "en": "These reels are recorded by the pipeline itself: a narrated bug report, a live test run, and k6 load tests. Open one to see the real page.",
+        "vi": "Các reel này do chính pipeline tự quay: một video báo lỗi có thuyết minh, một lần chạy test trực tiếp, và bài test tải k6. Mở một reel để xem trang thật."
+      }
+    },
+    {
+      "id": "agents",
+      "target": "#agents",
+      "title": { "en": "Agents in the loop", "vi": "Agent trong vòng lặp" },
+      "say": {
+        "en": "Four Claude Code sub-agents plan, generate, heal and triage the tests. They drive a real browser through Playwright MCP and follow the rules in CLAUDE.md. The agents propose, Linh approves.",
+        "vi": "Bốn sub-agent của Claude Code lập kế hoạch, sinh test, sửa test và phân loại lỗi. Chúng điều khiển trình duyệt thật qua Playwright MCP và tuân theo luật trong CLAUDE.md. Agent đề xuất, Linh duyệt."
+      }
+    },
+    {
+      "id": "workflow",
+      "target": "#workflow",
+      "title": { "en": "Agents in production", "vi": "Agent trong dự án thật" },
+      "say": {
+        "en": "This is how it works on a real B2B product: build the suite, run the test cycle, and release with evidence. The numbers come from that project, and the case study has the details.",
+        "vi": "Đây là cách quy trình chạy trên một sản phẩm B2B thật: xây bộ test, chạy chu kỳ kiểm thử, và release kèm bằng chứng. Các con số lấy từ dự án đó, chi tiết có trong case study."
+      }
+    },
+    {
+      "id": "framework",
+      "target": "#framework",
+      "title": { "en": "Framework", "vi": "Framework" },
+      "say": {
+        "en": "Under the hood: page objects, typed fixtures, data builders, and four test layers. UI, API, visual, and k6 performance.",
+        "vi": "Bên trong là page object, fixture có kiểu, data builder, và bốn tầng test: giao diện, API, so sánh hình ảnh, và hiệu năng với k6."
+      }
+    },
+    {
+      "id": "ci",
+      "target": "#ci",
+      "title": { "en": "Pipeline", "vi": "Pipeline" },
+      "say": {
+        "en": "Every push runs this pipeline: typecheck, then the tests and a k6 smoke run in parallel, AI triage when something fails, and a deploy to GitHub Pages. The report and the demo app are one click away.",
+        "vi": "Mỗi lần push đều chạy pipeline này: kiểm tra kiểu, rồi chạy test và k6 smoke song song, AI phân tích khi có lỗi, sau đó deploy lên GitHub Pages. Báo cáo và app demo chỉ cách một cú click."
+      }
+    },
+    {
+      "id": "observe",
+      "target": "#observe",
+      "title": { "en": "Watch it run", "vi": "Xem test chạy" },
+      "say": {
+        "en": "You can watch it run. The live dashboard streams every test, the k6 dashboards show load, stress and spike, and each bug comes with a narrated video and captions.",
+        "vi": "Bạn có thể xem test chạy. Dashboard trực tiếp hiển thị từng test, dashboard k6 cho thấy tải, stress và spike, còn mỗi lỗi đều có video thuyết minh kèm phụ đề."
+      }
+    },
+    {
+      "id": "services",
+      "target": "#services",
+      "title": { "en": "Services", "vi": "Dịch vụ" },
+      "say": {
+        "en": "Need this for your team? Linh offers Playwright framework setup, CI for tests, performance testing with k6, and AI agents in QA. Work with me opens the CV.",
+        "vi": "Bạn cần điều này cho đội của mình? Linh nhận dựng framework Playwright, CI cho test, kiểm thử hiệu năng với k6, và đưa AI agent vào QA. Nút Work with me sẽ mở CV."
+      }
+    },
+    {
+      "id": "lessons",
+      "target": "#lessons",
+      "title": { "en": "Lessons", "vi": "Bài học" },
+      "say": {
+        "en": "Linh also writes free lessons in Vietnamese, from test design patterns to k6, Docker and CI.",
+        "vi": "Linh còn viết các bài học miễn phí bằng tiếng Việt, từ mẫu thiết kế test đến k6, Docker và CI."
+      }
+    },
+    {
+      "id": "oss",
+      "target": "#oss",
+      "title": { "en": "Open source", "vi": "Mã nguồn mở" },
+      "say": {
+        "en": "Last stop: open source contributions to Playwright, k6 and other testing tools. That's the tour. Thanks for watching, and have fun with the demo!",
+        "vi": "Điểm dừng cuối: các đóng góp mã nguồn mở cho Playwright, k6 và các công cụ test khác. Hết tour rồi. Cảm ơn bạn đã xem, chúc bạn vui với app demo!"
+      }
+    }
+  ]
+}
