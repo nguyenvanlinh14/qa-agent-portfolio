@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { BLUEPRINT_STYLE, GITHUB_PROFILE_URL, ISO_LAYERS, LANE_NAMES, LINKEDIN_PROFILE_URL, WORKFLOW_FIGURES, WORKFLOW_NAMES, loadContributions } from '../data';
+import { REPORT_THEME_KEY, SITE_THEME_KEY, BLUEPRINT_STYLE, GITHUB_PROFILE_URL, ISO_LAYERS, LANE_NAMES, LINKEDIN_PROFILE_URL, WORKFLOW_FIGURES, WORKFLOW_NAMES, loadContributions } from '../data';
 
 const contributions = loadContributions();
 
@@ -132,6 +132,19 @@ test.describe('Portfolio home', () => {
     await expect(homePage.html).toHaveAttribute('data-theme', 'light');
     await homePage.themeToggle.click();
     await expect(homePage.html).toHaveAttribute('data-theme', 'dark');
+  });
+
+  test('@regression theme toggle keeps the Playwright report theme key untouched', async ({ page, homePage }) => {
+    await homePage.themeToggle.click();
+    await expect.poll(() => page.evaluate((k) => localStorage.getItem(k), SITE_THEME_KEY)).not.toBeNull();
+    await expect.poll(() => page.evaluate((k) => localStorage.getItem(k), REPORT_THEME_KEY)).toBeNull();
+  });
+
+  test('@regression a legacy dark/light value is moved off the report theme key', async ({ page, homePage }) => {
+    await page.evaluate((k) => localStorage.setItem(k, 'dark'), REPORT_THEME_KEY);
+    await homePage.goto();
+    await expect(homePage.html).toHaveAttribute('data-theme', 'dark');
+    await expect.poll(() => page.evaluate((k) => localStorage.getItem(k), REPORT_THEME_KEY)).toBeNull();
   });
 });
 

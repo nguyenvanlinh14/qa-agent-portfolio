@@ -7,7 +7,13 @@
   <meta name="description" content="QA Automation Engineer portfolio: Playwright framework built and maintained with AI agents (Claude Code, Playwright MCP, Playwright Test Agents) — POM, API, visual testing, CI reports." />
   <script>
     // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
-    try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
   </script>
   <link rel="stylesheet" href="assets/style.css" />
   <script src="assets/fx.js" defer></script>
@@ -421,7 +427,7 @@
       document.querySelector('.theme-toggle').addEventListener('click', () => {
         const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
         root.dataset.theme = dark ? 'light' : 'dark';
-        try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+        try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
       });
 
       // Count stats up from 0 the first time they scroll into view. The final value is
