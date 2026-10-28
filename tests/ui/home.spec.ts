@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { GITHUB_PROFILE_URL, loadContributions } from '../data';
+import { GITHUB_PROFILE_URL, LINKEDIN_PROFILE_URL, loadContributions } from '../data';
 
 const contributions = loadContributions();
 
@@ -15,6 +15,14 @@ test.describe('Portfolio home', () => {
 
   test('@smoke eyebrow names the specialty', async ({ homePage }) => {
     await expect(homePage.eyebrow).toContainText('QA Automation');
+  });
+
+  test('@regression eyebrow states the years of experience', async ({ homePage }) => {
+    await expect(homePage.eyebrow).toContainText('5+ yrs');
+  });
+
+  test('@regression footer links to the LinkedIn profile', async ({ homePage }) => {
+    await expect(homePage.footerLinkedIn).toHaveAttribute('href', LINKEDIN_PROFILE_URL);
   });
 
   test('@smoke report CTA points to the live report', async ({ homePage }) => {

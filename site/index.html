@@ -38,6 +38,7 @@
     <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" class="f" /></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-linkedin" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle cx="8" cy="7.8" r="1" class="f" /></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
   </svg>
 
@@ -60,7 +61,7 @@
   <header class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow" data-testid="hero-eyebrow">QA Automation · Agentic Testing</span>
+        <span class="eyebrow" data-testid="hero-eyebrow">QA Automation · 5+ yrs · Agentic Testing</span>
         <h1 data-testid="hero-title">Agents write the tests. <span class="grad">I own the quality.</span></h1>
         <div class="cta">
           <a class="btn primary" href="report/" data-testid="cta-report"><svg class="ic"><use href="#i-play" /></svg>Live report</a>
@@ -239,7 +240,10 @@
 
   <footer>
     <div class="wrap">
-      <a href="{{REPO_URL}}"><svg class="ic"><use href="#i-git" /></svg>{{REPO_SLUG}}</a>
+      <div class="foot-links">
+        <a href="{{REPO_URL}}"><svg class="ic"><use href="#i-git" /></svg>{{REPO_SLUG}}</a>
+        <a href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" data-testid="footer-linkedin"><svg class="ic" aria-hidden="true"><use href="#i-linkedin" /></svg>LinkedIn</a>
+      </div>
       <span>Built by GitHub Actions · tested by its own suite</span>
     </div>
   </footer>
