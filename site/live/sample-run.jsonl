@@ -1,0 +1,500 @@
+{"type":"begin","t":0,"total":249,"workers":4,"projects":["setup","ui","api"],"startedAt":"2026-10-28T08:10:51.270Z"}
+{"type":"testBegin","t":304,"id":"6bead371ebbc451c1152-c8ed6d03cfd64a9a014f#0","title":"POST /api/auth/login › @regression each login issues a different token","file":"tests/api/auth.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testBegin","t":308,"id":"e717b06d8d484d1cd946-e6c89ef5f8a261b6f827#0","title":"log into the demo app and store the session","file":"tests/setup/auth.setup.ts","project":"setup","worker":0,"retry":0}
+{"type":"testBegin","t":309,"id":"6bead371ebbc451c1152-bc8a85b3c93173a00f2c#0","title":"POST /api/auth/login › @regression missing body fields return 400","file":"tests/api/auth.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testBegin","t":312,"id":"6bead371ebbc451c1152-1c7b1bba88ae82068ec2#0","title":"POST /api/auth/login › @smoke valid credentials return 200 with a token","file":"tests/api/auth.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testEnd","t":359,"id":"6bead371ebbc451c1152-c8ed6d03cfd64a9a014f#0","status":"passed","outcome":"expected","duration":34,"retry":0}
+{"type":"testBegin","t":360,"id":"6bead371ebbc451c1152-17ac2df300054423278a#0","title":"POST /api/auth/login › @regression non-string fields return 400","file":"tests/api/auth.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testEnd","t":361,"id":"6bead371ebbc451c1152-bc8a85b3c93173a00f2c#0","status":"passed","outcome":"expected","duration":31,"retry":0}
+{"type":"testBegin","t":362,"id":"6bead371ebbc451c1152-6f09f9871a649e672e57#0","title":"POST /api/auth/login › @regression wrong password returns 401","file":"tests/api/auth.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testEnd","t":373,"id":"6bead371ebbc451c1152-1c7b1bba88ae82068ec2#0","status":"passed","outcome":"expected","duration":37,"retry":0}
+{"type":"testBegin","t":374,"id":"6bead371ebbc451c1152-769596a1695394e8e77e#0","title":"POST /api/auth/login › @regression unknown user returns 401","file":"tests/api/auth.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testEnd","t":377,"id":"6bead371ebbc451c1152-17ac2df300054423278a#0","status":"passed","outcome":"expected","duration":9,"retry":0}
+{"type":"testEnd","t":379,"id":"6bead371ebbc451c1152-6f09f9871a649e672e57#0","status":"passed","outcome":"expected","duration":7,"retry":0}
+{"type":"testBegin","t":380,"id":"d773548c0867c4bfdbac-aec0aaa7df60c6e30e64#0","title":"GET /api/health › @smoke reports the service as ok","file":"tests/api/health.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testBegin","t":384,"id":"1962bc0e05349d5dd4a5-d7625d82900f9953f924#0","title":"Todos CRUD › @smoke full lifecycle: create, read, update, delete","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testEnd","t":395,"id":"6bead371ebbc451c1152-769596a1695394e8e77e#0","status":"passed","outcome":"expected","duration":12,"retry":0}
+{"type":"testEnd","t":396,"id":"d773548c0867c4bfdbac-aec0aaa7df60c6e30e64#0","status":"passed","outcome":"expected","duration":7,"retry":0}
+{"type":"testBegin","t":401,"id":"1962bc0e05349d5dd4a5-023b68d569f11434ff73#0","title":"Todos CRUD › @regression created todo appears in the list","file":"tests/api/todos.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testBegin","t":403,"id":"1962bc0e05349d5dd4a5-c0cf2d14ad48ed1759ee#0","title":"Todos CRUD › @regression update can rename a todo","file":"tests/api/todos.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testEnd","t":421,"id":"1962bc0e05349d5dd4a5-d7625d82900f9953f924#0","status":"passed","outcome":"expected","duration":28,"retry":0}
+{"type":"testBegin","t":423,"id":"1962bc0e05349d5dd4a5-1f814e153d059f667f09#0","title":"Todos CRUD › @regression title is trimmed on create","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testEnd","t":441,"id":"1962bc0e05349d5dd4a5-c0cf2d14ad48ed1759ee#0","status":"passed","outcome":"expected","duration":27,"retry":0}
+{"type":"testBegin","t":442,"id":"1962bc0e05349d5dd4a5-e1399498f7df5af4b848#0","title":"Todos CRUD › @regression a title of exactly 120 characters is accepted","file":"tests/api/todos.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testEnd","t":444,"id":"1962bc0e05349d5dd4a5-023b68d569f11434ff73#0","status":"passed","outcome":"expected","duration":32,"retry":0}
+{"type":"testBegin","t":445,"id":"1962bc0e05349d5dd4a5-ba789faf3454c65923f1#0","title":"Todos authorization › @smoke listing without a token returns 401","file":"tests/api/todos.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testEnd","t":455,"id":"1962bc0e05349d5dd4a5-1f814e153d059f667f09#0","status":"passed","outcome":"expected","duration":24,"retry":0}
+{"type":"testBegin","t":456,"id":"1962bc0e05349d5dd4a5-c88b4d8ee447589e8d93#0","title":"Todos authorization › @regression creating without a token returns 401","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testEnd","t":471,"id":"1962bc0e05349d5dd4a5-e1399498f7df5af4b848#0","status":"passed","outcome":"expected","duration":15,"retry":0}
+{"type":"testEnd","t":472,"id":"1962bc0e05349d5dd4a5-c88b4d8ee447589e8d93#0","status":"passed","outcome":"expected","duration":9,"retry":0}
+{"type":"testEnd","t":473,"id":"1962bc0e05349d5dd4a5-ba789faf3454c65923f1#0","status":"passed","outcome":"expected","duration":14,"retry":0}
+{"type":"testBegin","t":473,"id":"1962bc0e05349d5dd4a5-6cfb7d084a907e15bf22#0","title":"Todos authorization › @regression an invalid token returns 401","file":"tests/api/todos.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testBegin","t":473,"id":"1962bc0e05349d5dd4a5-80111dc9c8c5386ef35e#0","title":"Todos validation › @regression empty title returns 422","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testBegin","t":474,"id":"1962bc0e05349d5dd4a5-e6a512d9cb10e04ef49b#0","title":"Todos validation › @regression whitespace-only title returns 422","file":"tests/api/todos.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testEnd","t":494,"id":"1962bc0e05349d5dd4a5-6cfb7d084a907e15bf22#0","status":"passed","outcome":"expected","duration":12,"retry":0}
+{"type":"testEnd","t":496,"id":"1962bc0e05349d5dd4a5-e6a512d9cb10e04ef49b#0","status":"passed","outcome":"expected","duration":14,"retry":0}
+{"type":"testEnd","t":496,"id":"1962bc0e05349d5dd4a5-80111dc9c8c5386ef35e#0","status":"passed","outcome":"expected","duration":14,"retry":0}
+{"type":"testBegin","t":498,"id":"1962bc0e05349d5dd4a5-3a8237ac9ef9b4ff4c3e#0","title":"Todos not found › @regression getting an unknown id returns 404","file":"tests/api/todos.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testBegin","t":499,"id":"1962bc0e05349d5dd4a5-9fb3ad42fd5eaab1316f#0","title":"Todos not found › @regression updating an unknown id returns 404","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testBegin","t":502,"id":"1962bc0e05349d5dd4a5-7a014740934e00e18211#0","title":"Todos validation › @regression title longer than 120 characters returns 422","file":"tests/api/todos.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testEnd","t":517,"id":"1962bc0e05349d5dd4a5-9fb3ad42fd5eaab1316f#0","status":"passed","outcome":"expected","duration":7,"retry":0}
+{"type":"testEnd","t":519,"id":"1962bc0e05349d5dd4a5-7a014740934e00e18211#0","status":"passed","outcome":"expected","duration":7,"retry":0}
+{"type":"testBegin","t":519,"id":"1962bc0e05349d5dd4a5-05b1c7c5545e13290f0e#0","title":"Todos not found › @regression deleting an unknown id returns 404","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testBegin","t":520,"id":"1962bc0e05349d5dd4a5-d7974fa70e6171fff30c#0","title":"Todos isolation between users › @smoke another user does not see my todos in the list","file":"tests/api/todos.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testEnd","t":520,"id":"1962bc0e05349d5dd4a5-3a8237ac9ef9b4ff4c3e#0","status":"passed","outcome":"expected","duration":7,"retry":0}
+{"type":"testBegin","t":526,"id":"1962bc0e05349d5dd4a5-328433b9743283e9d148#0","title":"Todos isolation between users › @regression another user cannot read my todo by id","file":"tests/api/todos.spec.ts","project":"api","worker":1,"retry":0}
+{"type":"testEnd","t":543,"id":"1962bc0e05349d5dd4a5-05b1c7c5545e13290f0e#0","status":"passed","outcome":"expected","duration":16,"retry":0}
+{"type":"testBegin","t":545,"id":"1962bc0e05349d5dd4a5-e2e58133dfff582425dd#0","title":"Todos isolation between users › @regression another user cannot update my todo","file":"tests/api/todos.spec.ts","project":"api","worker":3,"retry":0}
+{"type":"testEnd","t":547,"id":"1962bc0e05349d5dd4a5-d7974fa70e6171fff30c#0","status":"passed","outcome":"expected","duration":18,"retry":0}
+{"type":"testEnd","t":554,"id":"1962bc0e05349d5dd4a5-328433b9743283e9d148#0","status":"passed","outcome":"expected","duration":19,"retry":0}
+{"type":"testBegin","t":557,"id":"1962bc0e05349d5dd4a5-f0424b15b90b9f7cb2ee#0","title":"Todos isolation between users › @regression another user cannot delete my todo","file":"tests/api/todos.spec.ts","project":"api","worker":2,"retry":0}
+{"type":"testEnd","t":568,"id":"1962bc0e05349d5dd4a5-e2e58133dfff582425dd#0","status":"passed","outcome":"expected","duration":11,"retry":0}
+{"type":"testEnd","t":576,"id":"1962bc0e05349d5dd4a5-f0424b15b90b9f7cb2ee#0","status":"passed","outcome":"expected","duration":11,"retry":0}
+{"type":"testEnd","t":751,"id":"e717b06d8d484d1cd946-e6c89ef5f8a261b6f827#0","status":"passed","outcome":"expected","duration":323,"retry":0}
+{"type":"testBegin","t":1029,"id":"1e89b3ba34ee667a629f-ebc3e6e729c91432bad2#0","title":"Market board › @regression the board says it is frozen and shows the seed","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testBegin","t":1044,"id":"1e89b3ba34ee667a629f-18ba216ce6206ba0c3b8#0","title":"Market board › @smoke the summary bar shows the simulated VN30 index","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":1047,"id":"1e89b3ba34ee667a629f-b1bdc768699c7043395a#0","title":"Market board › @regression index breadth counts add up to the 30 constituents","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testBegin","t":1052,"id":"1e89b3ba34ee667a629f-3d02416204b162e15a01#0","title":"Market board › @smoke lists the 30 VN30 constituents","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":1578,"id":"1e89b3ba34ee667a629f-18ba216ce6206ba0c3b8#0","status":"passed","outcome":"expected","duration":362,"retry":0}
+{"type":"testEnd","t":1583,"id":"1e89b3ba34ee667a629f-b1bdc768699c7043395a#0","status":"passed","outcome":"expected","duration":371,"retry":0}
+{"type":"testBegin","t":1587,"id":"1e89b3ba34ee667a629f-0b75008c1c02c6514608#0","title":"Market board › @regression the demo disclaimer is visible","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":1590,"id":"1e89b3ba34ee667a629f-89fbf599a2b80689991b#0","title":"Market board › @regression the nav marks the board as the current page","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":1590,"id":"1e89b3ba34ee667a629f-3d02416204b162e15a01#0","status":"passed","outcome":"expected","duration":370,"retry":0}
+{"type":"testEnd","t":1591,"id":"1e89b3ba34ee667a629f-ebc3e6e729c91432bad2#0","status":"passed","outcome":"expected","duration":377,"retry":0}
+{"type":"testBegin","t":1593,"id":"1e89b3ba34ee667a629f-77d92d853967259421a8#0","title":"Market board › @regression every column has a sortable header with aria-sort","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":1594,"id":"1e89b3ba34ee667a629f-020d2e6e0e25e180c369#0","title":"Market board › prices follow the HOSE band rules › @regression ceiling and floor are reference x 1.07 / x 0.93 rounded to the tick, for all 30 rows","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":1872,"id":"1e89b3ba34ee667a629f-0b75008c1c02c6514608#0","status":"passed","outcome":"expected","duration":272,"retry":0}
+{"type":"testBegin","t":1873,"id":"1e89b3ba34ee667a629f-c509b0306912325a7e63#0","title":"Market board › prices follow the HOSE band rules › @regression last prices match the seed-42 snapshot","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":1877,"id":"1e89b3ba34ee667a629f-020d2e6e0e25e180c369#0","status":"passed","outcome":"expected","duration":266,"retry":0}
+{"type":"testEnd","t":1878,"id":"1e89b3ba34ee667a629f-89fbf599a2b80689991b#0","status":"passed","outcome":"expected","duration":277,"retry":0}
+{"type":"testBegin","t":1879,"id":"1e89b3ba34ee667a629f-aa820726c23b1969bebe#0","title":"Market board › prices follow the HOSE band rules › @regression a stock at its ceiling price is marked as ceiling (ACB)","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testBegin","t":1880,"id":"1e89b3ba34ee667a629f-6e9c39fb2a98788e044c#0","title":"Market board › prices follow the HOSE band rules › @regression a stock at its floor price is marked as floor (MBB)","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":1960,"id":"1e89b3ba34ee667a629f-77d92d853967259421a8#0","status":"passed","outcome":"expected","duration":352,"retry":0}
+{"type":"testBegin","t":1964,"id":"1e89b3ba34ee667a629f-d61c70c52cc8b9d2dd1e#0","title":"Market board › prices follow the HOSE band rules › @regression a stock at its reference price is marked as reference (SAB)","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":2174,"id":"1e89b3ba34ee667a629f-c509b0306912325a7e63#0","status":"passed","outcome":"expected","duration":288,"retry":0}
+{"type":"testBegin","t":2176,"id":"1e89b3ba34ee667a629f-96dbf542f0b734e17977#0","title":"Market board › prices follow the HOSE band rules › @regression a stock trading above the reference is marked as up, below as down","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":2183,"id":"1e89b3ba34ee667a629f-aa820726c23b1969bebe#0","status":"passed","outcome":"expected","duration":291,"retry":0}
+{"type":"testBegin","t":2185,"id":"1e89b3ba34ee667a629f-24a2c01f3aeaa109471f#0","title":"Market board › prices follow the HOSE band rules › @regression change and percent change are shown against the reference price","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":2198,"id":"1e89b3ba34ee667a629f-6e9c39fb2a98788e044c#0","status":"passed","outcome":"expected","duration":301,"retry":0}
+{"type":"testBegin","t":2201,"id":"1e89b3ba34ee667a629f-792d2bb29b7de83344be#0","title":"Market board › sorting › @regression sorting by %Chg puts the biggest gainers first","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":2250,"id":"1e89b3ba34ee667a629f-d61c70c52cc8b9d2dd1e#0","status":"passed","outcome":"expected","duration":273,"retry":0}
+{"type":"testBegin","t":2252,"id":"1e89b3ba34ee667a629f-35269bb75ca0e6000f0a#0","title":"Market board › sorting › @regression sorting by %Chg twice puts the biggest losers first","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":2491,"id":"1e89b3ba34ee667a629f-96dbf542f0b734e17977#0","status":"passed","outcome":"expected","duration":304,"retry":0}
+{"type":"testBegin","t":2492,"id":"1e89b3ba34ee667a629f-3b80846b751ddd7ef3b6#0","title":"Market board › sorting › @regression sorting by ticker twice reverses the alphabetical order","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":2494,"id":"1e89b3ba34ee667a629f-24a2c01f3aeaa109471f#0","status":"passed","outcome":"expected","duration":295,"retry":0}
+{"type":"testBegin","t":2494,"id":"1e89b3ba34ee667a629f-8a8a5e1d6172f11fda2b#0","title":"Market board › sorting › @regression only the sorted column reports an aria-sort direction","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":2577,"id":"1e89b3ba34ee667a629f-792d2bb29b7de83344be#0","status":"passed","outcome":"expected","duration":367,"retry":0}
+{"type":"testBegin","t":2581,"id":"1e89b3ba34ee667a629f-fa44a2e47aeb6fd0c143#0","title":"Market board › filtering › @smoke searching by ticker narrows the board to that stock","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":2627,"id":"1e89b3ba34ee667a629f-35269bb75ca0e6000f0a#0","status":"passed","outcome":"expected","duration":366,"retry":0}
+{"type":"testBegin","t":2631,"id":"1e89b3ba34ee667a629f-a18fbabc12ccc2646082#0","title":"Market board › filtering › @regression search is case-insensitive","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":2870,"id":"1e89b3ba34ee667a629f-fa44a2e47aeb6fd0c143#0","status":"passed","outcome":"expected","duration":271,"retry":0}
+{"type":"testEnd","t":2878,"id":"1e89b3ba34ee667a629f-8a8a5e1d6172f11fda2b#0","status":"passed","outcome":"expected","duration":374,"retry":0}
+{"type":"testEnd","t":2882,"id":"1e89b3ba34ee667a629f-3b80846b751ddd7ef3b6#0","status":"passed","outcome":"expected","duration":381,"retry":0}
+{"type":"testBegin","t":2882,"id":"1e89b3ba34ee667a629f-c906cd7314c42cf0ca9e#0","title":"Market board › filtering › @regression search also matches company names","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testBegin","t":2890,"id":"1e89b3ba34ee667a629f-a2a7b312ee8f5d59739d#0","title":"Market board › filtering › @regression a search without matches shows the empty state","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testBegin","t":2892,"id":"1e89b3ba34ee667a629f-5f6a50153c2abd17f96b#0","title":"Market board › filtering › @regression the result count follows the search","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":2910,"id":"1e89b3ba34ee667a629f-a18fbabc12ccc2646082#0","status":"passed","outcome":"expected","duration":264,"retry":0}
+{"type":"testBegin","t":2911,"id":"1e89b3ba34ee667a629f-b2ae7ffdb9106d3403e0#0","title":"Market board › filtering › @smoke a sector chip filters the board to that sector","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":3196,"id":"1e89b3ba34ee667a629f-a2a7b312ee8f5d59739d#0","status":"passed","outcome":"expected","duration":296,"retry":0}
+{"type":"testBegin","t":3201,"id":"1e89b3ba34ee667a629f-8b8d44621b3040fbc7f8#0","title":"Market board › filtering › @regression the All chip clears the sector filter","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":3202,"id":"1e89b3ba34ee667a629f-5f6a50153c2abd17f96b#0","status":"passed","outcome":"expected","duration":300,"retry":0}
+{"type":"testBegin","t":3204,"id":"1e89b3ba34ee667a629f-92e75de1e69425f37ac5#0","title":"Market board › filtering › @regression search and sector chip combine","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":3206,"id":"1e89b3ba34ee667a629f-c906cd7314c42cf0ca9e#0","status":"passed","outcome":"expected","duration":311,"retry":0}
+{"type":"testBegin","t":3207,"id":"1e89b3ba34ee667a629f-56e8b12a4c0b6e73aa1c#0","title":"Market board › filtering › @regression there is one chip per sector plus All","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":3269,"id":"1e89b3ba34ee667a629f-b2ae7ffdb9106d3403e0#0","status":"passed","outcome":"expected","duration":345,"retry":0}
+{"type":"testBegin","t":3271,"id":"1e89b3ba34ee667a629f-714511efdd766befc886#0","title":"Market board › watchlist stars › @smoke the star adds a stock to the watchlist","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":3484,"id":"1e89b3ba34ee667a629f-56e8b12a4c0b6e73aa1c#0","status":"passed","outcome":"expected","duration":265,"retry":0}
+{"type":"testBegin","t":3485,"id":"1e89b3ba34ee667a629f-3a4c8e03da52dd37eb02#0","title":"Market board › watchlist stars › @regression the star toggles back to remove the stock","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":3512,"id":"1e89b3ba34ee667a629f-714511efdd766befc886#0","status":"passed","outcome":"expected","duration":234,"retry":0}
+{"type":"testBegin","t":3521,"id":"1e89b3ba34ee667a629f-2b8677b63d5433f88313#0","title":"Market board › watchlist stars › @regression a starred stock stays starred after a reload","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":3566,"id":"1e89b3ba34ee667a629f-92e75de1e69425f37ac5#0","status":"passed","outcome":"expected","duration":353,"retry":0}
+{"type":"testBegin","t":3569,"id":"1e89b3ba34ee667a629f-ec92b09351660348ba1c#0","title":"Market board › watchlist stars › @regression starring a stock is announced politely","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":3626,"id":"1e89b3ba34ee667a629f-8b8d44621b3040fbc7f8#0","status":"passed","outcome":"expected","duration":412,"retry":0}
+{"type":"testBegin","t":3629,"id":"1e89b3ba34ee667a629f-f9b9a69e3ed89cdb10ee#0","title":"Market board › navigation › @smoke clicking a row opens the stock detail page","file":"tests/ui/board.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":3852,"id":"1e89b3ba34ee667a629f-3a4c8e03da52dd37eb02#0","status":"passed","outcome":"expected","duration":358,"retry":0}
+{"type":"testBegin","t":3854,"id":"1e89b3ba34ee667a629f-ed34127be649f4416811#0","title":"Market board › navigation › @regression the test-mode query travels with in-app links","file":"tests/ui/board.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":3925,"id":"1e89b3ba34ee667a629f-ec92b09351660348ba1c#0","status":"passed","outcome":"expected","duration":332,"retry":0}
+{"type":"testEnd","t":3925,"id":"1e89b3ba34ee667a629f-2b8677b63d5433f88313#0","status":"passed","outcome":"expected","duration":377,"retry":0}
+{"type":"testBegin","t":3927,"id":"1e89b3ba34ee667a629f-de5e9ce486cff1fe3b20#0","title":"Market board (live mode) › @regression live prices keep changing without a reload","file":"tests/ui/board.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":3927,"id":"1e89b3ba34ee667a629f-42e87bbd292b30cdd0cb#0","title":"Market board (narrow screen) › @regression the page itself does not scroll sideways at 375px","file":"tests/ui/board.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":3982,"id":"1e89b3ba34ee667a629f-f9b9a69e3ed89cdb10ee#0","status":"passed","outcome":"expected","duration":325,"retry":0}
+{"type":"testBegin","t":4008,"id":"2658db63924ddd818782-2951dfa62a4bf9fec3ef#0","title":"Case study page › @smoke case study shows the Problem, Approach and Results headings","file":"tests/ui/case-study.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":4203,"id":"1e89b3ba34ee667a629f-42e87bbd292b30cdd0cb#0","status":"passed","outcome":"expected","duration":268,"retry":0}
+{"type":"testEnd","t":4207,"id":"1e89b3ba34ee667a629f-ed34127be649f4416811#0","status":"passed","outcome":"expected","duration":346,"retry":0}
+{"type":"testBegin","t":4212,"id":"2658db63924ddd818782-6de832cb53789f72d2f3#0","title":"Case study page › @regression case study keeps the full section structure","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":4215,"id":"2658db63924ddd818782-3211041db496a99ba041#0","title":"Case study page › @regression case study states the anonymised context","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":4287,"id":"2658db63924ddd818782-2951dfa62a4bf9fec3ef#0","status":"passed","outcome":"expected","duration":272,"retry":0}
+{"type":"testBegin","t":4289,"id":"2658db63924ddd818782-2cc738afbebf9ec6a4b2#0","title":"Case study page › @regression approach describes the three workflows as tables","file":"tests/ui/case-study.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":4431,"id":"2658db63924ddd818782-3211041db496a99ba041#0","status":"passed","outcome":"expected","duration":204,"retry":0}
+{"type":"testEnd","t":4432,"id":"2658db63924ddd818782-6de832cb53789f72d2f3#0","status":"passed","outcome":"expected","duration":209,"retry":0}
+{"type":"testBegin","t":4433,"id":"2658db63924ddd818782-652b1d8c8744a41dc2d3#0","title":"Case study page › @regression evidence stamp mocks are drawn as blueprint figures","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":4433,"id":"2658db63924ddd818782-7ee8f96358d05bf8a921#0","title":"Case study page › @regression evidence stamp mock shows a TEST and a PROD label","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":4532,"id":"2658db63924ddd818782-2cc738afbebf9ec6a4b2#0","status":"passed","outcome":"expected","duration":230,"retry":0}
+{"type":"testBegin","t":4535,"id":"2658db63924ddd818782-88452f18d626829752d2#0","title":"Case study page › @regression blueprint stamp mocks are drawn in once they scroll into view","file":"tests/ui/case-study.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":4643,"id":"2658db63924ddd818782-7ee8f96358d05bf8a921#0","status":"passed","outcome":"expected","duration":202,"retry":0}
+{"type":"testBegin","t":4644,"id":"2658db63924ddd818782-acc1a4b21086815ab9ee#0","title":"Case study page › @regression results show the headline numbers","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":4684,"id":"2658db63924ddd818782-652b1d8c8744a41dc2d3#0","status":"passed","outcome":"expected","duration":237,"retry":0}
+{"type":"testBegin","t":4695,"id":"2658db63924ddd818782-7e7832960222def9a470#0","title":"Case study page › @regression results keep the triage example numbers","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":4873,"id":"2658db63924ddd818782-acc1a4b21086815ab9ee#0","status":"passed","outcome":"expected","duration":220,"retry":0}
+{"type":"testBegin","t":4874,"id":"2658db63924ddd818782-d2186418ab4db405b2c6#0","title":"Case study page › @regression case study contains no email address or phone number","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":4928,"id":"2658db63924ddd818782-7e7832960222def9a470#0","status":"passed","outcome":"expected","duration":221,"retry":0}
+{"type":"testBegin","t":4929,"id":"2658db63924ddd818782-a7df86395181ce100021#0","title":"Case study page › @regression case study contains no ticket key","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5098,"id":"2658db63924ddd818782-d2186418ab4db405b2c6#0","status":"passed","outcome":"expected","duration":218,"retry":0}
+{"type":"testBegin","t":5098,"id":"2658db63924ddd818782-b48aede712c59ac64426#0","title":"Case study page › @regression case study contains no real hostname","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":5133,"id":"2658db63924ddd818782-a7df86395181ce100021#0","status":"passed","outcome":"expected","duration":198,"retry":0}
+{"type":"testBegin","t":5136,"id":"2658db63924ddd818782-4a086f0d5803b6f1b244#0","title":"Case study page › @regression case study contains no API-key-like string","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5292,"id":"2658db63924ddd818782-b48aede712c59ac64426#0","status":"passed","outcome":"expected","duration":187,"retry":0}
+{"type":"testBegin","t":5293,"id":"2658db63924ddd818782-dde71ca7153d2bb89dbc#0","title":"Case study page › @regression case study contains no long opaque identifier","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":5335,"id":"2658db63924ddd818782-4a086f0d5803b6f1b244#0","status":"passed","outcome":"expected","duration":187,"retry":0}
+{"type":"testBegin","t":5342,"id":"2658db63924ddd818782-ab7439d1f8cfc694514b#0","title":"Case study page › @regression case study embeds no raster screenshots","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5512,"id":"2658db63924ddd818782-dde71ca7153d2bb89dbc#0","status":"passed","outcome":"expected","duration":214,"retry":0}
+{"type":"testBegin","t":5516,"id":"2658db63924ddd818782-6cbd86b6321727801e77#0","title":"Case study on a phone › @regression has no horizontal overflow at 375px","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":5522,"id":"2658db63924ddd818782-ab7439d1f8cfc694514b#0","status":"passed","outcome":"expected","duration":173,"retry":0}
+{"type":"testBegin","t":5523,"id":"2658db63924ddd818782-7360dfcc01c971996cfb#0","title":"Confidentiality patterns › @regression \"ticket key\" pattern flags \"Fixed in PROJ-123\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5528,"id":"2658db63924ddd818782-7360dfcc01c971996cfb#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5528,"id":"2658db63924ddd818782-5f5b65a9c2109ad07ae2#0","title":"Confidentiality patterns › @regression \"ticket key\" pattern flags \"see QA-4567 for details\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5532,"id":"2658db63924ddd818782-5f5b65a9c2109ad07ae2#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5533,"id":"2658db63924ddd818782-868c33dc86257cf04013#0","title":"Confidentiality patterns › @regression \"ticket key\" pattern flags \"STOCK_APP-12 is open\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5539,"id":"2658db63924ddd818782-868c33dc86257cf04013#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5540,"id":"2658db63924ddd818782-b89b1c4c5bbcd57cdcb0#0","title":"Confidentiality patterns › @regression \"ticket key\" pattern flags \"AB-1\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5545,"id":"2658db63924ddd818782-b89b1c4c5bbcd57cdcb0#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5546,"id":"2658db63924ddd818782-0840245f1cf7f127cd42#0","title":"Confidentiality patterns › @regression \"real hostname\" pattern flags \"https://app.some-client.com/login\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5560,"id":"2658db63924ddd818782-0840245f1cf7f127cd42#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5561,"id":"2658db63924ddd818782-ccab8c103301db53b344#0","title":"Confidentiality patterns › @regression \"real hostname\" pattern flags \"admin.stocks.co.jp\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5570,"id":"2658db63924ddd818782-ccab8c103301db53b344#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5572,"id":"2658db63924ddd818782-b73d7f53b5e1adcb6518#0","title":"Confidentiality patterns › @regression \"real hostname\" pattern flags \"tenant.corp.io\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5576,"id":"2658db63924ddd818782-b73d7f53b5e1adcb6518#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5577,"id":"2658db63924ddd818782-9d085384671746fc62f7#0","title":"Confidentiality patterns › @regression \"API-key-like string\" pattern flags \"sk-abcdef1234567890abcd\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5581,"id":"2658db63924ddd818782-9d085384671746fc62f7#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5581,"id":"2658db63924ddd818782-b2e5581055256af101fd#0","title":"Confidentiality patterns › @regression \"API-key-like string\" pattern flags \"api_key_ABCDEFGHIJKLMNOP\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5589,"id":"2658db63924ddd818782-b2e5581055256af101fd#0","status":"passed","outcome":"expected","duration":2,"retry":0}
+{"type":"testBegin","t":5589,"id":"2658db63924ddd818782-75c4209c356f019d0707#0","title":"Confidentiality patterns › @regression \"long opaque identifier\" pattern flags \"a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5596,"id":"2658db63924ddd818782-75c4209c356f019d0707#0","status":"passed","outcome":"expected","duration":2,"retry":0}
+{"type":"testBegin","t":5597,"id":"2658db63924ddd818782-14964317e2d4ed80f199#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"UTF-8\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5612,"id":"2658db63924ddd818782-14964317e2d4ed80f199#0","status":"passed","outcome":"expected","duration":2,"retry":0}
+{"type":"testBegin","t":5615,"id":"2658db63924ddd818782-deda2d115d98ed5ad827#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"ES6\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5623,"id":"2658db63924ddd818782-deda2d115d98ed5ad827#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5624,"id":"2658db63924ddd818782-e722352b1706332a0469#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"ISO-8601 dates\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5629,"id":"2658db63924ddd818782-e722352b1706332a0469#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5629,"id":"2658db63924ddd818782-4f3932ac9515c9a8dd15#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"SHA-256 checksum\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5637,"id":"2658db63924ddd818782-4f3932ac9515c9a8dd15#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5638,"id":"2658db63924ddd818782-616f8f946587fe2c1140#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"HTTP-2 and TLS-1.3\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5642,"id":"2658db63924ddd818782-616f8f946587fe2c1140#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5644,"id":"2658db63924ddd818782-010ac26d60f5ef47b458#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"ENV · tenant · role · time (JST)\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5654,"id":"2658db63924ddd818782-010ac26d60f5ef47b458#0","status":"passed","outcome":"expected","duration":2,"retry":0}
+{"type":"testBegin","t":5655,"id":"2658db63924ddd818782-32d54866e4ad1130dc71#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"DEV → TEST → PROD\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5660,"id":"2658db63924ddd818782-32d54866e4ad1130dc71#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5661,"id":"2658db63924ddd818782-bf2e1b506cffc1e83de6#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"tenant-a.example\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5667,"id":"2658db63924ddd818782-bf2e1b506cffc1e83de6#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5669,"id":"2658db63924ddd818782-b0fac3b01284b2967d2c#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"https://tenant-b.example/…\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5674,"id":"2658db63924ddd818782-b0fac3b01284b2967d2c#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5675,"id":"2658db63924ddd818782-c75e423fb6c39d1bdcaf#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"Node.js and Playwright + TypeScript\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5679,"id":"2658db63924ddd818782-c75e423fb6c39d1bdcaf#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5679,"id":"2658db63924ddd818782-1a91bad3866b0dce890b#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"playwright test --list\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5686,"id":"2658db63924ddd818782-1a91bad3866b0dce890b#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5687,"id":"2658db63924ddd818782-ac98b96be1ee71e62292#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"Release of 28 Oct 2026\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5691,"id":"2658db63924ddd818782-ac98b96be1ee71e62292#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5692,"id":"2658db63924ddd818782-336fd9d6450afe1e6b95#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"Passed on PROD\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5697,"id":"2658db63924ddd818782-336fd9d6450afe1e6b95#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5698,"id":"2658db63924ddd818782-437dcb9ce7454352e5ab#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"404 on Backtest\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5706,"id":"2658db63924ddd818782-437dcb9ce7454352e5ab#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5707,"id":"2658db63924ddd818782-89bb174a7312e2886307#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"Python (openpyxl, Pillow)\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5712,"id":"2658db63924ddd818782-6cbd86b6321727801e77#0","status":"passed","outcome":"expected","duration":189,"retry":0}
+{"type":"testEnd","t":5713,"id":"2658db63924ddd818782-89bb174a7312e2886307#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":5714,"id":"2658db63924ddd818782-d7e6e3d703f3a81da41e#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"xlsx / HTML reports\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testBegin","t":5715,"id":"2658db63924ddd818782-d4306448e81bbe4a8224#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"Go / No-go\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5722,"id":"2658db63924ddd818782-d4306448e81bbe4a8224#0","status":"passed","outcome":"expected","duration":3,"retry":0}
+{"type":"testBegin","t":5723,"id":"2658db63924ddd818782-6c26edf05a9b32c49447#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"about 7.5 MB in about 15 minutes\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":5724,"id":"2658db63924ddd818782-d7e6e3d703f3a81da41e#0","status":"passed","outcome":"expected","duration":4,"retry":0}
+{"type":"testBegin","t":5725,"id":"2658db63924ddd818782-0038a6deaa1702034963#0","title":"Confidentiality patterns › @regression confidential patterns ignore \"@regression @deep @market-data\"","file":"tests/ui/case-study.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":5728,"id":"2658db63924ddd818782-6c26edf05a9b32c49447#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testEnd","t":5731,"id":"2658db63924ddd818782-0038a6deaa1702034963#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":5735,"id":"94a4647ec5baf734c64b-ddd2b47912e010d4f80d#0","title":"CV page › @smoke CV page shows the summary and skills","file":"tests/ui/cv.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":5741,"id":"94a4647ec5baf734c64b-2e465c52ebb5d00be667#0","title":"CV page › @smoke CV shows the experience section with several roles","file":"tests/ui/cv.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":5961,"id":"94a4647ec5baf734c64b-2e465c52ebb5d00be667#0","status":"passed","outcome":"expected","duration":211,"retry":0}
+{"type":"testBegin","t":5962,"id":"94a4647ec5baf734c64b-a4bedc5d5a6d43899fdc#0","title":"CV page › @regression CV links to the LinkedIn profile","file":"tests/ui/cv.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":5963,"id":"94a4647ec5baf734c64b-ddd2b47912e010d4f80d#0","status":"passed","outcome":"expected","duration":219,"retry":0}
+{"type":"testBegin","t":5964,"id":"94a4647ec5baf734c64b-c6f1f8f069d113978db5#0","title":"CV page › @regression CV links to the GitHub profile","file":"tests/ui/cv.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":6104,"id":"1e89b3ba34ee667a629f-de5e9ce486cff1fe3b20#0","status":"passed","outcome":"expected","duration":2165,"retry":0}
+{"type":"testBegin","t":6117,"id":"94a4647ec5baf734c64b-7a22b379b9537ec8df64#0","title":"CV page › @regression freelance role lists its engagements","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6185,"id":"94a4647ec5baf734c64b-a4bedc5d5a6d43899fdc#0","status":"passed","outcome":"expected","duration":216,"retry":0}
+{"type":"testBegin","t":6186,"id":"94a4647ec5baf734c64b-4c5e771ddf4ef6692ab7#0","title":"CV page › @regression Picon Technology and Human Brain Global are one role","file":"tests/ui/cv.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":6206,"id":"94a4647ec5baf734c64b-c6f1f8f069d113978db5#0","status":"passed","outcome":"expected","duration":231,"retry":0}
+{"type":"testBegin","t":6207,"id":"94a4647ec5baf734c64b-f8861693b7fa647eca66#0","title":"CV page › @regression Gameloft DAD is an earlier role, not a freelance engagement","file":"tests/ui/cv.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":6349,"id":"94a4647ec5baf734c64b-7a22b379b9537ec8df64#0","status":"passed","outcome":"expected","duration":222,"retry":0}
+{"type":"testBegin","t":6363,"id":"94a4647ec5baf734c64b-993021258b5c2416ccf1#0","title":"CV page › @regression Workout Tracking engagement ends in Jan 2023","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6451,"id":"94a4647ec5baf734c64b-f8861693b7fa647eca66#0","status":"passed","outcome":"expected","duration":233,"retry":0}
+{"type":"testBegin","t":6453,"id":"94a4647ec5baf734c64b-28562b260bc26aeaec18#0","title":"CV page › @regression CV no longer lists the removed engagement","file":"tests/ui/cv.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":6475,"id":"94a4647ec5baf734c64b-4c5e771ddf4ef6692ab7#0","status":"passed","outcome":"expected","duration":283,"retry":0}
+{"type":"testBegin","t":6476,"id":"94a4647ec5baf734c64b-8c8abb94a046f67ab696#0","title":"CV page › @regression experience links to the case study","file":"tests/ui/cv.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":6595,"id":"94a4647ec5baf734c64b-993021258b5c2416ccf1#0","status":"passed","outcome":"expected","duration":215,"retry":0}
+{"type":"testBegin","t":6597,"id":"94a4647ec5baf734c64b-00f680a421fd105626b9#0","title":"CV page › @regression CV shows education and certifications","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6636,"id":"2658db63924ddd818782-88452f18d626829752d2#0","status":"passed","outcome":"expected","duration":2093,"retry":0}
+{"type":"testBegin","t":6640,"id":"94a4647ec5baf734c64b-dfc76a2e94c91f22ed6a#0","title":"CV page › @regression the only learning skill is Go","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6696,"id":"94a4647ec5baf734c64b-28562b260bc26aeaec18#0","status":"passed","outcome":"expected","duration":234,"retry":0}
+{"type":"testBegin","t":6698,"id":"94a4647ec5baf734c64b-b3e422e0fa9911bad024#0","title":"CV page › @regression CV contains no email address or phone number","file":"tests/ui/cv.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":6720,"id":"94a4647ec5baf734c64b-8c8abb94a046f67ab696#0","status":"passed","outcome":"expected","duration":233,"retry":0}
+{"type":"testBegin","t":6722,"id":"94a4647ec5baf734c64b-475b4fd2b67118e060bf#0","title":"CV page › @regression print button exists","file":"tests/ui/cv.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":6881,"id":"94a4647ec5baf734c64b-00f680a421fd105626b9#0","status":"passed","outcome":"expected","duration":266,"retry":0}
+{"type":"testBegin","t":6885,"id":"94a4647ec5baf734c64b-c24f0e77fc04f4ce677c#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"+84 90 123 4567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6893,"id":"94a4647ec5baf734c64b-c24f0e77fc04f4ce677c#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":6895,"id":"94a4647ec5baf734c64b-805eb4baf872e605fb3e#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"+84901234567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6897,"id":"94a4647ec5baf734c64b-dfc76a2e94c91f22ed6a#0","status":"passed","outcome":"expected","duration":249,"retry":0}
+{"type":"testBegin","t":6899,"id":"94a4647ec5baf734c64b-db75e55d753b91bab3e5#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"090 123 4567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6903,"id":"94a4647ec5baf734c64b-805eb4baf872e605fb3e#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6904,"id":"94a4647ec5baf734c64b-957d6415c6e2244eed24#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"090.123.4567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6906,"id":"94a4647ec5baf734c64b-db75e55d753b91bab3e5#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":6907,"id":"94a4647ec5baf734c64b-07f0e5cbfdb46a486b0a#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"(028) 123 4567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6910,"id":"94a4647ec5baf734c64b-957d6415c6e2244eed24#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testEnd","t":6915,"id":"94a4647ec5baf734c64b-07f0e5cbfdb46a486b0a#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6916,"id":"94a4647ec5baf734c64b-f67e975968d279e6457e#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"555-123-4567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testBegin","t":6916,"id":"94a4647ec5baf734c64b-6c25b11e47c5e8fcfd96#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"0901234567\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6921,"id":"94a4647ec5baf734c64b-6c25b11e47c5e8fcfd96#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testEnd","t":6922,"id":"94a4647ec5baf734c64b-f67e975968d279e6457e#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6922,"id":"94a4647ec5baf734c64b-b6e2c847571055c8b90a#0","title":"Privacy patterns › @regression PHONE_PATTERN flags \"+1 (415) 555 0100\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":6927,"id":"94a4647ec5baf734c64b-58e14ddf87b05eb48386#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"2018 – 2020\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6929,"id":"94a4647ec5baf734c64b-b6e2c847571055c8b90a#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6930,"id":"94a4647ec5baf734c64b-41ebb179f56d00d5c254#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"Mar 2023 – Oct 2025\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6931,"id":"94a4647ec5baf734c64b-58e14ddf87b05eb48386#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6932,"id":"94a4647ec5baf734c64b-5f483f49ff5d35e4c8e2#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"Jul 2022 – Jan 2023\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6934,"id":"94a4647ec5baf734c64b-41ebb179f56d00d5c254#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6936,"id":"94a4647ec5baf734c64b-d87b83a4bcb30d5f67c5#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"Apr 2025 – Present\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6937,"id":"94a4647ec5baf734c64b-5f483f49ff5d35e4c8e2#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6938,"id":"94a4647ec5baf734c64b-57d61eda7fcbf4b09fb0#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"2019 – Jan 2026\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6941,"id":"94a4647ec5baf734c64b-d87b83a4bcb30d5f67c5#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6941,"id":"94a4647ec5baf734c64b-d55288af35ec6d9a7546#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"Until 2019 · ~5 years\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6942,"id":"94a4647ec5baf734c64b-57d61eda7fcbf4b09fb0#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6943,"id":"94a4647ec5baf734c64b-c15d652936235440a0be#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"2018-2020\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6946,"id":"94a4647ec5baf734c64b-d55288af35ec6d9a7546#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6949,"id":"94a4647ec5baf734c64b-92c81daec154a996a5da#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"2019 - 2020 300 500\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6950,"id":"94a4647ec5baf734c64b-c15d652936235440a0be#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6954,"id":"94a4647ec5baf734c64b-32b487200490ad62c0e4#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"Jan 2020 300 400\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6958,"id":"94a4647ec5baf734c64b-92c81daec154a996a5da#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":6959,"id":"94a4647ec5baf734c64b-521a86d49d5673da1c62#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"2026-10-27\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6962,"id":"94a4647ec5baf734c64b-32b487200490ad62c0e4#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6962,"id":"94a4647ec5baf734c64b-6e5673d612dc5479f648#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"300+ test cases\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6965,"id":"94a4647ec5baf734c64b-521a86d49d5673da1c62#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testBegin","t":6965,"id":"94a4647ec5baf734c64b-028dc4ed7553bf667c4e#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"500+ test cases per platform\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6974,"id":"94a4647ec5baf734c64b-6e5673d612dc5479f648#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testBegin","t":6975,"id":"94a4647ec5baf734c64b-b76c11bde16d9d39618d#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"5+ years\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":6977,"id":"94a4647ec5baf734c64b-475b4fd2b67118e060bf#0","status":"passed","outcome":"expected","duration":245,"retry":0}
+{"type":"testBegin","t":6978,"id":"94a4647ec5baf734c64b-36347db21ac7cbd624be#0","title":"Privacy patterns › @regression PHONE_PATTERN ignores \"Dungeon Hunter 5 (37%), War Planet Online (40%), Modern Combat 5 (20%)\"","file":"tests/ui/cv.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":6978,"id":"94a4647ec5baf734c64b-028dc4ed7553bf667c4e#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testEnd","t":6981,"id":"94a4647ec5baf734c64b-b3e422e0fa9911bad024#0","status":"passed","outcome":"expected","duration":270,"retry":0}
+{"type":"testBegin","t":6982,"id":"94a4647ec5baf734c64b-c98db97516502ca67fda#0","title":"Privacy patterns › @regression EMAIL_PATTERN flags an email address","file":"tests/ui/cv.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":6984,"id":"94a4647ec5baf734c64b-36347db21ac7cbd624be#0","status":"passed","outcome":"expected","duration":0,"retry":0}
+{"type":"testEnd","t":6984,"id":"94a4647ec5baf734c64b-b76c11bde16d9d39618d#0","status":"passed","outcome":"expected","duration":1,"retry":0}
+{"type":"testEnd","t":6990,"id":"94a4647ec5baf734c64b-c98db97516502ca67fda#0","status":"passed","outcome":"expected","duration":2,"retry":0}
+{"type":"testBegin","t":6990,"id":"d78cbb9224ac62d5c0ca-22a0d91db373cb66f983#0","title":"Portfolio home › @smoke hero title is visible","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":6991,"id":"d78cbb9224ac62d5c0ca-4f3d12c990e7a74ee695#0","title":"Portfolio home › @smoke eyebrow names the specialty","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testBegin","t":6992,"id":"d78cbb9224ac62d5c0ca-df36e765c584a3364f70#0","title":"Portfolio home › @regression eyebrow states the years of experience","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testBegin","t":6998,"id":"d78cbb9224ac62d5c0ca-6748b27747f979a5d484#0","title":"Portfolio home › @regression footer links to the LinkedIn profile","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":7654,"id":"d78cbb9224ac62d5c0ca-4f3d12c990e7a74ee695#0","status":"passed","outcome":"expected","duration":654,"retry":0}
+{"type":"testBegin","t":7668,"id":"d78cbb9224ac62d5c0ca-48512d87e90f45138fcd#0","title":"Portfolio home › @smoke report CTA points to the live report","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":7676,"id":"d78cbb9224ac62d5c0ca-df36e765c584a3364f70#0","status":"passed","outcome":"expected","duration":646,"retry":0}
+{"type":"testBegin","t":7678,"id":"d78cbb9224ac62d5c0ca-91637798400c018c9e00#0","title":"Portfolio home › @smoke demo CTA points to the demo app","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":7708,"id":"d78cbb9224ac62d5c0ca-22a0d91db373cb66f983#0","status":"passed","outcome":"expected","duration":708,"retry":0}
+{"type":"testBegin","t":7710,"id":"d78cbb9224ac62d5c0ca-526c1846b7885f482a46#0","title":"Portfolio home › @smoke repo CTA points to the GitHub repository","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":7778,"id":"d78cbb9224ac62d5c0ca-6748b27747f979a5d484#0","status":"passed","outcome":"expected","duration":767,"retry":0}
+{"type":"testBegin","t":7781,"id":"d78cbb9224ac62d5c0ca-17b4cd2aac0ea1207243#0","title":"Portfolio home › @smoke at least 8 lesson cards are listed","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":8333,"id":"d78cbb9224ac62d5c0ca-526c1846b7885f482a46#0","status":"passed","outcome":"expected","duration":613,"retry":0}
+{"type":"testBegin","t":8337,"id":"d78cbb9224ac62d5c0ca-6d26dfa3321ba4d1d1f8#0","title":"Portfolio home › @smoke agent workflow section shows the three workflows and links to the case study","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":8344,"id":"d78cbb9224ac62d5c0ca-91637798400c018c9e00#0","status":"passed","outcome":"expected","duration":642,"retry":0}
+{"type":"testBegin","t":8346,"id":"d78cbb9224ac62d5c0ca-12236006ad91da935260#0","title":"Portfolio home › @regression each workflow has a QC lane and an Agent lane","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":8346,"id":"d78cbb9224ac62d5c0ca-48512d87e90f45138fcd#0","status":"passed","outcome":"expected","duration":654,"retry":0}
+{"type":"testBegin","t":8348,"id":"d78cbb9224ac62d5c0ca-b350161119c24191cabb#0","title":"Portfolio home › @regression workflow stats show the project figures","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":8348,"id":"d78cbb9224ac62d5c0ca-17b4cd2aac0ea1207243#0","status":"passed","outcome":"expected","duration":558,"retry":0}
+{"type":"testBegin","t":8349,"id":"d78cbb9224ac62d5c0ca-1d63688bb6553e148336#0","title":"Portfolio home › @regression nav links to the workflow section","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":8921,"id":"d78cbb9224ac62d5c0ca-1d63688bb6553e148336#0","status":"passed","outcome":"expected","duration":560,"retry":0}
+{"type":"testBegin","t":8932,"id":"d78cbb9224ac62d5c0ca-a097bbac76e4a57fc08d#0","title":"Portfolio home › @regression workflows sit side by side on desktop","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":9076,"id":"d78cbb9224ac62d5c0ca-b350161119c24191cabb#0","status":"passed","outcome":"expected","duration":718,"retry":0}
+{"type":"testBegin","t":9078,"id":"d78cbb9224ac62d5c0ca-cdb7b1dae100f39906a1#0","title":"Portfolio home › @regression stats block is visible","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":9115,"id":"d78cbb9224ac62d5c0ca-12236006ad91da935260#0","status":"passed","outcome":"expected","duration":757,"retry":0}
+{"type":"testBegin","t":9116,"id":"d78cbb9224ac62d5c0ca-98412fc2b503ed4a1d92#0","title":"Portfolio home › @regression pipeline is visible","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":9160,"id":"d78cbb9224ac62d5c0ca-6d26dfa3321ba4d1d1f8#0","status":"passed","outcome":"expected","duration":813,"retry":0}
+{"type":"testBegin","t":9161,"id":"d78cbb9224ac62d5c0ca-daaf48208b25d97484cd#0","title":"Portfolio home › @regression open source block is visible","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":9509,"id":"d78cbb9224ac62d5c0ca-a097bbac76e4a57fc08d#0","status":"passed","outcome":"expected","duration":553,"retry":0}
+{"type":"testBegin","t":9511,"id":"d78cbb9224ac62d5c0ca-c3a730c94398738d01fb#0","title":"Portfolio home › @smoke open-source contributions are listed with their stage","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":9671,"id":"d78cbb9224ac62d5c0ca-cdb7b1dae100f39906a1#0","status":"passed","outcome":"expected","duration":582,"retry":0}
+{"type":"testBegin","t":9677,"id":"d78cbb9224ac62d5c0ca-93437e4d0e22c04a2eca#0","title":"Portfolio home › @regression a contribution shows its Run link only when it has evidence","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":9680,"id":"d78cbb9224ac62d5c0ca-98412fc2b503ed4a1d92#0","status":"passed","outcome":"expected","duration":555,"retry":0}
+{"type":"testBegin","t":9682,"id":"d78cbb9224ac62d5c0ca-259d3467a014e699f8c1#0","title":"Portfolio home › @smoke services section links to the CV","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":9764,"id":"d78cbb9224ac62d5c0ca-daaf48208b25d97484cd#0","status":"passed","outcome":"expected","duration":593,"retry":0}
+{"type":"testBegin","t":9766,"id":"d78cbb9224ac62d5c0ca-71e0fc915f4c69a687c3#0","title":"Portfolio home › @regression services offers four tiles, each with an evidence link into the repo","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":10258,"id":"d78cbb9224ac62d5c0ca-93437e4d0e22c04a2eca#0","status":"passed","outcome":"expected","duration":562,"retry":0}
+{"type":"testBegin","t":10261,"id":"d78cbb9224ac62d5c0ca-cf3b33975674bc7061ed#0","title":"Portfolio home › @regression services GitHub button points to the profile","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":10262,"id":"d78cbb9224ac62d5c0ca-c3a730c94398738d01fb#0","status":"passed","outcome":"expected","duration":738,"retry":0}
+{"type":"testBegin","t":10263,"id":"d78cbb9224ac62d5c0ca-74aa30c10266c71111e8#0","title":"Portfolio home › @regression theme toggle flips html[data-theme]","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":10268,"id":"d78cbb9224ac62d5c0ca-259d3467a014e699f8c1#0","status":"passed","outcome":"expected","duration":547,"retry":0}
+{"type":"testBegin","t":10268,"id":"d78cbb9224ac62d5c0ca-17ca97071a569dee93e2#0","title":"Portfolio home › @regression theme toggle keeps the Playwright report theme key untouched","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":10422,"id":"d78cbb9224ac62d5c0ca-71e0fc915f4c69a687c3#0","status":"passed","outcome":"expected","duration":647,"retry":0}
+{"type":"testBegin","t":10423,"id":"d78cbb9224ac62d5c0ca-a6293e1090ad438bffa6#0","title":"Portfolio home › @regression a legacy dark/light value is moved off the report theme key","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":10772,"id":"d78cbb9224ac62d5c0ca-cf3b33975674bc7061ed#0","status":"passed","outcome":"expected","duration":498,"retry":0}
+{"type":"testBegin","t":10773,"id":"d78cbb9224ac62d5c0ca-91f10a637057a4f2ce45#0","title":"Portfolio home on a phone › @regression workflows stack vertically at 375px","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":10982,"id":"d78cbb9224ac62d5c0ca-17ca97071a569dee93e2#0","status":"passed","outcome":"expected","duration":698,"retry":0}
+{"type":"testBegin","t":10985,"id":"d78cbb9224ac62d5c0ca-01718fa9d9015717cd6c#0","title":"Portfolio home on a phone › @regression has no horizontal overflow at 375px","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":11299,"id":"d78cbb9224ac62d5c0ca-a6293e1090ad438bffa6#0","status":"passed","outcome":"expected","duration":860,"retry":0}
+{"type":"testBegin","t":11301,"id":"d78cbb9224ac62d5c0ca-819cc2deefeb4f00440e#0","title":"Portfolio home: hero particles › @regression particles canvas is decorative and ignores the pointer","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":11304,"id":"d78cbb9224ac62d5c0ca-91f10a637057a4f2ce45#0","status":"passed","outcome":"expected","duration":522,"retry":0}
+{"type":"testBegin","t":11307,"id":"d78cbb9224ac62d5c0ca-a3b43fa7c4966469b7ec#0","title":"Portfolio home: hero particles › @regression particles canvas is sized to the hero","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":11430,"id":"d78cbb9224ac62d5c0ca-01718fa9d9015717cd6c#0","status":"passed","outcome":"expected","duration":426,"retry":0}
+{"type":"testBegin","t":11432,"id":"d78cbb9224ac62d5c0ca-136d726f42d144f3dbba#0","title":"Portfolio home: hero particles › @regression particles animate while motion is allowed","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":11445,"id":"d78cbb9224ac62d5c0ca-74aa30c10266c71111e8#0","status":"passed","outcome":"expected","duration":1162,"retry":0}
+{"type":"testBegin","t":11445,"id":"d78cbb9224ac62d5c0ca-e2f642825dd00d47b515#0","title":"Portfolio home: hero particles › @regression with reduced motion particles draw one static frame and run no loop","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":11747,"id":"d78cbb9224ac62d5c0ca-a3b43fa7c4966469b7ec#0","status":"passed","outcome":"expected","duration":422,"retry":0}
+{"type":"testEnd","t":11748,"id":"d78cbb9224ac62d5c0ca-819cc2deefeb4f00440e#0","status":"passed","outcome":"expected","duration":438,"retry":0}
+{"type":"testBegin","t":11749,"id":"d78cbb9224ac62d5c0ca-9293b536a0ff60ff486a#0","title":"Portfolio home: hero particles › @regression the static particle frame has painted pixels","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testBegin","t":11753,"id":"d78cbb9224ac62d5c0ca-69448997406910c20e76#0","title":"Portfolio home: hero particles › @regression the static particle frame is identical on every load","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":11995,"id":"d78cbb9224ac62d5c0ca-e2f642825dd00d47b515#0","status":"passed","outcome":"expected","duration":542,"retry":0}
+{"type":"testBegin","t":11996,"id":"d78cbb9224ac62d5c0ca-9d3786c3259a8d4756b3#0","title":"Portfolio home: framework isometric stack › @regression framework shows an isometric stack with four layers","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":12020,"id":"d78cbb9224ac62d5c0ca-136d726f42d144f3dbba#0","status":"passed","outcome":"expected","duration":571,"retry":0}
+{"type":"testBegin","t":12023,"id":"d78cbb9224ac62d5c0ca-f0015a86c2ef9d403ceb#0","title":"Portfolio home: framework isometric stack › @regression the stack separates into its exploded view on scroll-in","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":12117,"id":"d78cbb9224ac62d5c0ca-9293b536a0ff60ff486a#0","status":"passed","outcome":"expected","duration":360,"retry":0}
+{"type":"testBegin","t":12118,"id":"d78cbb9224ac62d5c0ca-2892060963cf7e9743b9#0","title":"Portfolio home: framework isometric stack › @regression with reduced motion the stack is a static exploded view","file":"tests/ui/home.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":12255,"id":"d78cbb9224ac62d5c0ca-69448997406910c20e76#0","status":"passed","outcome":"expected","duration":487,"retry":0}
+{"type":"testBegin","t":12260,"id":"d78cbb9224ac62d5c0ca-f11a14314aa1ec0394a1#0","title":"Portfolio home: blueprint workflow › @regression workflow section has the blueprint style","file":"tests/ui/home.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":12440,"id":"d78cbb9224ac62d5c0ca-f0015a86c2ef9d403ceb#0","status":"passed","outcome":"expected","duration":409,"retry":0}
+{"type":"testBegin","t":12441,"id":"d78cbb9224ac62d5c0ca-8065ffb767d80e89a9d9#0","title":"Portfolio home: blueprint workflow › @regression blueprint strokes are drawn in once the swimlane scrolls into view","file":"tests/ui/home.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":12444,"id":"d78cbb9224ac62d5c0ca-9d3786c3259a8d4756b3#0","status":"passed","outcome":"expected","duration":439,"retry":0}
+{"type":"testBegin","t":12445,"id":"d78cbb9224ac62d5c0ca-4f7aba6ac8bad67b223a#0","title":"Portfolio home: blueprint workflow › @regression with reduced motion the blueprint is fully drawn from the start","file":"tests/ui/home.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":12516,"id":"d78cbb9224ac62d5c0ca-2892060963cf7e9743b9#0","status":"passed","outcome":"expected","duration":391,"retry":0}
+{"type":"testBegin","t":12520,"id":"280b94e966fa00c16ce2-b25e95a1ce71ae9077f3#0","title":"Lessons › @smoke opening a lesson card shows the lesson with a next link","file":"tests/ui/lessons.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":12833,"id":"d78cbb9224ac62d5c0ca-f11a14314aa1ec0394a1#0","status":"passed","outcome":"expected","duration":566,"retry":0}
+{"type":"testBegin","t":12841,"id":"25217b8bb4316ea872c4-b5cbe5ea6f44ab3b84d2#0","title":"Login (anonymous visitor) › @smoke valid credentials open the market board","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":12844,"id":"d78cbb9224ac62d5c0ca-4f7aba6ac8bad67b223a#0","status":"passed","outcome":"expected","duration":386,"retry":0}
+{"type":"testBegin","t":12854,"id":"25217b8bb4316ea872c4-e5a9ba8ed2869e1ebf03#0","title":"Login (anonymous visitor) › @regression the page is branded and carries the demo disclaimer","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":13051,"id":"280b94e966fa00c16ce2-b25e95a1ce71ae9077f3#0","status":"passed","outcome":"expected","duration":524,"retry":0}
+{"type":"testEnd","t":13056,"id":"25217b8bb4316ea872c4-e5a9ba8ed2869e1ebf03#0","status":"passed","outcome":"expected","duration":194,"retry":0}
+{"type":"testBegin","t":13057,"id":"25217b8bb4316ea872c4-6e165fe52fd6077f5d6e#0","title":"Login (anonymous visitor) › @regression unknown user shows an error","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":13058,"id":"25217b8bb4316ea872c4-d25c780cf1abc50b9d5b#0","title":"Login (anonymous visitor) › @regression wrong password shows an error","file":"tests/ui/login.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":13177,"id":"25217b8bb4316ea872c4-b5cbe5ea6f44ab3b84d2#0","status":"passed","outcome":"expected","duration":326,"retry":0}
+{"type":"testBegin","t":13178,"id":"25217b8bb4316ea872c4-cdec63399dbd658424ef#0","title":"Login (anonymous visitor) › @regression empty fields are rejected","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":13353,"id":"25217b8bb4316ea872c4-6e165fe52fd6077f5d6e#0","status":"passed","outcome":"expected","duration":289,"retry":0}
+{"type":"testBegin","t":13364,"id":"25217b8bb4316ea872c4-2141c4af4c07945b74d7#0","title":"Login (anonymous visitor) › @regression missing password is rejected","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":13373,"id":"25217b8bb4316ea872c4-d25c780cf1abc50b9d5b#0","status":"passed","outcome":"expected","duration":304,"retry":0}
+{"type":"testBegin","t":13374,"id":"25217b8bb4316ea872c4-0d4a31434343b73e9e64#0","title":"Login (anonymous visitor) › @regression the show button reveals the password and the hide button masks it again","file":"tests/ui/login.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":13465,"id":"25217b8bb4316ea872c4-cdec63399dbd658424ef#0","status":"passed","outcome":"expected","duration":282,"retry":0}
+{"type":"testBegin","t":13466,"id":"25217b8bb4316ea872c4-ddf54ee65ad13f3045cb#0","title":"Login (anonymous visitor) › @regression remember me is on by default","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":13654,"id":"25217b8bb4316ea872c4-ddf54ee65ad13f3045cb#0","status":"passed","outcome":"expected","duration":179,"retry":0}
+{"type":"testBegin","t":13654,"id":"25217b8bb4316ea872c4-8f31ea0d5a78c80b2393#0","title":"Login (anonymous visitor) › @regression without remember me the session stays out of localStorage","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":13655,"id":"25217b8bb4316ea872c4-2141c4af4c07945b74d7#0","status":"passed","outcome":"expected","duration":284,"retry":0}
+{"type":"testBegin","t":13656,"id":"25217b8bb4316ea872c4-a6ea17aab4d6bb91c9ec#0","title":"Login (anonymous visitor) › @regression the frozen query is carried from the login page to the board","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":13710,"id":"25217b8bb4316ea872c4-0d4a31434343b73e9e64#0","status":"passed","outcome":"expected","duration":327,"retry":0}
+{"type":"testBegin","t":13711,"id":"25217b8bb4316ea872c4-107d277f91934a804edc#0","title":"Login (liquid background) › @regression the liquid background is decorative and animates while motion is allowed","file":"tests/ui/login.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":13953,"id":"25217b8bb4316ea872c4-a6ea17aab4d6bb91c9ec#0","status":"passed","outcome":"expected","duration":289,"retry":0}
+{"type":"testBegin","t":13954,"id":"25217b8bb4316ea872c4-81e4438d86cb6f630800#0","title":"Login (liquid background) › with reduced motion › @regression the liquid background is drawn once and runs no loop","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":13970,"id":"25217b8bb4316ea872c4-8f31ea0d5a78c80b2393#0","status":"passed","outcome":"expected","duration":311,"retry":0}
+{"type":"testBegin","t":13970,"id":"25217b8bb4316ea872c4-824a9f06c1636645efa4#0","title":"Login (liquid background) › @regression frozen mode keeps the liquid background static","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":14121,"id":"25217b8bb4316ea872c4-81e4438d86cb6f630800#0","status":"passed","outcome":"expected","duration":162,"retry":0}
+{"type":"testBegin","t":14121,"id":"25217b8bb4316ea872c4-510fe37f175509716a2a#0","title":"Access control (anonymous visitor) › @smoke the board redirects to the login page","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":14133,"id":"25217b8bb4316ea872c4-824a9f06c1636645efa4#0","status":"passed","outcome":"expected","duration":159,"retry":0}
+{"type":"testBegin","t":14134,"id":"25217b8bb4316ea872c4-2e654b1f99eecc65e29d#0","title":"Access control (anonymous visitor) › @regression the watchlist redirects to the login page","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":14284,"id":"25217b8bb4316ea872c4-107d277f91934a804edc#0","status":"passed","outcome":"expected","duration":563,"retry":0}
+{"type":"testBegin","t":14285,"id":"25217b8bb4316ea872c4-038bef27b847416035d1#0","title":"Access control (anonymous visitor) › @regression the screener redirects to the login page","file":"tests/ui/login.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":14286,"id":"d78cbb9224ac62d5c0ca-8065ffb767d80e89a9d9#0","status":"passed","outcome":"expected","duration":1837,"retry":0}
+{"type":"testBegin","t":14291,"id":"25217b8bb4316ea872c4-1d38dc805b73237b6ca2#0","title":"Access control (anonymous visitor) › @regression a stock detail page redirects to the login page","file":"tests/ui/login.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":14320,"id":"25217b8bb4316ea872c4-510fe37f175509716a2a#0","status":"passed","outcome":"expected","duration":192,"retry":0}
+{"type":"testBegin","t":14320,"id":"25217b8bb4316ea872c4-3fd2435967b1e68bf37e#0","title":"Login (stored session) › @regression signed-in user is redirected away from the login page","file":"tests/ui/login.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":14361,"id":"25217b8bb4316ea872c4-2e654b1f99eecc65e29d#0","status":"passed","outcome":"expected","duration":220,"retry":0}
+{"type":"testBegin","t":14362,"id":"25217b8bb4316ea872c4-c9b068d4c3050ee505de#0","title":"Login (stored session) › @regression signing out returns to the login page","file":"tests/ui/login.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":14487,"id":"25217b8bb4316ea872c4-038bef27b847416035d1#0","status":"passed","outcome":"expected","duration":195,"retry":0}
+{"type":"testBegin","t":14488,"id":"25217b8bb4316ea872c4-35c0a515e02797b12ed5#0","title":"Login (stored session) › @regression after signing out the board is no longer reachable","file":"tests/ui/login.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":14506,"id":"25217b8bb4316ea872c4-1d38dc805b73237b6ca2#0","status":"passed","outcome":"expected","duration":202,"retry":0}
+{"type":"testBegin","t":14510,"id":"a56a76390df6523b4c7b-904149ec78dc2d9a8c1e#0","title":"Screener › @smoke shows all 30 stocks before any filter is set","file":"tests/ui/screener.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":14637,"id":"25217b8bb4316ea872c4-3fd2435967b1e68bf37e#0","status":"passed","outcome":"expected","duration":305,"retry":0}
+{"type":"testBegin","t":14646,"id":"a56a76390df6523b4c7b-1204bbed845647ec6066#0","title":"Screener › @smoke the sector filter narrows the results","file":"tests/ui/screener.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":14724,"id":"25217b8bb4316ea872c4-c9b068d4c3050ee505de#0","status":"passed","outcome":"expected","duration":353,"retry":0}
+{"type":"testBegin","t":14727,"id":"a56a76390df6523b4c7b-4a43586055f864eea931#0","title":"Screener › @regression P/E max keeps stocks at or below the limit","file":"tests/ui/screener.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":14758,"id":"a56a76390df6523b4c7b-904149ec78dc2d9a8c1e#0","status":"passed","outcome":"expected","duration":236,"retry":0}
+{"type":"testBegin","t":14759,"id":"a56a76390df6523b4c7b-57d87c063aa9032a213e#0","title":"Screener › @regression market cap min keeps stocks at or above the limit","file":"tests/ui/screener.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":14888,"id":"a56a76390df6523b4c7b-1204bbed845647ec6066#0","status":"passed","outcome":"expected","duration":232,"retry":0}
+{"type":"testBegin","t":14889,"id":"a56a76390df6523b4c7b-9fb68d619279f02cc805#0","title":"Screener › @regression %Chg min keeps stocks that rose at least that much","file":"tests/ui/screener.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":14889,"id":"25217b8bb4316ea872c4-35c0a515e02797b12ed5#0","status":"passed","outcome":"expected","duration":391,"retry":0}
+{"type":"testBegin","t":14894,"id":"a56a76390df6523b4c7b-989ce619892e9c25b9d9#0","title":"Screener › @regression %Chg max keeps stocks that fell or rose less than that","file":"tests/ui/screener.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":14966,"id":"a56a76390df6523b4c7b-4a43586055f864eea931#0","status":"passed","outcome":"expected","duration":230,"retry":0}
+{"type":"testBegin","t":14967,"id":"a56a76390df6523b4c7b-7fd7b7010c2ac95e82aa#0","title":"Screener › @regression filters combine with AND","file":"tests/ui/screener.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":15004,"id":"a56a76390df6523b4c7b-57d87c063aa9032a213e#0","status":"passed","outcome":"expected","duration":228,"retry":0}
+{"type":"testBegin","t":15005,"id":"a56a76390df6523b4c7b-be2a17da7d3bb704e3e0#0","title":"Screener › @regression filters that match nothing show the empty state","file":"tests/ui/screener.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":15124,"id":"a56a76390df6523b4c7b-989ce619892e9c25b9d9#0","status":"passed","outcome":"expected","duration":220,"retry":0}
+{"type":"testBegin","t":15126,"id":"a56a76390df6523b4c7b-eaa583c733114c59e0d6#0","title":"Screener › @regression one result is counted in the singular","file":"tests/ui/screener.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":15131,"id":"a56a76390df6523b4c7b-9fb68d619279f02cc805#0","status":"passed","outcome":"expected","duration":230,"retry":0}
+{"type":"testBegin","t":15131,"id":"a56a76390df6523b4c7b-83d770473a44a85a2316#0","title":"Screener › @regression a %Chg range with min above max is flagged","file":"tests/ui/screener.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":15214,"id":"a56a76390df6523b4c7b-7fd7b7010c2ac95e82aa#0","status":"passed","outcome":"expected","duration":240,"retry":0}
+{"type":"testBegin","t":15215,"id":"a56a76390df6523b4c7b-27e3be0d96babfdc332a#0","title":"Screener › @smoke Reset filters brings back all 30 stocks","file":"tests/ui/screener.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":15239,"id":"a56a76390df6523b4c7b-be2a17da7d3bb704e3e0#0","status":"passed","outcome":"expected","duration":222,"retry":0}
+{"type":"testBegin","t":15240,"id":"a56a76390df6523b4c7b-dfffb7663be2ea215c28#0","title":"Screener › @regression Reset filters clears every field","file":"tests/ui/screener.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":15347,"id":"a56a76390df6523b4c7b-eaa583c733114c59e0d6#0","status":"passed","outcome":"expected","duration":212,"retry":0}
+{"type":"testBegin","t":15348,"id":"a56a76390df6523b4c7b-a5cf61dbc2017cad0bd4#0","title":"Screener › @regression the nav marks the screener as the current page and shows the disclaimer","file":"tests/ui/screener.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":15348,"id":"a56a76390df6523b4c7b-83d770473a44a85a2316#0","status":"passed","outcome":"expected","duration":208,"retry":0}
+{"type":"testBegin","t":15353,"id":"65ebd12d0b1b5f016f07-9cd543e8013fb892c0f2#0","title":"Stock detail › @smoke the header shows the ticker, company, last price and change","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":15554,"id":"a56a76390df6523b4c7b-dfffb7663be2ea215c28#0","status":"passed","outcome":"expected","duration":306,"retry":0}
+{"type":"testBegin","t":15558,"id":"65ebd12d0b1b5f016f07-f4d1e66852d6fa594d25#0","title":"Stock detail › @smoke the chart draws 60 candles","file":"tests/ui/stock.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":15566,"id":"a56a76390df6523b4c7b-27e3be0d96babfdc332a#0","status":"passed","outcome":"expected","duration":339,"retry":0}
+{"type":"testEnd","t":15570,"id":"65ebd12d0b1b5f016f07-9cd543e8013fb892c0f2#0","status":"passed","outcome":"expected","duration":210,"retry":0}
+{"type":"testEnd","t":15570,"id":"a56a76390df6523b4c7b-a5cf61dbc2017cad0bd4#0","status":"passed","outcome":"expected","duration":216,"retry":0}
+{"type":"testBegin","t":15571,"id":"65ebd12d0b1b5f016f07-9b78d2f032818b12d10b#0","title":"Stock detail › @regression VIC: ceiling and floor are reference x 1.07 / x 0.93 rounded to the tick","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":15572,"id":"65ebd12d0b1b5f016f07-b9013a66b7a901fa5e68#0","title":"Stock detail › @regression ACB: ceiling and floor are reference x 1.07 / x 0.93 rounded to the tick","file":"tests/ui/stock.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":15575,"id":"65ebd12d0b1b5f016f07-20c03081b9aabf954084#0","title":"Stock detail › @regression the key statistics show P/E, market cap and sector","file":"tests/ui/stock.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":15799,"id":"65ebd12d0b1b5f016f07-b9013a66b7a901fa5e68#0","status":"passed","outcome":"expected","duration":220,"retry":0}
+{"type":"testEnd","t":15800,"id":"65ebd12d0b1b5f016f07-9b78d2f032818b12d10b#0","status":"passed","outcome":"expected","duration":223,"retry":0}
+{"type":"testBegin","t":15800,"id":"65ebd12d0b1b5f016f07-8c8c26650342f98d5e2f#0","title":"Stock detail › @regression a stock at its floor is labelled Floor","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":15801,"id":"65ebd12d0b1b5f016f07-835db9843dfd0541e6cd#0","title":"Stock detail › @regression a stock at its ceiling is labelled Ceiling","file":"tests/ui/stock.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":15804,"id":"65ebd12d0b1b5f016f07-f4d1e66852d6fa594d25#0","status":"passed","outcome":"expected","duration":237,"retry":0}
+{"type":"testBegin","t":15805,"id":"65ebd12d0b1b5f016f07-eca9aaa012c616bcdff5#0","title":"Stock detail › @regression the ticker in the URL is case-insensitive","file":"tests/ui/stock.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":15814,"id":"65ebd12d0b1b5f016f07-20c03081b9aabf954084#0","status":"passed","outcome":"expected","duration":232,"retry":0}
+{"type":"testBegin","t":15814,"id":"65ebd12d0b1b5f016f07-602b18af375bea28354e#0","title":"Stock detail › @regression an unknown ticker shows a not-found message","file":"tests/ui/stock.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":16011,"id":"65ebd12d0b1b5f016f07-602b18af375bea28354e#0","status":"passed","outcome":"expected","duration":192,"retry":0}
+{"type":"testBegin","t":16012,"id":"65ebd12d0b1b5f016f07-9408341db4df59534c4c#0","title":"Stock detail › @regression the demo disclaimer is visible","file":"tests/ui/stock.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":16031,"id":"65ebd12d0b1b5f016f07-835db9843dfd0541e6cd#0","status":"passed","outcome":"expected","duration":223,"retry":0}
+{"type":"testEnd","t":16031,"id":"65ebd12d0b1b5f016f07-8c8c26650342f98d5e2f#0","status":"passed","outcome":"expected","duration":226,"retry":0}
+{"type":"testBegin","t":16032,"id":"65ebd12d0b1b5f016f07-c523e20e69acd085a5f2#0","title":"Stock detail › watchlist button › @smoke adds the stock to the watchlist","file":"tests/ui/stock.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testBegin","t":16032,"id":"65ebd12d0b1b5f016f07-90e34698b4a6bfbae48c#0","title":"Stock detail › watchlist button › @regression the choice persists after a reload","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":16032,"id":"65ebd12d0b1b5f016f07-eca9aaa012c616bcdff5#0","status":"passed","outcome":"expected","duration":220,"retry":0}
+{"type":"testBegin","t":16033,"id":"65ebd12d0b1b5f016f07-aab14cf23b7caeb8b98f#0","title":"Stock detail › price alerts › @regression an invalid alert price is rejected (empty)","file":"tests/ui/stock.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":16253,"id":"65ebd12d0b1b5f016f07-9408341db4df59534c4c#0","status":"passed","outcome":"expected","duration":236,"retry":0}
+{"type":"testBegin","t":16254,"id":"65ebd12d0b1b5f016f07-ba09e70725630b759209#0","title":"Stock detail › price alerts › @regression an invalid alert price is rejected (notANumber)","file":"tests/ui/stock.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":16316,"id":"65ebd12d0b1b5f016f07-c523e20e69acd085a5f2#0","status":"passed","outcome":"expected","duration":279,"retry":0}
+{"type":"testBegin","t":16317,"id":"65ebd12d0b1b5f016f07-11924174861e6fca400d#0","title":"Stock detail › price alerts › @regression an invalid alert price is rejected (negative)","file":"tests/ui/stock.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":16326,"id":"65ebd12d0b1b5f016f07-90e34698b4a6bfbae48c#0","status":"passed","outcome":"expected","duration":288,"retry":0}
+{"type":"testBegin","t":16326,"id":"65ebd12d0b1b5f016f07-a570a0c613907042ded2#0","title":"Stock detail › price alerts › @regression an invalid alert price is rejected (zero)","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":16347,"id":"65ebd12d0b1b5f016f07-aab14cf23b7caeb8b98f#0","status":"passed","outcome":"expected","duration":303,"retry":0}
+{"type":"testBegin","t":16348,"id":"65ebd12d0b1b5f016f07-2b2dcd9d1eeab76335c6#0","title":"Stock detail › price alerts › @regression an invalid alert price is rejected (tooManyDecimals)","file":"tests/ui/stock.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":16545,"id":"65ebd12d0b1b5f016f07-ba09e70725630b759209#0","status":"passed","outcome":"expected","duration":286,"retry":0}
+{"type":"testBegin","t":16547,"id":"65ebd12d0b1b5f016f07-556c39ff9ee5dd5f6ce1#0","title":"Stock detail › price alerts › @smoke a valid alert is listed","file":"tests/ui/stock.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":16605,"id":"65ebd12d0b1b5f016f07-a570a0c613907042ded2#0","status":"passed","outcome":"expected","duration":272,"retry":0}
+{"type":"testEnd","t":16606,"id":"65ebd12d0b1b5f016f07-11924174861e6fca400d#0","status":"passed","outcome":"expected","duration":282,"retry":0}
+{"type":"testBegin","t":16606,"id":"65ebd12d0b1b5f016f07-016e1b3e29333fd144b2#0","title":"Stock detail › price alerts › @regression a below alert is listed with its direction","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testBegin","t":16607,"id":"65ebd12d0b1b5f016f07-f0966d3d09aae8e15c35#0","title":"Stock detail › price alerts › @regression a valid alert clears an earlier error","file":"tests/ui/stock.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":16653,"id":"65ebd12d0b1b5f016f07-2b2dcd9d1eeab76335c6#0","status":"passed","outcome":"expected","duration":292,"retry":0}
+{"type":"testBegin","t":16657,"id":"65ebd12d0b1b5f016f07-8a35dc4e22cd55610e0c#0","title":"Stock detail › price alerts › @regression a price with one or two decimals is accepted","file":"tests/ui/stock.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":16902,"id":"65ebd12d0b1b5f016f07-016e1b3e29333fd144b2#0","status":"passed","outcome":"expected","duration":287,"retry":0}
+{"type":"testBegin","t":16903,"id":"65ebd12d0b1b5f016f07-50609721c93e2fd8a421#0","title":"Stock detail › price alerts › @smoke deleting an alert removes it","file":"tests/ui/stock.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":16920,"id":"65ebd12d0b1b5f016f07-556c39ff9ee5dd5f6ce1#0","status":"passed","outcome":"expected","duration":365,"retry":0}
+{"type":"testBegin","t":16920,"id":"65ebd12d0b1b5f016f07-ea07dba0f25ac46a9181#0","title":"Stock detail › price alerts › @regression alerts survive a reload","file":"tests/ui/stock.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":16929,"id":"65ebd12d0b1b5f016f07-8a35dc4e22cd55610e0c#0","status":"passed","outcome":"expected","duration":262,"retry":0}
+{"type":"testBegin","t":16930,"id":"65ebd12d0b1b5f016f07-189953ba795eac9905a8#0","title":"Stock detail › price alerts › @regression alerts belong to their ticker","file":"tests/ui/stock.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":16942,"id":"65ebd12d0b1b5f016f07-f0966d3d09aae8e15c35#0","status":"passed","outcome":"expected","duration":328,"retry":0}
+{"type":"testBegin","t":16946,"id":"941f2a303dd9bcc40a16-6874e940c10b8e4d9887#0","title":"Watchlist › @smoke an empty watchlist explains how to add stocks","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":17157,"id":"941f2a303dd9bcc40a16-6874e940c10b8e4d9887#0","status":"passed","outcome":"expected","duration":204,"retry":0}
+{"type":"testBegin","t":17159,"id":"941f2a303dd9bcc40a16-16b86f2e438caf276dd1#0","title":"Watchlist › @smoke a stock starred on the board appears on the watchlist","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":17210,"id":"65ebd12d0b1b5f016f07-ea07dba0f25ac46a9181#0","status":"passed","outcome":"expected","duration":282,"retry":0}
+{"type":"testBegin","t":17215,"id":"941f2a303dd9bcc40a16-ea577f66971d22a344b2#0","title":"Watchlist › @regression the watchlist lists stocks in the order they were added with their prices","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":17221,"id":"65ebd12d0b1b5f016f07-189953ba795eac9905a8#0","status":"passed","outcome":"expected","duration":285,"retry":0}
+{"type":"testBegin","t":17227,"id":"941f2a303dd9bcc40a16-3966962da6258f1d3aa1#0","title":"Watchlist › @regression the count follows the number of stocks","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":17229,"id":"65ebd12d0b1b5f016f07-50609721c93e2fd8a421#0","status":"passed","outcome":"expected","duration":320,"retry":0}
+{"type":"testBegin","t":17233,"id":"941f2a303dd9bcc40a16-8f14fbc7842940bf66a6#0","title":"Watchlist › @smoke removing a stock takes it off the list","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":17447,"id":"941f2a303dd9bcc40a16-3966962da6258f1d3aa1#0","status":"passed","outcome":"expected","duration":215,"retry":0}
+{"type":"testBegin","t":17447,"id":"941f2a303dd9bcc40a16-5d78ed0ee126c949363f#0","title":"Watchlist › @regression removing the last stock shows the empty state","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":7,"retry":0}
+{"type":"testEnd","t":17461,"id":"941f2a303dd9bcc40a16-ea577f66971d22a344b2#0","status":"passed","outcome":"expected","duration":236,"retry":0}
+{"type":"testBegin","t":17462,"id":"941f2a303dd9bcc40a16-364e5f4baf3e97125bc3#0","title":"Watchlist › @regression the watchlist survives a reload","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":17519,"id":"941f2a303dd9bcc40a16-16b86f2e438caf276dd1#0","status":"passed","outcome":"expected","duration":348,"retry":0}
+{"type":"testBegin","t":17520,"id":"941f2a303dd9bcc40a16-73b231522cee70962c57#0","title":"Watchlist › @regression a removal survives a reload","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":5,"retry":0}
+{"type":"testEnd","t":17545,"id":"941f2a303dd9bcc40a16-8f14fbc7842940bf66a6#0","status":"passed","outcome":"expected","duration":303,"retry":0}
+{"type":"testBegin","t":17546,"id":"941f2a303dd9bcc40a16-57ab9101c6e556ddfeaf#0","title":"Watchlist › @regression a watchlist belongs to its user","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":4,"retry":0}
+{"type":"testEnd","t":17734,"id":"941f2a303dd9bcc40a16-364e5f4baf3e97125bc3#0","status":"passed","outcome":"expected","duration":262,"retry":0}
+{"type":"testBegin","t":17735,"id":"941f2a303dd9bcc40a16-0080950fa63ff79aa156#0","title":"Watchlist › @regression the nav marks the watchlist as the current page and shows the disclaimer","file":"tests/ui/watchlist.spec.ts","project":"ui","worker":6,"retry":0}
+{"type":"testEnd","t":17770,"id":"941f2a303dd9bcc40a16-5d78ed0ee126c949363f#0","status":"passed","outcome":"expected","duration":317,"retry":0}
+{"type":"testEnd","t":17786,"id":"941f2a303dd9bcc40a16-57ab9101c6e556ddfeaf#0","status":"passed","outcome":"expected","duration":227,"retry":0}
+{"type":"testEnd","t":17803,"id":"941f2a303dd9bcc40a16-73b231522cee70962c57#0","status":"passed","outcome":"expected","duration":277,"retry":0}
+{"type":"testEnd","t":17910,"id":"941f2a303dd9bcc40a16-0080950fa63ff79aa156#0","status":"passed","outcome":"expected","duration":167,"retry":0}
+{"type":"end","t":17937,"status":"passed","duration":17937}

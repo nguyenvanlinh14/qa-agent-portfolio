@@ -253,4 +253,32 @@
     // never print a half-drawn sheet
     addEventListener('beforeprint', () => panels.forEach((p) => { p.classList.add('bp-in'); p.classList.remove('bp-pre'); }));
   }
+
+  /* ---------------------------------------------------------------- reels */
+
+  // Each reel plays (muted) while it is mostly on screen and pauses when it leaves, like a reel feed.
+  // Under reduced motion nothing autoplays: the videos get native controls instead.
+  const reels = [...document.querySelectorAll('.reel video')];
+  if (reels.length) {
+    if (reduceQuery.matches || !canObserve) {
+      reels.forEach((v) => { v.controls = true; });
+    } else {
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
+      }, { threshold: 0.6 });
+      reels.forEach((v) => io.observe(v));
+      reels.forEach((v) => v.addEventListener('click', () => (v.paused ? v.play().catch(() => {}) : v.pause())));
+    }
+    // Sound: one reel at a time.
+    for (const btn of document.querySelectorAll('.reel-sound')) {
+      btn.addEventListener('click', () => {
+        const v = btn.parentElement.querySelector('video');
+        const on = v.muted;
+        reels.forEach((o) => { o.muted = true; });
+        document.querySelectorAll('.reel-sound').forEach((b) => { b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'Turn sound on'); });
+        v.muted = !on;
+        if (on) { btn.setAttribute('aria-pressed', 'true'); btn.setAttribute('aria-label', 'Turn sound off'); v.play().catch(() => {}); }
+      });
+    }
+  }
 })();

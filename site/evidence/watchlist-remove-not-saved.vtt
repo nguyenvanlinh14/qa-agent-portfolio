@@ -1,0 +1,33 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:06.580
+This video shows a bug in the MarketFlow demo. Removing a stock from the watchlist is not saved.
+
+2
+00:00:06.780 --> 00:00:09.880
+First, sign in with the QA test account.
+
+3
+00:00:10.090 --> 00:00:15.670
+On the market board, add ACB and FPT to the watchlist with the star buttons.
+
+4
+00:00:15.870 --> 00:00:19.450
+Open the watchlist. Both stocks are listed.
+
+5
+00:00:19.650 --> 00:00:26.070
+Now remove FPT with its star. The row disappears, and the count shows one stock.
+
+6
+00:00:26.270 --> 00:00:28.010
+Reload the page.
+
+7
+00:00:28.220 --> 00:00:34.640
+Actual result: FPT is back on the watchlist. The removal was never saved.
+
+8
+00:00:34.840 --> 00:00:41.700
+Expected result: FPT stays removed after a reload, and the count stays at one stock.

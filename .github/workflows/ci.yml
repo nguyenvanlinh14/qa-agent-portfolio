@@ -59,6 +59,10 @@ jobs:
           path: reports/
           retention-days: 14
           if-no-files-found: ignore
+      # N red tests usually come from far fewer causes: group them by signature before anyone records evidence.
+      - name: Failure dedupe
+        if: failure()
+        run: node scripts/evidence/dedupe.mjs
       - name: AI failure triage
         if: failure()
         run: node scripts/ai-triage.mjs
@@ -93,10 +97,13 @@ jobs:
           cat reports/sut.log >&2
           exit 1
       - uses: grafana/setup-k6-action@v1
+      # The web dashboard runs during the test and is exported as one HTML file; deploy publishes it at /perf/.
       - name: k6 smoke test
         run: k6 run k6/smoke.js
         env:
           BASE_URL: http://localhost:4173
+          K6_WEB_DASHBOARD: 'true'
+          K6_WEB_DASHBOARD_EXPORT: reports/k6-smoke-dashboard.html
       - name: Upload k6 reports
         if: always()
         uses: actions/upload-artifact@v4

@@ -8,3 +8,5 @@ export * from './profile';
 export * from './case-study';
 export * from './animation';
 export * from './storage';
+export * from './live';
+export * from './a11y';
