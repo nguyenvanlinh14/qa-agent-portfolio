@@ -11,3 +11,4 @@ export { MarketPage } from './market.page';
 export { ScreenerPage } from './screener.page';
 export { StockPage, type StockStat } from './stock.page';
 export { WatchlistPage } from './watchlist.page';
+export { GuidePage } from './guide.page';
