@@ -22,6 +22,12 @@ export class HomePage extends BasePage {
   readonly workCta: Locator;
   readonly githubCta: Locator;
   readonly footerLinkedIn: Locator;
+  readonly workflowSection: Locator;
+  readonly workflowHeading: Locator;
+  readonly workflows: Locator;
+  readonly workflowStats: Locator;
+  readonly caseStudyCta: Locator;
+  readonly navWorkflowLink: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -43,6 +49,12 @@ export class HomePage extends BasePage {
     this.workCta = page.getByTestId('cta-work');
     this.githubCta = page.getByTestId('cta-github');
     this.footerLinkedIn = page.getByRole('contentinfo').getByRole('link', { name: 'LinkedIn' });
+    this.workflowSection = page.getByTestId('agent-workflow');
+    this.workflowHeading = this.workflowSection.getByRole('heading', { level: 2, name: 'Agents in production' });
+    this.workflows = this.workflowSection.getByTestId('workflow');
+    this.workflowStats = this.workflowSection.getByTestId('workflow-stats');
+    this.caseStudyCta = page.getByTestId('cta-case-study');
+    this.navWorkflowLink = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Workflow', exact: true });
   }
 
   /** The card for one contribution, found by its "owner/repo#number" label. */
@@ -58,9 +70,23 @@ export class HomePage extends BasePage {
     return card.getByRole('link', { name, exact: true });
   }
 
-  async hasHorizontalOverflow(): Promise<boolean> {
-    return this.page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-    );
+  /** The workflow card (A, B or C) found by its title, e.g. "Build the suite". */
+  workflow(title: string): Locator {
+    return this.workflows.filter({ has: this.page.getByRole('heading', { name: title, exact: true }) });
+  }
+
+  /** A lane inside one workflow card. Its tag is visually hidden on desktop, so it is counted, not asserted visible. */
+  lane(card: Locator, name: string): Locator {
+    return card.getByText(name, { exact: true });
+  }
+
+  /** One headline figure tile, found by its label. */
+  workflowStat(label: string): Locator {
+    return this.workflowStats.getByTestId('workflow-stat').filter({ hasText: label });
+  }
+
+  /** Top edge (px) of every workflow card, to tell side-by-side from stacked. */
+  async workflowTops(): Promise<number[]> {
+    return this.workflows.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)));
   }
 }
