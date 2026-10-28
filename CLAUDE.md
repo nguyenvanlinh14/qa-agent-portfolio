@@ -43,6 +43,8 @@ evidence videos and training. Normal tests never pass it; without it the demo be
 | `npm run test:live` | Full run with the live dashboard (`reporters/live-reporter.ts`, http://127.0.0.1:5667) |
 | `npm run evidence` | Narrated bug video: TTS → Playwright recording (`EVIDENCE=1`) → ffmpeg build into `site/evidence/` |
 | `npm run guide:voice` | Voice the homepage guide (`site/guide/tour.json`) with Gemini TTS into `site/guide/audio/`; needs `GEMINI_API_KEY`, skips unchanged clips |
+| `npm run guide:model -- <in.vrm> site/guide/tess.glb` | Shrink the guide's VRoid model for the web (textures ≤512 px, VRM data kept; macOS `sips`) |
+| `npm run guide:portrait` | Render the launcher portraits `site/guide/tess-face.png` / `tess-blink.png` from the 3D model |
 | `npm run evidence:dedupe` | Group failures in `reports/results.json` by signature, match `evidence/registry.json` |
 
 Never run `npx playwright install`: the browser is already installed locally, and CI uses the Playwright Docker image.

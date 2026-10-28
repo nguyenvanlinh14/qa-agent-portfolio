@@ -36,5 +36,10 @@ export const GUIDE_LAST = stepAt(-1);
 export const GUIDE_CLIPS: readonly { lang: string; id: string; file: string }[] = Object.entries(voice.clips).flatMap(
   ([lang, clips]) => Object.entries(clips).map(([id, c]) => ({ lang, id, file: c.file })),
 );
+/** The "Click me" bubble next to the launcher, per language (site/assets/guide.js). */
+export const GUIDE_HINT = {
+  en: '👋 Click me! A 1-minute tour of this portfolio',
+  vi: '👋 Bấm vào mình nhé! Tour 1 phút qua portfolio',
+} as const;
 /** Step counter text as the panel shows it, e.g. "2 / 10". */
 export const guideCount = (index: number): string => `${index + 1} / ${GUIDE_STEPS.length}`;

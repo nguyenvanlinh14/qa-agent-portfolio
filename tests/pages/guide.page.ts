@@ -19,6 +19,10 @@ export class GuidePage extends BasePage {
   readonly stops: Locator;
   /** The homepage section the guide is talking about. */
   readonly focusedSection: Locator;
+  /** The "Click me" bubble next to the launcher. */
+  readonly hint: Locator;
+  readonly hintOpen: Locator;
+  readonly hintClose: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -36,6 +40,9 @@ export class GuidePage extends BasePage {
     this.stops = this.panel.getByRole('navigation', { name: 'Tour stops' }).getByRole('button');
     // The highlight is a data attribute on whichever section is current; no role or label names "current section".
     this.focusedSection = page.locator('[data-guide-focus]');
+    this.hint = page.getByTestId('guide-hint');
+    this.hintOpen = this.hint.getByTestId('guide-hint-open');
+    this.hintClose = this.hint.getByRole('button', { name: 'Hide the tour hint' });
   }
 
   /** Opens the homepage with the guide already open, through the shareable #tour link. */

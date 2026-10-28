@@ -386,6 +386,22 @@ if (savedOss) {
   writeFileSync(ossFile, savedOss);
 }
 
+// three.js + three-vrm for the 3D guide (assets/guide3d.js, import map in index.html): only the modules it loads,
+// from the pinned devDependencies, so the site needs no CDN. Skipped when node_modules is missing.
+const VENDOR = [
+  ['three/build/three.module.js', 'three/three.module.js'],
+  ['three/build/three.core.js', 'three/three.core.js'],
+  ['three/examples/jsm/loaders/GLTFLoader.js', 'three/addons/loaders/GLTFLoader.js'],
+  ['three/examples/jsm/utils/BufferGeometryUtils.js', 'three/addons/utils/BufferGeometryUtils.js'],
+  ['three/examples/jsm/utils/SkeletonUtils.js', 'three/addons/utils/SkeletonUtils.js'],
+  ['@pixiv/three-vrm/lib/three-vrm.module.min.js', 'three-vrm/three-vrm.module.min.js'],
+];
+for (const [from, to] of VENDOR) {
+  if (!existsSync(at('node_modules', from))) continue;
+  mkdirSync(dirname(join(DIST, 'assets', 'vendor', to)), { recursive: true });
+  cpSync(at('node_modules', from), join(DIST, 'assets', 'vendor', to));
+}
+
 const lessons = loadLessons();
 mkdirSync(join(DIST, 'lessons'), { recursive: true });
 lessons.forEach((l, i) => writeFileSync(join(DIST, 'lessons', `${l.slug}.html`), lessonPage(l, lessons[i - 1], lessons[i + 1])));

@@ -1291,3 +1291,57 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .g-launch { right: 12px; bottom: 12px; }
   .g-panel { right: 16px; left: 16px; bottom: 12px; width: auto; max-height: 52svh; }
 }
+/* 3D bust (assets/guide3d.js): replaces the neon avatar once loaded */
+.g-stage {
+  position: relative; flex: none; margin: 0 -14px; height: 176px; overflow: hidden;
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--accent) 32%, var(--surface)) 0%, var(--surface-2) 62%, var(--surface) 100%);
+}
+.g-stage[hidden] { display: none; }
+.g-stage canvas { display: block; width: 100%; height: 100%; }
+.g-stage:not(:has(canvas))::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--accent-2) 30%, transparent); border-top-color: var(--accent-2); animation: g-spin 0.9s linear infinite;
+}
+@keyframes g-spin { to { transform: rotate(360deg); } }
+.g-panel.has-3d .g-avatar.big { display: none; }
+.g-sign { margin: -4px 0 0; text-align: right; color: var(--muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; }
+@media (max-width: 560px) { .g-stage { height: 140px; } }
+/* launcher face: two portraits rendered from the 3D model (eyes open / closed), CSS-only blink and breathing */
+.g-face {
+  position: relative; flex: none; width: 46px; height: 46px; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent) 45%, var(--surface)), var(--surface-2));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-2) 70%, transparent);
+}
+.g-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.g-face .g-face-blink { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .g-face img { animation: g-breathe 4s ease-in-out infinite; transform-origin: 50% 90%; }
+  .g-face .g-face-blink { animation: g-breathe 4s ease-in-out infinite, g-face-blink 4.6s step-end infinite; }
+}
+@keyframes g-breathe { 50% { transform: translateY(-1px) scale(1.025); } }
+@keyframes g-face-blink { 0% { opacity: 0; } 95% { opacity: 1; } 98% { opacity: 0; } }
+/* "Click me" hint next to the launcher (shown until the tour is opened or the hint dismissed once) */
+.g-hint {
+  position: fixed; right: 18px; bottom: 88px; z-index: 60; display: flex; align-items: flex-start; gap: 4px; max-width: min(260px, calc(100vw - 32px));
+  padding: 10px 8px 10px 14px; border-radius: 14px 14px 4px 14px; border: 1px solid var(--accent);
+  background: var(--surface); color: var(--text); box-shadow: var(--glow);
+}
+.g-hint[hidden] { display: none; }
+.g-hint::after {
+  content: ''; position: absolute; right: 26px; bottom: -7px; width: 12px; height: 12px; transform: rotate(45deg);
+  background: var(--surface); border-right: 1px solid var(--accent); border-bottom: 1px solid var(--accent);
+}
+.g-hint-open { border: 0; background: none; color: inherit; font: 600 0.9rem/1.35 var(--sans); text-align: left; cursor: pointer; padding: 0; }
+.g-hint-open:hover { color: var(--accent); }
+.g-hint-close { flex: none; width: 24px; height: 24px; border: 0; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-size: 0.75rem; cursor: pointer; }
+@media (prefers-reduced-motion: no-preference) {
+  .g-hint { animation: g-hint-in 0.5s 0.8s cubic-bezier(0.2, 1.4, 0.4, 1) backwards, g-hint-bob 3.2s 1.6s ease-in-out infinite; }
+  .g-launch.is-hinting { animation: g-ping 2.4s 1.2s ease-out infinite; }
+}
+@keyframes g-hint-in { from { opacity: 0; transform: translateY(10px) scale(0.9); } }
+@keyframes g-hint-bob { 0%, 80%, 100% { transform: none; } 88% { transform: translateY(-5px); } 94% { transform: translateY(1px); } }
+@keyframes g-ping {
+  0% { box-shadow: var(--glow), 0 0 0 0 color-mix(in srgb, var(--accent-2) 55%, transparent); }
+  70%, 100% { box-shadow: var(--glow), 0 0 0 14px transparent; }
+}
+@media (max-width: 560px) { .g-hint { right: 12px; bottom: 80px; } }
