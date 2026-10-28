@@ -50,5 +50,18 @@
       "evidence": null,
       "pr": "https://github.com/meshery/meshery/pull/22619"
     }
+  },
+  {
+    "repo": "meshery/meshery",
+    "issue": 22628,
+    "title": "Web-first URL assertion in logout spec",
+    "kind": "fix",
+    "stage": "pr",
+    "links": {
+      "issue": "https://github.com/meshery/meshery/issues/22628",
+      "draft": "https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-logout-web-first.md",
+      "evidence": null,
+      "pr": "https://github.com/meshery/meshery/pull/22628"
+    }
   }
 ]
