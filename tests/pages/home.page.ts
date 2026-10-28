@@ -21,6 +21,7 @@ export class HomePage extends BasePage {
   readonly serviceTiles: Locator;
   readonly workCta: Locator;
   readonly githubCta: Locator;
+  readonly footerLinkedIn: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -41,6 +42,7 @@ export class HomePage extends BasePage {
     this.serviceTiles = page.getByTestId('service-tile');
     this.workCta = page.getByTestId('cta-work');
     this.githubCta = page.getByTestId('cta-github');
+    this.footerLinkedIn = page.getByRole('contentinfo').getByRole('link', { name: 'LinkedIn' });
   }
 
   /** The card for one contribution, found by its "owner/repo#number" label. */
