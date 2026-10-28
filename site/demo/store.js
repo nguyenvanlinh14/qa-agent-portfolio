@@ -39,15 +39,21 @@ export function logout() {
   });
 }
 
-// ---------- test-mode query params (?seed=N&frozen=1) travel with every in-app link ----------
+// ---------- test-mode query params (?seed=N&frozen=1&defect=name) travel with every in-app link ----------
 
 export function carry() {
   const q = new URLSearchParams(location.search);
   const out = new URLSearchParams();
-  for (const k of ['seed', 'frozen']) if (q.has(k)) out.set(k, q.get(k));
+  for (const k of ['seed', 'frozen', 'defect']) if (q.has(k)) out.set(k, q.get(k));
   const s = out.toString();
   return s ? `?${s}` : '';
 }
+
+/**
+ * Fault injection for training and evidence demos: `?defect=<name>` switches on one known, documented bug.
+ * Without the parameter the app behaves normally. Known names: `watchlist-remove-not-saved`.
+ */
+export const defect = (name) => new URLSearchParams(location.search).get('defect') === name;
 
 /** href('stock.html', { t: 'ACB' }) -> stock.html?t=ACB&seed=42&frozen=1 */
 export function href(page, extra = {}) {

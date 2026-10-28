@@ -297,7 +297,7 @@ Cách đọc nhanh:
 
 1. Chạy `npm run k6:smoke` cục bộ rồi cố ý làm nó fail: hạ threshold xuống `p(95)<0.1` và quan sát exit code (`echo $?`).
 2. Thêm một group vào `k6/load.js` kiểm tra đăng nhập sai mật khẩu, kèm check `status === 401`. Đảm bảo `http_req_failed` không bị tính sai (gợi ý: `http.setResponseCallback(http.expectedStatuses(200, 201, 204, 401))` hoặc tham số `responseCallback` ở từng request).
-3. Viết `k6/stress.js` theo mẫu stage ở mục 4 và tìm số VU mà p95 bắt đầu vượt 300ms trên máy bạn.
+3. Chạy `npm run k6:stress` (đã có sẵn [`k6/stress.js`](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/stress.js)) và tìm số VU mà p95 bắt đầu vượt 300ms trên máy bạn; đọc thêm live mode và so sánh trước / sau ở bài 09.
 4. Mở rộng `handleSummary` để xuất thêm `reports/k6-smoke-summary.md` (bảng markdown ngắn gồm p95, error rate) rồi ghi nội dung đó vào `$GITHUB_STEP_SUMMARY` trong CI.
 5. Thêm job `k6-load` chạy theo `schedule` (cron hằng đêm) và `workflow_dispatch`, không chạy trên mỗi push.
 

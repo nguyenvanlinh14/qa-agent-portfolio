@@ -1,5 +1,5 @@
 import { createQuoteRow, createStar } from './quote-table.js';
-import { href, loadWatchlist, saveWatchlist } from './store.js';
+import { defect, href, loadWatchlist, saveWatchlist } from './store.js';
 import { announce, h, mountShell, requireUser, startMarket } from './ui.js';
 
 if (requireUser()) main();
@@ -16,7 +16,8 @@ function main() {
   const rows = new Map();
 
   function remove(ticker) {
-    saveWatchlist(loadWatchlist().filter((t) => t !== ticker));
+    // Injected defect: the row goes away but the list is never saved, so the stock comes back after a reload.
+    if (!defect('watchlist-remove-not-saved')) saveWatchlist(loadWatchlist().filter((t) => t !== ticker));
     rows.get(ticker)?.tr.remove();
     rows.delete(ticker);
     announce(`${ticker} removed from watchlist`);

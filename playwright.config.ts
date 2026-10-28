@@ -23,6 +23,8 @@ export default defineConfig({
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'reports/results.json' }],
     ['junit', { outputFile: 'reports/junit.xml' }],
+    // Records reports/live-events.jsonl on every run; LIVE=1 also serves the live dashboard (npm run test:live).
+    ['./reporters/live-reporter.ts'],
     ...(isCI ? ([['github']] as const) : []),
   ],
   use: {
@@ -56,6 +58,10 @@ export default defineConfig({
         contextOptions: { reducedMotion: 'reduce' },
       },
     },
+    // Evidence videos (npm run evidence): only when EVIDENCE=1, never in the normal run or CI.
+    ...(process.env.EVIDENCE
+      ? [{ name: 'evidence', testMatch: 'evidence/**/*.evidence.ts', use: { ...devices['Desktop Chrome'] } }]
+      : []),
   ],
   webServer: process.env.BASE_URL
     ? undefined

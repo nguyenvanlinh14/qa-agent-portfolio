@@ -1,0 +1,70 @@
+{
+  "id": "watchlist-remove-not-saved",
+  "title": "Watchlist: a removed stock comes back after a reload",
+  "signature": "watchlist | removal not persisted | removed ticker ≠ absent after reload",
+  "matches": [
+    "watchlist\\.spec\\.ts.*removal survives a reload"
+  ],
+  "defect": "watchlist-remove-not-saved",
+  "voice": {
+    "engine": "gemini",
+    "name": "en-us-rami",
+    "model": "gemini-3.8-flash-tts"
+  },
+  "fallback": {
+    "engine": "say",
+    "name": "Samantha",
+    "rate": 172
+  },
+  "report": {
+    "device": "MacBook (Chromium, Playwright), 1280 × 720",
+    "os": "macOS / Linux CI",
+    "prerequisite": "MarketFlow demo opened with ?defect=watchlist-remove-not-saved; empty watchlist",
+    "account": "qa@demo.dev (demo account)",
+    "scope": "Watchlist page only. Removing from the board star or the stock page is not affected."
+  },
+  "steps": [
+    {
+      "key": "intro",
+      "card": "Bug",
+      "say": "This video shows a bug in the MarketFlow demo. Removing a stock from the watchlist is not saved."
+    },
+    {
+      "key": "login",
+      "card": "Sign in",
+      "say": "First, sign in with the QA test account."
+    },
+    {
+      "key": "add",
+      "card": "Add ACB and FPT",
+      "say": "On the market board, add ACB and FPT to the watchlist with the star buttons."
+    },
+    {
+      "key": "open",
+      "card": "Open the watchlist",
+      "say": "Open the watchlist. Both stocks are listed."
+    },
+    {
+      "key": "remove",
+      "card": "Remove FPT",
+      "say": "Now remove FPT with its star. The row disappears, and the count shows one stock."
+    },
+    {
+      "key": "reload",
+      "card": "Reload",
+      "say": "Reload the page."
+    },
+    {
+      "key": "actual",
+      "card": "Actual",
+      "kind": "actual",
+      "say": "Actual result: FPT is back on the watchlist. The removal was never saved."
+    },
+    {
+      "key": "expected",
+      "card": "Expected",
+      "kind": "expected",
+      "say": "Expected result: FPT stays removed after a reload, and the count stays at one stock."
+    }
+  ]
+}

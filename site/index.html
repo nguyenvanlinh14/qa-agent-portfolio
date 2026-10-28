@@ -53,6 +53,8 @@
     <div class="wrap">
       <a class="brand" href="./">Linh<span>.</span>QA</a>
       <ul>
+        <li><a href="live/" class="nav-hot" data-testid="nav-live">Live</a></li>
+        <li><a href="evidence/" class="nav-hot" data-testid="nav-evidence">Evidence</a></li>
         <li><a href="#agents">Agents</a></li>
         <li><a href="#workflow">Workflow</a></li>
         <li><a href="#ci">Pipeline</a></li>
@@ -120,6 +122,49 @@
   </header>
 
   <main>
+    <!-- Reels: muted autoplay while on screen (IntersectionObserver in assets/fx.js), tap the sound button to listen. -->
+    <section id="reels" data-testid="reels">
+      <div class="wrap">
+        <h2>Reels</h2>
+        <p class="sub">Swipe through. Each reel is recorded by the pipeline itself and opens the real page.</p>
+        <div class="reels" role="list" aria-label="Reels">
+          <article class="reel" role="listitem" data-testid="reel" data-reel="evidence">
+            <div class="reel-frame">
+              <video muted loop playsinline preload="none" poster="reels/watchlist-remove-not-saved.jpg" aria-label="Bug evidence video: a removed watchlist stock comes back after a reload, with English narration and subtitles">
+                <source src="reels/watchlist-remove-not-saved.mp4" type="video/mp4" />
+              </video>
+              <button class="reel-sound" type="button" aria-pressed="false" aria-label="Turn sound on" data-testid="reel-sound">
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="on" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" /><path class="off" d="M17 9l5 6M22 9l-5 6" /></svg>
+              </button>
+            </div>
+            <span class="reel-tag">Bug evidence · narrated</span>
+            <b>A removed stock comes back after a reload</b>
+            <a href="evidence/" data-testid="reel-link">Open the evidence and bug report</a>
+          </article>
+          <article class="reel" role="listitem" data-testid="reel" data-reel="live">
+            <div class="reel-frame">
+              <video muted loop playsinline preload="none" poster="reels/live-run.jpg" aria-label="Screen recording: the live run dashboard replaying a full Playwright run, with the browser view of each tested page">
+                <source src="reels/live-run.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <span class="reel-tag">Live run · Playwright</span>
+            <b>Every test streamed, with the page it tested</b>
+            <a href="live/" data-testid="reel-link">Open the live dashboard</a>
+          </article>
+          <article class="reel" role="listitem" data-testid="reel" data-reel="k6">
+            <div class="reel-frame">
+              <video muted loop playsinline preload="none" poster="reels/k6-dashboard.jpg" aria-label="Screen recording: the k6 web dashboard of a spike test, scrolling through the charts">
+                <source src="reels/k6-dashboard.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <span class="reel-tag">Performance · k6</span>
+            <b>Spike test: surge, then recovery</b>
+            <a href="perf/" data-testid="reel-link">Open the k6 dashboards</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section id="agents">
       <div class="wrap">
         <h2>Agents in the loop</h2>
@@ -346,6 +391,19 @@
               </div>
             </div>
           </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="observe" data-testid="observe">
+      <div class="wrap">
+        <h2>Watch it run</h2>
+        <p class="sub">Live while it runs, replayable after it ends, with evidence a client can watch without the code.</p>
+        <div class="tiles">
+          <a class="tile" href="live/" data-testid="observe-live"><svg class="big"><use href="#i-ci" /></svg><b>Live run</b><small>Playwright, streamed · CI replay</small></a>
+          <a class="tile" href="perf/" data-testid="observe-k6"><svg class="big"><use href="#i-gauge" /></svg><b>k6 dashboard</b><small>live · stress · spike</small></a>
+          <a class="tile" href="evidence/" data-testid="observe-evidence"><svg class="big"><use href="#i-play" /></svg><b>Bug evidence</b><small>narrated video · captions</small></a>
+          <a class="tile" href="{{REPO_URL}}/blob/main/tests/ui/a11y.spec.ts" data-testid="observe-a11y"><svg class="big"><use href="#i-rules" /></svg><b>Accessibility</b><small>axe · WCAG 2.1 AA</small></a>
         </div>
       </div>
     </section>

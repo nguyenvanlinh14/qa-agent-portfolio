@@ -20,6 +20,9 @@ Humans: this file is also the contract that the test framework follows.
 
 Demo credentials: `qa@demo.dev` / `Passw0rd!`.
 
+Fault injection: `?defect=<name>` switches on one documented bug in the demo (today: `watchlist-remove-not-saved`) for
+evidence videos and training. Normal tests never pass it; without it the demo behaves as before.
+
 ## Commands
 
 | Command | What it does |
@@ -34,7 +37,12 @@ Demo credentials: `qa@demo.dev` / `Passw0rd!`.
 | `npm run report` | Open the HTML report |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run ai:triage` | Summarise failures from `reports/results.json` (uses the Anthropic API if a key is set) |
-| `npm run k6:smoke` / `k6:load` | k6 against the API |
+| `npm run k6:smoke` / `k6:load` / `k6:stress` / `k6:spike` | k6 against the API |
+| `npm run k6:live` | k6 load with the web dashboard open, exported to `reports/k6-load-dashboard.html` |
+| `npm run k6:compare -- <before> <after>` | p95 per endpoint, before vs after (exit 1 when worse) |
+| `npm run test:live` | Full run with the live dashboard (`reporters/live-reporter.ts`, http://127.0.0.1:5667) |
+| `npm run evidence` | Narrated bug video: TTS → Playwright recording (`EVIDENCE=1`) → ffmpeg build into `site/evidence/` |
+| `npm run evidence:dedupe` | Group failures in `reports/results.json` by signature, match `evidence/registry.json` |
 
 Never run `npx playwright install`: the browser is already installed locally, and CI uses the Playwright Docker image.
 
@@ -42,9 +50,11 @@ Never run `npx playwright install`: the browser is already installed locally, an
 
 ```
 server/app.mjs           SUT (static + REST API)
-site/                    Portfolio template, CSS, MarketFlow demo (login, board, watchlist, screener, stock)
-docs/lessons/            Vietnamese lessons (01..08) + open-source-playbook.md
-scripts/                 build-site.mjs, ai-triage.mjs, find-good-first-issues.mjs
+site/                    Portfolio template, CSS, MarketFlow demo (login, board, watchlist, screener, stock), live/, evidence/
+docs/lessons/            Vietnamese lessons (01..11) + open-source-playbook.md
+reporters/               live-reporter.ts: JSONL timeline every run, SSE live dashboard with LIVE=1
+evidence/                narrated bug scripts (scripts/*.json) + registry.json; out/ is git-ignored
+scripts/                 build-site.mjs, ai-triage.mjs, find-good-first-issues.mjs, k6-compare.mjs, evidence/
 tests/
   setup/                 *.setup.ts   login once, save playwright/.auth/user.json
   pages/                 BasePage, HomePage, LoginPage, BoardPage, WatchlistPage, ScreenerPage, StockPage, LessonPage
@@ -67,6 +77,8 @@ k6/  docker/             performance scripts, Docker image + compose
    and then comment why.
 2. **No hard sleeps.** Never use `waitForTimeout`, `setTimeout`-based waits or `page.waitForLoadState('networkidle')`
    as a synchronisation crutch. Rely on auto-waiting and web-first assertions.
+   The only exception is `tests/evidence/recorder.ts`, which holds each step of a recording for its narration
+   (pacing a video for a viewer, never synchronising with the app).
 3. **Web-first assertions only:** `await expect(locator).toBeVisible()`, `toHaveText`, `toHaveCount`, `toHaveURL`.
    Do not assert on `await locator.isVisible()` / `textContent()` results with plain `expect(...)`.
 4. **One behaviour per test.** A test has one reason to fail. Small and independent; no test depends on another test.
