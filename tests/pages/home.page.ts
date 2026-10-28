@@ -43,9 +43,19 @@ export class HomePage extends BasePage {
   readonly isoPackets: Locator;
   readonly blueprintPanel: Locator;
   readonly blueprintStrokes: Locator;
+  readonly observeSection: Locator;
+  readonly navLive: Locator;
+  readonly navEvidence: Locator;
+  readonly reelSection: Locator;
+  readonly reels: Locator;
 
   constructor(page: Page) {
     super(page);
+    this.observeSection = page.getByTestId('observe');
+    this.navLive = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Live', exact: true });
+    this.navEvidence = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Evidence', exact: true });
+    this.reelSection = page.getByTestId('reels');
+    this.reels = this.reelSection.getByRole('listitem');
     this.eyebrow = page.getByTestId('hero-eyebrow');
     this.heroTitle = page.getByTestId('hero-title');
     this.reportCta = page.getByTestId('cta-report');
@@ -159,5 +169,15 @@ export class HomePage extends BasePage {
   /** The canvas bitmap as a data URL, to compare two loads pixel for pixel. */
   async particlesBitmap(): Promise<string> {
     return this.page.evaluate(() => document.querySelector<HTMLCanvasElement>('canvas.particles')?.toDataURL() ?? '');
+  }
+
+  /** A tile of the "Watch it run" section by its relative link, e.g. 'live/'. */
+  observeLink(href: string): Locator {
+    return this.observeSection.locator(`a[href="${href}"]`);
+  }
+
+  /** One reel by its kind: 'evidence' | 'live' | 'k6'. */
+  reel(kind: string): Locator {
+    return this.reelSection.locator(`[data-reel="${kind}"]`);
   }
 }

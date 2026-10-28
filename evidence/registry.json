@@ -1,0 +1,21 @@
+{
+  "bugs": [
+    {
+      "id": "watchlist-remove-not-saved",
+      "signature": "watchlist | removal not persisted | removed ticker ≠ absent after reload",
+      "title": "Watchlist: a removed stock comes back after a reload",
+      "status": "open",
+      "matches": [
+        "watchlist\\.spec\\.ts.*removal survives a reload"
+      ],
+      "evidence": "site/evidence/watchlist-remove-not-saved.mp4",
+      "occurrences": [
+        {
+          "date": "2026-10-28",
+          "ref": "watchlist-remove-not-saved",
+          "env": "local demo"
+        }
+      ]
+    }
+  ]
+}

@@ -249,4 +249,10 @@ test.describe('Portfolio home: blueprint workflow', () => {
     await expect(homePage.blueprintPanel).not.toHaveClass(/bp-pre/);
     await expect(homePage.blueprintStrokes.first()).toHaveCSS('animation-name', 'none');
   });
+
+  test('@regression watch-it-run section links to the live run, k6 dashboards and bug evidence', async ({ homePage }) => {
+    await homePage.goto();
+    await expect(homePage.observeSection.getByRole('heading', { name: 'Watch it run' })).toBeVisible();
+    for (const href of ['live/', 'perf/', 'evidence/']) await expect(homePage.observeLink(href)).toBeVisible();
+  });
 });

@@ -51,13 +51,13 @@
     --text: #121826;
     --muted: #55617a;
     --accent: #6a47ff;
-    --accent-2: #0b9a79;
-    --warn: #b97a06;
-    --danger: #d8374f;
-    --ok: #14a05a;
+    --accent-2: #087a60;
+    --warn: #8a5b00;
+    --danger: #c02640;
+    --ok: #0e7a43;
     --shadow: 0 18px 40px -22px rgba(40, 50, 90, 0.35);
     --iso-1: #6a47ff;
-    --iso-2: #0b9a79;
+    --iso-2: #087a60;
     --iso-3: #c98a10;
     --iso-4: #0284c7;
     --bp-bg: #1f62c9;
@@ -79,13 +79,13 @@
   --text: #121826;
   --muted: #55617a;
   --accent: #6a47ff;
-  --accent-2: #0b9a79;
-  --warn: #b97a06;
-  --danger: #d8374f;
-  --ok: #14a05a;
+  --accent-2: #087a60;
+  --warn: #8a5b00;
+  --danger: #c02640;
+  --ok: #0e7a43;
   --shadow: 0 18px 40px -22px rgba(40, 50, 90, 0.35);
   --iso-1: #6a47ff;
-  --iso-2: #0b9a79;
+  --iso-2: #087a60;
   --iso-3: #c98a10;
   --iso-4: #0284c7;
   --bp-bg: #1f62c9;
@@ -306,7 +306,7 @@ main section h2 {
 }
 main section h2::before { content: ''; width: 6px; height: 1.1em; border-radius: 3px; background: linear-gradient(var(--accent), var(--accent-2)); flex: none; }
 h2 small.lang {
-  font: 700 0.7rem var(--mono); letter-spacing: 0.1em; color: var(--accent-2);
+  font: 700 0.7rem var(--mono); letter-spacing: 0.1em; color: color-mix(in srgb, var(--accent-2) 65%, var(--text));
   padding: 3px 9px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent-2) 50%, var(--border));
   background: color-mix(in srgb, var(--accent-2) 10%, transparent);
 }
@@ -561,7 +561,7 @@ h3.mini {
 .chip:hover { transform: translateY(-3px); border-color: var(--accent-2); text-decoration: none; box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--accent-2) 70%, transparent); }
 .chip-repo {
   flex: none; padding: 3px 10px; border-radius: 999px; font: 700 0.74rem var(--mono);
-  color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: color-mix(in srgb, var(--accent) 55%, var(--text)); background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 .chip:hover .chip-repo { color: var(--on-accent); background: var(--accent); }
 .chip-title { min-width: 0; max-width: 34ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1198,4 +1198,33 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .n1 circle { stroke: var(--accent-2); }
   .n1 { filter: drop-shadow(0 0 8px var(--accent-2)); }
   .tile:hover, .lesson:hover, .window:hover, .chip:hover, .contrib:hover, .btn:hover, .stat:hover, .lesson-nav a:hover { transform: none; }
+}
+
+/* ---------- reels (home): vertical videos in a swipeable strip ---------- */
+.nav ul a.nav-hot { color: var(--text); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.nav ul a.nav-hot:hover { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.reels {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 300px); gap: 18px;
+  overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 14px; overscroll-behavior-x: contain;
+}
+.reel { scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.reel-frame {
+  position: relative; aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; background: #000;
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.reel-frame video { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; }
+.reel-tag { font: 700 0.72rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.reel b { font-size: 1rem; line-height: 1.3; }
+.reel a { font-size: 0.9rem; font-weight: 600; }
+.reel-sound {
+  position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(0, 0, 0, 0.55); color: #fff; cursor: pointer;
+}
+.reel-sound .ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.reel-sound[aria-pressed='false'] .on, .reel-sound[aria-pressed='true'] .off { display: none; }
+/* On a phone the section links are hidden; Live and Evidence stay, since they are what a visitor came to see. */
+@media (max-width: 860px) {
+  .nav ul:has(.nav-hot) { display: flex; margin-left: auto; }
+  .nav ul:has(.nav-hot) li:not(:has(.nav-hot)) { display: none; }
+  .nav ul:has(.nav-hot) + .theme-toggle { margin-left: 4px; }
 }
