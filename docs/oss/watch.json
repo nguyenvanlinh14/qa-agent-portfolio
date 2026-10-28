@@ -1,7 +1,28 @@
 [
-  { "repo": "grafana/k6", "number": 4260, "title": "deriveBits: support lengths that are not multiples of 8" },
-  { "repo": "grafana/k6", "number": 3062, "title": "Test k6 installation in CI" },
-  { "repo": "volcano-sh/volcano", "head": "nguyenvanlinh14:test/job-state-unit-tests" },
-  { "repo": "kyverno/kyverno", "head": "nguyenvanlinh14:test/gzip-cel-lib-tests" },
-  { "repo": "meshery/meshery", "head": "nguyenvanlinh14:test/userpref-no-wait-for-timeout" }
+  {
+    "repo": "grafana/k6",
+    "number": 4260,
+    "title": "deriveBits: support lengths that are not multiples of 8"
+  },
+  {
+    "repo": "grafana/k6",
+    "number": 3062,
+    "title": "Test k6 installation in CI"
+  },
+  {
+    "repo": "volcano-sh/volcano",
+    "head": "nguyenvanlinh14:test/job-state-unit-tests"
+  },
+  {
+    "repo": "kyverno/kyverno",
+    "head": "nguyenvanlinh14:test/gzip-cel-lib-tests"
+  },
+  {
+    "repo": "meshery/meshery",
+    "head": "nguyenvanlinh14:test/userpref-no-wait-for-timeout"
+  },
+  {
+    "repo": "meshery/meshery",
+    "head": "nguyenvanlinh14:test/logout-web-first-assertions"
+  }
 ]
