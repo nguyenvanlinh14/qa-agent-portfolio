@@ -12,3 +12,4 @@ export { ScreenerPage } from './screener.page';
 export { StockPage, type StockStat } from './stock.page';
 export { WatchlistPage } from './watchlist.page';
 export { GuidePage } from './guide.page';
+export { SiteNavPage } from './site-nav.page';

@@ -38,6 +38,11 @@ export class CvPage extends BasePage {
     this.emailOrPhoneLinks = page.locator('a[href^="mailto:" i], a[href^="tel:" i]');
   }
 
+  /** Renders the page the way the print dialog / "Save as PDF" does, with the screen in the dark theme. */
+  async emulatePrint(): Promise<void> {
+    await this.page.emulateMedia({ media: 'print', colorScheme: 'dark' });
+  }
+
   /** A link in the CV header by its accessible name (the LinkedIn / GitHub profile links). */
   profileLink(name: string | RegExp): Locator {
     return this.profile.getByRole('link', { name });

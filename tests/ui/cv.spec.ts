@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures';
 import {
+  CV_PRINT,
   EMAIL_PATTERN,
   FAKE_PHONE_NUMBERS,
   GITHUB_PROFILE_URL,
@@ -26,6 +27,16 @@ test.describe('CV page', () => {
     await expect(cvPage.experience).toBeVisible();
     await expect(cvPage.roles.first()).toBeVisible();
     await expect.poll(() => cvPage.roles.count()).toBeGreaterThanOrEqual(MIN_CV_ROLES);
+  });
+
+  test('@regression the printed CV keeps the light-theme link colour of the page', async ({ cvPage }) => {
+    await cvPage.emulatePrint();
+    await expect(cvPage.profileLink(/linkedin/i)).toHaveCSS('color', CV_PRINT.linkColor);
+  });
+
+  test('@regression the printed CV prints its chip and card backgrounds', async ({ cvPage }) => {
+    await cvPage.emulatePrint();
+    await expect(cvPage.skill('TypeScript')).toHaveCSS('print-color-adjust', CV_PRINT.colorAdjust);
   });
 
   test('@regression CV links to the LinkedIn profile', async ({ cvPage }) => {

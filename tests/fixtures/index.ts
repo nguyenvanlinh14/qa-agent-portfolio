@@ -6,7 +6,7 @@ import { A11Y_TAGS } from '../data/a11y';
 import { LIVE_FRAMES_RAW } from '../data/live';
 import { ApiClient } from './api-client';
 import { users } from '../data/factories';
-import { BoardPage, CaseStudyPage, CvPage, EvidencePage, GuidePage, HomePage, LessonPage, LivePage, LoginPage, ScreenerPage, StockPage, WatchlistPage } from '../pages';
+import { BoardPage, CaseStudyPage, CvPage, EvidencePage, GuidePage, HomePage, LessonPage, LivePage, LoginPage, ScreenerPage, SiteNavPage, StockPage, WatchlistPage } from '../pages';
 
 interface Fixtures {
   homePage: HomePage;
@@ -21,6 +21,7 @@ interface Fixtures {
   livePage: LivePage;
   evidencePage: EvidencePage;
   guidePage: GuidePage;
+  siteNav: SiteNavPage;
   /** axe-core scan of the current page, limited to WCAG 2.1 A/AA rules. */
   axe: () => AxeBuilder;
   /** Anonymous API client (no token). */
@@ -55,6 +56,7 @@ export const test = base.extend<Fixtures>({
   livePage: async ({ page }, use) => use(new LivePage(page)),
   evidencePage: async ({ page }, use) => use(new EvidencePage(page)),
   guidePage: async ({ page }, use) => use(new GuidePage(page)),
+  siteNav: async ({ page }, use) => use(new SiteNavPage(page)),
   axe: async ({ page }, use) => use(() => new AxeBuilder({ page }).withTags([...A11Y_TAGS])),
   api: async ({ request }, use) => use(new ApiClient(request)),
   qaApi: async ({ request }, use) => use(await new ApiClient(request).signIn(users.qa)),
