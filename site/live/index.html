@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Live Test Run · Linh.QA</title>
+  <title>Live Test Run · Linh.NV</title>
   <meta name="description" content="Playwright run dashboard: live while the tests run (npm run test:live), replay of the latest CI run on the site." />
   <script>
     try { const t = localStorage.getItem('linhqa-theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch {}
@@ -14,7 +14,7 @@
 <body>
   <header class="top">
     <div class="wrap row">
-      <a class="brand" href="../" data-testid="live-home">Linh<span>.</span>QA</a>
+      <a class="brand" href="../" data-testid="live-home">Linh<span>.</span>NV</a>
       <h1>Test run <span class="mode" data-testid="live-mode">connecting</span></h1>
       <div class="controls" data-testid="replay-controls" hidden>
         <label>Speed
@@ -24,6 +24,7 @@
         </label>
         <button type="button" data-testid="replay-restart">Replay</button>
       </div>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
     </div>
   </header>
 

@@ -133,7 +133,7 @@ function pageShell({ title, description, content, depth = 1 }) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${esc(title)} · Linh.QA</title>
+  <title>${esc(title)} · Linh.NV</title>
   <meta name="description" content="${esc(description ?? title)}" />
   ${THEME_BOOT}
   <link rel="stylesheet" href="${up}assets/style.css" />
@@ -143,12 +143,13 @@ function pageShell({ title, description, content, depth = 1 }) {
   ${SPRITE}
   <nav class="nav" aria-label="Main">
     <div class="wrap">
-      <a class="brand" href="${up}">Linh<span>.</span>QA</a>
+      <a class="brand" href="${up}">Linh<span>.</span>NV</a>
       <ul>
         <li><a href="${up}#lessons">Lessons</a></li>
         <li><a href="${up}report/">Report</a></li>
         <li><a href="${esc(REPO_URL)}">GitHub</a></li>
       </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
       <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
         <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
       </button>

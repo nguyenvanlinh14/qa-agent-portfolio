@@ -1040,9 +1040,11 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
 /* print: a plain light one-pager. Hide chrome, drop colours, shadows and motion. */
 @media print {
   @page { margin: 8mm 12mm; }
+  /* The PDF looks like the page in the light theme (same colours, chips and cards), on white paper, whatever theme
+     is on screen. Backgrounds print even with "Background graphics" off in the print dialog. */
   :root:root {
-    --bg: #fff; --surface: #fff; --surface-2: #f3f4f8; --border: #c9cedd;
-    --text: #111; --muted: #444; --accent: #3a2bb0; --accent-2: #0a6650;
+    --bg: #fff; --surface: #fff; --surface-2: #edf0f9; --border: #d9dfee;
+    --text: #121826; --muted: #55617a; --accent: #6a47ff; --accent-2: #087a60;
     --shadow: none; --glow: none; color-scheme: light;
     --bp-bg: #fff; --bp-bg-deep: #fff; --bp-line: #1a3a7a; --bp-grid: rgba(26, 58, 122, 0.06); --bp-grid-major: rgba(26, 58, 122, 0.14);
     --bp-ink: #111; --bp-dim: #333; --bp-cyan: #0a4a8a; --bp-amber: #7a4a00; --bp-chip: #f3f4f8; --bp-on-tint: #fff;
@@ -1050,7 +1052,8 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .bp-pre .bp-stroke { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; fill-opacity: 1 !important; }
   .bp-pre .bp-fade, .bp-pre .bp-tick, .bp-pre .step, .bp-pre .flow li { opacity: 1 !important; transform: none !important; }
   .bp-panel { break-inside: avoid; }
-  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; animation: none !important; transition: none !important; backdrop-filter: none !important; }
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; animation: none !important; transition: none !important; backdrop-filter: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; }
   body { font-size: 9pt; line-height: 1.34; }
   .nav, .theme-toggle, .cv-actions, .cv-hint { display: none !important; }
   .cv { max-width: none; padding: 0; }
@@ -1059,7 +1062,6 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .cv section h2 { margin-bottom: 5px; break-after: avoid; }
   .cv p { margin-bottom: 6px; }
   .cv-summary { font-size: 1em; }
-  .cv a { color: var(--text); text-decoration-color: var(--muted); }
   .skills li, .track li::before, .track li::after, .contrib .big { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .contrib { break-inside: avoid; }
   .contrib::before { display: none; }
@@ -1089,7 +1091,6 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   .case section h2 { font-size: 13pt; break-after: avoid; }
   .case h3 { break-after: avoid; margin-top: 14px; }
   .case-head h1 { font-size: 22pt; }
-  .case a { color: var(--text); }
   .case tr, .tech, .case-card, .stamp-fig, .case-stats { break-inside: avoid; }
   .case .btn { display: none; }
   .who, .case th, .stat, .stamp-fig svg, .lessons-list li::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1345,3 +1346,19 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
   70%, 100% { box-shadow: var(--glow), 0 0 0 14px transparent; }
 }
 @media (max-width: 560px) { .g-hint { right: 12px; bottom: 80px; } }
+/* LinkedIn link in the top nav of every page (icon + label; icon only on phones) */
+.nav-in {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; flex: none;
+  border: 1px solid var(--border); color: var(--text); font-size: 0.88rem; font-weight: 600; text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+.nav-in:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.nav-in .f { fill: currentColor; stroke: none; }
+.nav ul + .nav-in { margin-left: 4px; }
+.nav-in + .theme-toggle { margin-left: 2px; }
+@media (max-width: 860px) {
+  .nav ul:not(:has(.nav-hot)) + .nav-in { margin-left: auto; }
+  .nav-in { width: 38px; height: 38px; padding: 0; justify-content: center; }
+  .nav-in span { display: none; }
+  .nav-in .ic { width: 18px; height: 18px; }
+}

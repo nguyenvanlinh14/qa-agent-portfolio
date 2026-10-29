@@ -98,3 +98,13 @@ th { color: var(--muted); font-weight: 500; }
 .browser .status.expected { --c: #138a4f; } .browser .status.unexpected { --c: #c02640; } .browser .status.flaky { --c: #8a5b00; } .browser .status.skipped { --c: #55617a; }
 @keyframes fade { from { opacity: 0.25; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .browser img { animation: none; } }
+/* LinkedIn link in the header (same look as the site nav) */
+.nav-in {
+  display: inline-flex; align-items: center; gap: 6px; margin-left: auto; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--border); color: var(--text); font-size: 0.88rem; font-weight: 600; text-decoration: none;
+}
+.nav-in:hover { border-color: var(--accent); color: var(--accent); }
+.nav-in .ic { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.nav-in .f { fill: currentColor; stroke: none; }
+@media (max-width: 860px) { .nav-in span { display: none; } }
+.controls:not([hidden]) + .nav-in { margin-left: 8px; }
