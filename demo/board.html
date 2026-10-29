@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-auth="required">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MarketFlow (demo) · Board</title>
+  <script src="boot.js"></script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="stylesheet" href="demo.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%236a47ff'/><path d='M9 21v-6M16 23v-9M23 20v-5' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>" />
+</head>
+<body class="mf-app">
+  <header id="mf-header"></header>
+  <main class="mf-main">
+    <h1>Market board</h1>
+
+    <section class="mf-summary" aria-labelledby="idx-title">
+      <svg class="mf-sum-blob" viewBox="0 0 600 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <path id="sum-b1" fill="var(--accent)" d="" /><path id="sum-b2" fill="var(--accent-2)" d="" />
+      </svg>
+      <div class="idx">
+        <h2 id="idx-title">VN30 (simulated)</h2>
+        <p class="idx-value" data-testid="index-value">—</p>
+        <p class="idx-chg" data-testid="index-change">—</p>
+      </div>
+      <dl class="breadth" aria-label="Market breadth">
+        <div><dt>Advancing</dt><dd data-testid="breadth-up">—</dd></div>
+        <div><dt>Unchanged</dt><dd data-testid="breadth-flat">—</dd></div>
+        <div><dt>Declining</dt><dd data-testid="breadth-down">—</dd></div>
+        <div><dt>Ceiling</dt><dd data-testid="breadth-ceiling">—</dd></div>
+        <div><dt>Floor</dt><dd data-testid="breadth-floor">—</dd></div>
+        <div><dt>Volume</dt><dd data-testid="breadth-volume">—</dd></div>
+      </dl>
+      <p class="mode" data-testid="market-mode">—</p>
+    </section>
+
+    <section class="toolbar" aria-label="Board filters">
+      <label class="sr-only" for="q">Search ticker or name</label>
+      <input id="q" type="search" placeholder="Search ticker or company" autocomplete="off" />
+      <div class="chips" role="group" aria-label="Sector filter" id="chips"></div>
+    </section>
+
+    <p class="count" data-testid="result-count">&nbsp;</p>
+
+    <div class="mf-table-wrap" role="region" aria-label="VN30 board, scrollable" tabindex="0">
+      <table class="mf-table" id="board">
+        <caption class="sr-only">VN30 constituents with simulated prices</caption>
+        <thead><tr id="head-row"></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="empty" data-testid="empty-state" id="empty" hidden>No stocks match your filters.</p>
+
+    <ul class="legend" aria-label="Colour legend">
+      <li class="lg-ceiling">Ceiling</li><li class="lg-floor">Floor</li><li class="lg-reference">Reference</li><li class="lg-up">Up</li><li class="lg-down">Down</li>
+    </ul>
+  </main>
+  <footer class="mf-footer"><p class="disclaimer" data-testid="disclaimer">Simulated data for testing demos — not real prices, not investment advice.</p></footer>
+  <script type="module" src="board.js"></script>
+</body>
+</html>

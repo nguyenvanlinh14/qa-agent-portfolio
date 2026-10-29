@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MarketFlow (demo) · Sign in</title>
+  <script src="boot.js"></script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="stylesheet" href="demo.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%236a47ff'/><path d='M9 21v-6M16 23v-9M23 20v-5' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>" />
+</head>
+<body class="mf-login">
+  <!-- Liquid background: decorative, morphs only when motion is allowed (see liquid.js) -->
+  <div class="lq-bg" data-testid="liquid-bg" aria-hidden="true">
+    <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <defs>
+        <filter id="lq-goo" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
+        </filter>
+        <linearGradient id="lq-g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color: var(--accent)" /><stop offset="1" style="stop-color: var(--iso-4)" /></linearGradient>
+        <linearGradient id="lq-g2" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color: var(--accent-2)" /><stop offset="1" style="stop-color: var(--iso-4)" /></linearGradient>
+        <linearGradient id="lq-g3" x1="1" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--iso-4)" /><stop offset="1" style="stop-color: var(--accent)" /></linearGradient>
+        <linearGradient id="lq-g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color: var(--accent)" /><stop offset="1" style="stop-color: var(--accent-2)" /></linearGradient>
+      </defs>
+      <g filter="url(#lq-goo)">
+        <path id="lq-b1" fill="url(#lq-g1)" d="" />
+        <path id="lq-b2" fill="url(#lq-g2)" d="" />
+        <path id="lq-b3" fill="url(#lq-g3)" d="" />
+        <path id="lq-b4" fill="url(#lq-g4)" d="" />
+      </g>
+    </svg>
+  </div>
+
+  <main class="login-shell">
+    <form class="lq-card" id="login-form" novalidate aria-labelledby="login-title">
+      <div class="brand">
+        <svg class="mf-logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="9" fill="#6a47ff" />
+          <path d="M9 21v-6M9 12v-2M16 23v-9M16 11V8M23 20v-5M23 12v-3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" />
+          <rect x="7.4" y="12" width="3.2" height="3.4" rx=".8" fill="#fff" /><rect x="14.4" y="14" width="3.2" height="6" rx=".8" fill="#fff" opacity=".85" /><rect x="21.4" y="12.5" width="3.2" height="4.6" rx=".8" fill="#fff" />
+        </svg>
+        <h1 id="login-title">MarketFlow (demo)</h1>
+      </div>
+      <p class="tagline">A simulated stock board and screener for test automation demos.</p>
+      <p class="hint">Demo app under test. Use <code>qa@demo.dev</code> / <code>Passw0rd!</code></p>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required />
+
+      <label for="password">Password</label>
+      <div class="pw">
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <button class="pw-toggle" id="pw-toggle" type="button" aria-label="Show password" aria-controls="password">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /><path class="slash" d="M4 4l16 16" /></svg>
+        </button>
+      </div>
+
+      <label class="check" for="remember"><input id="remember" name="remember" type="checkbox" checked /> Remember me</label>
+
+      <p class="error" role="alert" id="login-error" hidden></p>
+      <button class="btn primary liquid-btn" type="submit"><span>Sign in</span></button>
+    </form>
+    <p class="disclaimer glass" data-testid="disclaimer">Simulated data for testing demos — not real prices, not investment advice.</p>
+  </main>
+  <script type="module" src="login.js"></script>
+</body>
+</html>

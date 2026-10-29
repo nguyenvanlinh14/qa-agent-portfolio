@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paid OSS bounties · Linh.NV</title>
+  <meta name="description" content="Paid OSS bounties" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="paid-oss-bounties">Paid OSS bounties</h1>
+<p>Trang này được tạo tự động bởi workflow oss-scout (<code>scripts/find-bounties.mjs</code>) vào 2026-10-27. Script tìm các issue đang mở có nhãn bounty (ví dụ <code>💎 Bounty</code> của Algora, hoặc <code>[$250]</code> trong tiêu đề của Expensify), chưa ai nhận, cập nhật trong 120 ngày gần đây. Trước khi chấm điểm, script lọc độ tin cậy của repo để loại các repo &quot;bounty farm&quot; (repo lập ra chỉ để câu lượt attempt): chỉ giữ repo có từ 200★ trở lên, được tạo cách đây ít nhất 6 tháng, không phải fork hay repo đã archive, tên repo không chứa bounty/hunter/livefire/airdrop. Lịch sử đã trả thưởng được tra bằng số issue có nhãn <code>💰 Rewarded</code> của repo (cột Paid before; <code>0 ⚠</code> nghĩa là chưa thấy bằng chứng repo từng trả tiền). Issue có hơn 15 người attempt được tách sang mục Crowded, không xếp hạng. Điểm 0-100: tiền thưởng (tối đa 25, thang log, trần $1000), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 30), độ tin cậy của repo (tối đa 25: số sao và lịch sử trả thưởng), độ mới (tối đa 10), độ phù hợp với QA automation (tối đa 10: ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli), trừ điểm nếu chưa rõ số tiền, mô tả quá dài hoặc chưa rõ quy định AI. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.</p>
+<blockquote>
+<p>Lưu ý: bounty rất cạnh tranh, số tiền và số lượt attempt có thể đã đổi từ lúc tạo trang. Hãy đọc kỹ CONTRIBUTING và luật của repo trước khi làm, luôn khai báo (disclose) khi có AI hỗ trợ, và đừng spam <code>/attempt</code>. Bộ lọc chỉ giảm rủi ro, không thay thế việc tự kiểm tra repo và người ra bounty. Mục AI: <code>disclose</code> nghĩa là repo yêu cầu khai báo, <code>unknown</code> nghĩa là chưa tìm thấy quy định rõ ràng. Mục Paid before: <code>Upwork</code> nghĩa là repo trả qua Upwork (không có nhãn để đếm), <code>?</code> nghĩa là chưa tra được.</p>
+</blockquote>
+<h2 id="top-20">Top 20</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Score</th>
+<th align="right">$</th>
+<th>Issue</th>
+<th>Title</th>
+<th align="right">Attempts</th>
+<th align="right">★ stars</th>
+<th align="right">Paid before</th>
+<th>Lang</th>
+<th>AI</th>
+<th>Updated</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">53</td>
+<td align="right">$300</td>
+<td><a href="https://github.com/go-gitea/gitea/issues/4898">go-gitea/gitea#4898</a></td>
+<td>Add inline comments on commits</td>
+<td align="right">10</td>
+<td align="right">59k</td>
+<td align="right">5</td>
+<td>Go</td>
+<td>disclose</td>
+<td>2026-07-05</td>
+</tr>
+<tr>
+<td align="right">34</td>
+<td align="right">?</td>
+<td><a href="https://github.com/shanalikhan/code-settings-sync/issues/413">shanalikhan/code-settings-sync#413</a></td>
+<td>Suggestion: Allow upload to repository</td>
+<td align="right">1</td>
+<td align="right">4.1k</td>
+<td align="right">0 ⚠</td>
+<td>TypeScript</td>
+<td>unknown</td>
+<td>2026-10-13</td>
+</tr>
+<tr>
+<td align="right">33</td>
+<td align="right">?</td>
+<td><a href="https://github.com/Ikalus1988/MisakaNet/issues/1258">Ikalus1988/MisakaNet#1258</a></td>
+<td>Start here: give your coding agent a failure memory (MCP, 60 seconds)</td>
+<td align="right">1</td>
+<td align="right">543</td>
+<td align="right">0 ⚠</td>
+<td>Python</td>
+<td>unknown</td>
+<td>2026-10-27</td>
+</tr>
+<tr>
+<td align="right">31</td>
+<td align="right">?</td>
+<td><a href="https://github.com/FreezingMoon/AncientBeast/issues/1772">FreezingMoon/AncientBeast#1772</a></td>
+<td>showcase ability targeting area better [bounty: 16 XTR]</td>
+<td align="right">2</td>
+<td align="right">1.9k</td>
+<td align="right">0 ⚠</td>
+<td>TypeScript</td>
+<td>unknown</td>
+<td>2026-10-27</td>
+</tr>
+<tr>
+<td align="right">24</td>
+<td align="right">?</td>
+<td><a href="https://github.com/livepeer/go-livepeer/issues/1815">livepeer/go-livepeer#1815</a></td>
+<td>livepeer_cli: Show estimated tx cost in a confirmation step</td>
+<td align="right">2</td>
+<td align="right">587</td>
+<td align="right">0 ⚠</td>
+<td>Go</td>
+<td>unknown</td>
+<td>2026-10-11</td>
+</tr>
+<tr>
+<td align="right">17</td>
+<td align="right">?</td>
+<td><a href="https://github.com/stashapp/stash/issues/3530">stashapp/stash#3530</a></td>
+<td>Support multiple scenes in a single file</td>
+<td align="right">4</td>
+<td align="right">13k</td>
+<td align="right">0 ⚠</td>
+<td>Go</td>
+<td>unknown</td>
+<td>2026-09-28</td>
+</tr>
+<tr>
+<td align="right">14</td>
+<td align="right">?</td>
+<td><a href="https://github.com/stashapp/stash/issues/571">stashapp/stash#571</a></td>
+<td>Support for multiple performer images</td>
+<td align="right">4</td>
+<td align="right">13k</td>
+<td align="right">0 ⚠</td>
+<td>Go</td>
+<td>unknown</td>
+<td>2026-08-24</td>
+</tr>
+</tbody></table>
+<h2 id="crowded-gt-15-attempts">Crowded (&gt;15 attempts)</h2>
+<p>Quá đông người, không xếp hạng (hiện 6 issue, chỉ liệt kê 6 issue tiền cao nhất).</p>
+<table>
+<thead>
+<tr>
+<th align="right">$</th>
+<th>Issue</th>
+<th align="right">Attempts</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">$250</td>
+<td><a href="https://github.com/onyx-dot-app/onyx/issues/2281">onyx-dot-app/onyx#2281</a></td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">$50</td>
+<td><a href="https://github.com/arakoodev/EdgeChains/issues/290">arakoodev/EdgeChains#290</a></td>
+<td align="right">64</td>
+</tr>
+<tr>
+<td align="right">$30</td>
+<td><a href="https://github.com/arakoodev/EdgeChains/issues/273">arakoodev/EdgeChains#273</a></td>
+<td align="right">60</td>
+</tr>
+<tr>
+<td align="right">$25</td>
+<td><a href="https://github.com/arakoodev/EdgeChains/issues/279">arakoodev/EdgeChains#279</a></td>
+<td align="right">27</td>
+</tr>
+<tr>
+<td align="right">$20</td>
+<td><a href="https://github.com/highlight/highlight/issues/8032">highlight/highlight#8032</a></td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="right">$15</td>
+<td><a href="https://github.com/flydelabs/flyde/issues/112">flydelabs/flyde#112</a></td>
+<td align="right">32</td>
+</tr>
+</tbody></table>
+<h2 id="top-10-chi-tiet">Top 10 chi tiết</h2>
+<details>
+<summary><b>53</b> · $300 · go-gitea/gitea#4898: Add inline comments on commits</summary><p><a href="https://github.com/go-gitea/gitea/issues/4898">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">Add comments on commits (not only in PR), I would love to have this feature :smiley: 
+
+Reference: https://github.com/go-gitea/gitea/issues/124, https://github.com/go-gitea/gitea/issues/124#issuecomment-419289878
+
+Thanks to gitea&#39;s team and contributors :heart: 
+
+----
+
+Update: there were some attempts but they failed to make attachment management right. Pay more attention to:
+
+*  Gitea binds the attachments to repo issue/comment/release. If no binding, then the attachment will be deleted. For example: `DeleteOrphanedAttachments`
+* `checkStorage(&amp;checkStorageOptions&#123;Attachments: true})` deletes</code></pre>
+</details><details>
+<summary><b>34</b> · ? · shanalikhan/code-settings-sync#413: Suggestion: Allow upload to repository</summary><p><a href="https://github.com/shanalikhan/code-settings-sync/issues/413">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">[&lt;img alt=&quot;Issuehunt badges&quot; src=&quot;https://img.shields.io/badge/IssueHunt-%24200%20Funded-%2300A156.svg&quot; /&gt;](https://oss.issuehunt.io/r/shanalikhan/code-settings-sync/issues/413)
+
+By @shanalikhan
+
+Before starting this feature, Settings Sync required code requires refactoring. You can take https://github.com/shanalikhan/code-settings-sync/pull/937 as a baseline for refactoring to start working.
+
+Following are the feature i see for git sync.
+
+Originally by @smbkr
+
+It would be useful to be able to upload the settings to a repo instead of a gist, the way that JetBrains IDEs sync, so that the change</code></pre>
+</details><details>
+<summary><b>33</b> · ? · Ikalus1988/MisakaNet#1258: Start here: give your coding agent a failure memory (MCP, 60 seconds)</summary><p><a href="https://github.com/Ikalus1988/MisakaNet/issues/1258">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">&gt; ## Start here (updated 2026-10-26)
+&gt;
+&gt; MisakaNet is a searchable memory of **650 evidence-rated failure lessons** — the errors agents and humans actually hit, with root cause, fix, and verification. Your agent can search it before it starts guessing.
+&gt;
+&gt; **60 seconds**
+&gt; - **Any MCP client** (Claude Code, Cursor, Codex, DSH): add `https://misakanet.org/mcp`
+&gt; - **DSH:** `dsh plugin --profile web add misakanet`
+&gt; - **CLI (needs a checkout):** `python3 search_knowledge.py &quot;your error&quot; --remote`
+&gt;
+&gt; **Pick one path**
+&gt; 1. **Search a real error** → comment `Found it` or `Did not find`; both are</code></pre>
+</details><details>
+<summary><b>31</b> · ? · FreezingMoon/AncientBeast#1772: showcase ability targeting area better \[bounty: 16 XTR\]</summary><p><a href="https://github.com/FreezingMoon/AncientBeast/issues/1772">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">Area abilities, such as Godlet Printer, should show dashed hexagons for occupied hexagons within range to better reflect total area.</code></pre>
+</details><details>
+<summary><b>24</b> · ? · livepeer/go-livepeer#1815: livepeer_cli: Show estimated tx cost in a confirmation step</summary><p><a href="https://github.com/livepeer/go-livepeer/issues/1815">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">When you use livepeer_cli to tell the node to submit a transaction there is:
+
+- No indication of how much the transaction will cost
+- No confirmation step checking with the user if they are sure they want to do this
+
+As a result, it is easy for the following to occur:
+
+- User spends more than they want to
+- User has to guess how much ETH they need for the transactions since the failure message don&#39;t indicate how much was needed. Related to https://github.com/livepeer/go-livepeer/issues/1783</code></pre>
+</details><details>
+<summary><b>17</b> · ? · stashapp/stash#3530: Support multiple scenes in a single file</summary><p><a href="https://github.com/stashapp/stash/issues/3530">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">### **Is your feature request related to a problem? Please describe.**
+There are cases where a stash user would want to view scenes that may exist in a single file separately without re-encoding the source file into separate files so they can be viewed as separate scenes within stash 
+
+### **Describe the solution you&#39;d like**
+The solution has been discussed a few times and usually revolves around utilizing a similar system to Markers to determine the start and end points of a &quot;sub-scene&quot; within a file that has multiple scenes while leaving the source file as is
+
+### **Describe alternatives you</code></pre>
+</details><details>
+<summary><b>14</b> · ? · stashapp/stash#571: Support for multiple performer images</summary><p><a href="https://github.com/stashapp/stash/issues/571">Mở issue trên GitHub</a></p>
+<pre tabindex="0"><code class="language-text">It would be great to allow save a few images at performer entity and not just one like now. I like to ocassionally surf the net searching for great profile images for girls in my database, and it would be nice to keep more that one (maybe with a limit?) and show one randomly as default or visible each session (or something like that). I mean something that don&#39;t suppose extra work to devs, just to see a little more &quot;variety&quot; and &quot;eyecandy&quot;.
+
+Maybe store a few images and the possibility to change the &quot;default&quot; manually from perfomers page? I dont know what would be more simple.
+
+Sorry for my en</code></pre>
+</details>
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <span></span>
+        <span></span>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

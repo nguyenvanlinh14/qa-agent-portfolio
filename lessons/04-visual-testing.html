@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visual Testing với toHaveScreenshot — baseline theo OS, Docker image chính thức và workflow update-snapshots · Linh.NV</title>
+  <meta name="description" content="Visual Testing với toHaveScreenshot — baseline theo OS, Docker image chính thức và workflow update-snapshots" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="visual-testing-voi-tohavescreenshot">Visual Testing với <code>toHaveScreenshot</code></h1>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<p>Sau bài này bạn sẽ:</p>
+<ul>
+<li>Viết visual test bằng <code>expect(...).toHaveScreenshot()</code> và hiểu cơ chế <strong>baseline</strong> hoạt động ra sao.</li>
+<li>Loại bỏ nguồn gây nhiễu: vùng động (<code>mask</code>), hoạt ảnh (<code>animations: &#39;disabled&#39;</code>), <code>reducedMotion</code>, font chưa tải.</li>
+<li>Giải thích được vì sao baseline phụ thuộc <strong>hệ điều hành</strong> và vì sao repo này chạy test trong <strong>Docker image chính thức của Playwright</strong>.</li>
+<li>Vận hành quy trình cập nhật baseline qua workflow <code>update-snapshots</code> một cách an toàn.</li>
+<li>Chọn <strong>threshold</strong> hợp lý và biết <strong>khi nào không nên</strong> dùng visual test.</li>
+</ul>
+<h2 id="1-khai-niem">1. Khái niệm</h2>
+<h3 id="visual-regression-test-la-gi">Visual regression test là gì?</h3>
+<p>Test chức năng hỏi &quot;nút có tồn tại và bấm được không&quot;. Visual test hỏi &quot;trang <strong>trông</strong> có giống lần trước đã được duyệt không&quot;. Lần chạy đầu tiên, Playwright lưu ảnh chụp làm <strong>baseline</strong> (còn gọi là snapshot hoặc golden image). Các lần sau nó chụp lại, so từng pixel với baseline, và nếu khác quá ngưỡng thì test fail, kèm ba ảnh: <em>expected</em>, <em>actual</em>, <em>diff</em>.</p>
+<p>Visual test bắt được loại lỗi mà assertion DOM bỏ qua: CSS sai làm nút bị che, font bị đổi, màu mất tương phản, layout vỡ ở dark mode. Đổi lại, nó <strong>nhạy</strong> và <strong>dễ gây nhiễu</strong>, nên cần kỷ luật.</p>
+<h3 id="vi-du-chay-duoc">Ví dụ chạy được</h3>
+<p>File thật: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/visual/visual.spec.ts">tests/visual/visual.spec.ts</a>.</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect } from &#39;../fixtures&#39;;
+
+test.describe(&#39;Visual regression&#39;, () =&gt; &#123;
+  test(&#39;@regression home hero matches the baseline&#39;, async (&#123; page, homePage }) =&gt; &#123;
+    await homePage.goto();
+    await page.evaluate(() =&gt; document.fonts.ready);
+    await expect(homePage.heroTitle).toBeVisible();
+    await expect(page.locator(&#39;.hero&#39;)).toHaveScreenshot(&#39;home-hero.png&#39;, &#123;
+      mask: [homePage.stats], // numbers change with every build
+      maxDiffPixelRatio: 0.01,
+      animations: &#39;disabled&#39;,
+    });
+  });
+
+  test(&#39;@regression demo login page matches the baseline&#39;, async (&#123; page, loginPage }) =&gt; &#123;
+    await loginPage.goto();
+    await page.evaluate(() =&gt; document.fonts.ready);
+    await expect(loginPage.heading).toBeVisible();
+    await expect(page).toHaveScreenshot(&#39;demo-login.png&#39;, &#123;
+      maxDiffPixelRatio: 0.01,
+      animations: &#39;disabled&#39;,
+    });
+  });
+});</code></pre>
+<p>Đi qua từng quyết định, vì mỗi dòng ở đây tồn tại để chống một nguồn flaky cụ thể.</p>
+<p><strong><code>await page.evaluate(() =&gt; document.fonts.ready)</code></strong>: chờ web font tải xong. Ảnh chụp lúc font fallback còn hiển thị sẽ khác ảnh chụp sau khi font tải, một nguồn flaky kinh điển.</p>
+<p><strong><code>await expect(...).toBeVisible()</code> trước khi chụp</strong>: bảo đảm trang đã render phần quan trọng; <code>toHaveScreenshot</code> tự chờ ảnh ổn định giữa hai lần chụp liên tiếp, nhưng không biết &quot;trang đã sẵn sàng&quot; nghĩa là gì với app của bạn.</p>
+<p><strong>Chụp một phần tử (<code>page.locator(&#39;.hero&#39;)</code>) thay vì cả trang</strong>: phạm vi nhỏ hơn thì ít nhiễu hơn và diff dễ đọc hơn. Chụp toàn trang chỉ nên dành cho vài trang &quot;đại diện&quot;.</p>
+<p><strong><code>mask: [homePage.stats]</code></strong>: Playwright phủ một khối màu đặc lên vùng được chỉ định trước khi so sánh. Dùng cho mọi thứ thay đổi theo mỗi build hoặc mỗi lần chạy: số liệu thống kê, thời gian, avatar ngẫu nhiên, quảng cáo, <code>build-info</code>, con số báo cáo.</p>
+<p><strong><code>animations: &#39;disabled&#39;</code></strong>: Playwright dừng CSS animation/transition (hoạt ảnh hữu hạn nhảy về trạng thái cuối, vô hạn về trạng thái đầu) và đóng băng caret nhấp nháy. Repo đặt mặc định này ở cấp config:</p>
+<pre tabindex="0"><code class="language-ts">// playwright.config.ts
+expect: &#123;
+  timeout: 7_000,
+  toHaveScreenshot: &#123; maxDiffPixelRatio: 0.01, animations: &#39;disabled&#39; },
+},
+snapshotPathTemplate: &#39;&#123;testDir}/visual/__screenshots__/&#123;arg}&#123;ext}&#39;,</code></pre>
+<p><strong><code>reducedMotion: &#39;reduce&#39;</code></strong> (project <code>visual</code>): bật <code>prefers-reduced-motion: reduce</code> trong trình duyệt. Những trang tôn trọng media query này sẽ tự tắt hoạt ảnh ngay từ CSS, bổ trợ cho <code>animations: &#39;disabled&#39;</code> (vốn chỉ xử lý CSS animation, không xử lý animation viết bằng JS). Cấu hình project:</p>
+<pre tabindex="0"><code class="language-ts">&#123;
+  name: &#39;visual&#39;,
+  testMatch: &#39;visual/**/*.spec.ts&#39;,
+  use: &#123;
+    ...devices[&#39;Desktop Chrome&#39;],
+    viewport: &#123; width: 1280, height: 800 },
+    colorScheme: &#39;dark&#39;,
+    contextOptions: &#123; reducedMotion: &#39;reduce&#39; },
+  },
+},</code></pre>
+<p>Ba điều khác được <strong>cố định</strong> ở đây: viewport (kích thước khác → layout khác), <code>colorScheme</code> (không phụ thuộc cài đặt máy), và chỉ một trình duyệt (Chromium). Nguyên tắc chung: visual test càng <em>xác định</em> (deterministic) càng ít flaky. Xem toàn bộ cấu hình ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/playwright.config.ts">playwright.config.ts</a>.</p>
+<h2 id="2-baseline-va-duong-dan-snapshot">2. Baseline và đường dẫn snapshot</h2>
+<p>Với <code>snapshotPathTemplate</code> ở trên, ảnh baseline nằm tại <code>tests/visual/__screenshots__/home-hero.png</code> và <code>demo-login.png</code>. Chúng được commit vào git như mã nguồn: <strong>thay đổi baseline là thay đổi hành vi hiển thị, và phải đi qua code review</strong> như mọi diff khác (nhìn ảnh trước/sau ngay trong PR).</p>
+<p>Template đã <strong>bỏ</strong> các token mặc định như <code>{projectName}</code> và <code>{platform}</code>. Mặc định, Playwright thêm hậu tố nền tảng (<code>-linux</code>, <code>-darwin</code>, <code>-win32</code>) vào tên file. Repo cố ý gom về một tên duy nhất vì chỉ <strong>một</strong> môi trường (Linux trong Docker) được phép sinh baseline; xem phần tiếp theo.</p>
+<h2 id="3-vi-sao-baseline-phu-thuoc-os-va-vi-sao-dung-docker">3. Vì sao baseline phụ thuộc OS, và vì sao dùng Docker</h2>
+<p>Cùng một trang, cùng một Chromium, nhưng chụp trên macOS, Windows và Linux cho ra ảnh <strong>khác pixel</strong>:</p>
+<ul>
+<li>Font hệ thống và cấu hình hinting khác nhau.</li>
+<li>Anti-aliasing (làm mịn chữ) khác nhau, nhất là LCD/subpixel.</li>
+<li>Phiên bản thư viện đồ họa (FreeType, Skia, driver) khác nhau.</li>
+</ul>
+<p>Hậu quả: baseline sinh trên laptop macOS sẽ fail trên CI Linux với hàng ngàn pixel lệch nhẹ, dù không có lỗi nào cả. Nhiều team vì thế tắt visual test; cách làm đúng là <strong>cố định môi trường</strong>.</p>
+<p>Quy ước của repo (CI contract):</p>
+<ol>
+<li>Mọi lần chạy có ảnh chụp, ở CI và ở workflow cập nhật baseline, đều chạy bên trong image <strong><code>mcr.microsoft.com/playwright:v1.64.1-noble</code></strong>, trùng phiên bản với <code>@playwright/test</code> trong <code>package.json</code>. Image đã có sẵn trình duyệt và font cố định.</li>
+<li><strong>Không ai sinh baseline trên máy cá nhân</strong> và commit lên (quy tắc 11 trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/CLAUDE.md">CLAUDE.md</a>). <code>npm run test:update-snapshots</code> chỉ để thử nghiệm cục bộ.</li>
+<li>Muốn chạy visual test giống CI ngay trên máy mình, dùng cùng image (xem thêm bài 6 về Docker):</li>
+</ol>
+<pre tabindex="0"><code class="language-bash">docker run --rm -it --ipc=host -v &quot;$PWD&quot;:/work -w /work \
+  mcr.microsoft.com/playwright:v1.64.1-noble \
+  bash -lc &quot;npm ci &amp;&amp; npm run build &amp;&amp; npx playwright test --project=visual&quot;</code></pre>
+<p>Khi nâng cấp Playwright, nhớ nâng cả tag image, và sinh lại baseline, vì bản Chromium mới có thể render khác đi chút ít.</p>
+<h2 id="4-workflow-update-snapshots">4. Workflow update-snapshots</h2>
+<p>Khi UI thay đổi có chủ đích (đổi màu nút, thêm một khối), baseline cũ fail một cách <em>đúng đắn</em>. Quy trình cập nhật:</p>
+<ol>
+<li>Mở PR với thay đổi UI. CI (<code>ci.yml</code>) fail ở project <code>visual</code>; trong artifact <code>playwright-report</code> bạn thấy ảnh <em>expected / actual / diff</em>.</li>
+<li><strong>Con người xem diff và quyết định</strong>: thay đổi này có chủ đích không? Nếu không, đó là bug, hãy sửa code, đừng sửa baseline.</li>
+<li>Nếu có chủ đích, chạy tay workflow <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.github/workflows/update-snapshots.yml">update-snapshots.yml</a> bằng <code>workflow_dispatch</code> trên nhánh của PR. Workflow chạy trong đúng Docker image ở trên, thực thi <code>npm run test:update-snapshots</code>, rồi commit các ảnh mới vào nhánh.</li>
+<li>Review ảnh baseline mới trong PR (GitHub hiển thị ảnh PNG trực tiếp), rồi merge.</li>
+</ol>
+<p>Rút gọn ý tưởng của workflow:</p>
+<pre tabindex="0"><code class="language-yaml">name: Update snapshots
+on: workflow_dispatch
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.64.1-noble
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright test --project=visual --update-snapshots
+      # ... commit &amp; push các file trong tests/visual/__screenshots__/</code></pre>
+<p>Với AI agent (bài 1): agent <strong>không được</strong> cập nhật baseline để làm CI xanh. Đây là một trong những cách dễ nhất để một agent &quot;lách&quot; test, và <code>test-healer</code> bị cấm rõ ràng điều này. Cập nhật baseline là quyết định của con người.</p>
+<h2 id="5-threshold-bao-nhieu-thi-du">5. Threshold: bao nhiêu thì đủ?</h2>
+<p><code>toHaveScreenshot</code> có ba nút chỉnh độ nhạy:</p>
+<table>
+<thead>
+<tr>
+<th>Tùy chọn</th>
+<th>Ý nghĩa</th>
+<th>Gợi ý</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>maxDiffPixelRatio</code></td>
+<td>Tỉ lệ pixel được phép lệch (0–1)</td>
+<td><code>0.01</code> (1%) cho trang UI thường, như repo</td>
+</tr>
+<tr>
+<td><code>maxDiffPixels</code></td>
+<td>Số pixel tuyệt đối được phép lệch</td>
+<td>Dùng cho phần tử nhỏ, nơi tỉ lệ phần trăm không có nghĩa</td>
+</tr>
+<tr>
+<td><code>threshold</code></td>
+<td>Độ khác màu (0–1) để một pixel bị tính là lệch</td>
+<td>Mặc định <code>0.2</code>; hạ xuống nếu cần bắt thay đổi màu tinh tế</td>
+</tr>
+</tbody></table>
+<p>Nguyên tắc:</p>
+<ul>
+<li>Bắt đầu <strong>chặt</strong> (ngưỡng thấp), nới dần chỉ khi bạn chứng minh được nhiễu là vô hại. Ngưỡng cao hơn nhu cầu sẽ nuốt mất lỗi thật, ví dụ một icon biến mất có thể chỉ chiếm 0,3% pixel.</li>
+<li>Ngưỡng <strong>không</strong> thay thế cho việc cố định môi trường. Dùng ngưỡng để che sự khác biệt giữa OS là cách làm sai (mục 3).</li>
+<li>Ưu tiên chụp <strong>phần tử nhỏ</strong> thay vì toàn trang với ngưỡng lớn: ngưỡng 1% trên ảnh toàn trang là hàng ngàn pixel, đủ để giấu cả một nút bị hỏng.</li>
+<li>Ngưỡng đặt ở config là mặc định; chỉ ghi đè tại test khi có lý do, kèm comment.</li>
+</ul>
+<h2 id="6-khi-nao-khong-nen-dung-visual-test">6. Khi nào KHÔNG nên dùng visual test</h2>
+<ul>
+<li><strong>Nội dung động</strong>: feed, dashboard thời gian thực, dữ liệu theo người dùng. Mask quá nhiều thì không còn gì để so sánh; dùng assertion DOM.</li>
+<li><strong>Trang đang thay đổi liên tục</strong> (giai đoạn prototype): baseline sẽ phải cập nhật hằng ngày và mọi người sẽ ngừng đọc diff.</li>
+<li><strong>Khi assertion DOM đã đủ</strong>: &quot;nút Add tồn tại và bật&quot; không cần ảnh chụp. Visual test là lớp bổ sung, không phải lớp thay thế.</li>
+<li><strong>Kiểm tra layout đa trình duyệt/đa OS</strong>: ảnh chụp không đáp ứng việc này; dùng project riêng và baseline riêng, hoặc công cụ chuyên dụng (cloud visual testing).</li>
+<li><strong>Không có môi trường cố định</strong> (không dùng Docker, runner khác nhau mỗi lần): bạn sẽ chỉ nhận được nhiễu.</li>
+<li><strong>Không ai review diff.</strong> Một bộ visual test mà người ta bấm &quot;update&quot; vô tội vạ còn tệ hơn không có.</li>
+</ul>
+<p>Quy tắc ngón tay cái: giữ vài visual test cho các trang &quot;bộ mặt&quot; (trang chủ, đăng nhập, một vài thành phần cốt lõi), phần còn lại dùng assertion thông thường. Đó cũng là cách repo này làm: chỉ hai ảnh baseline.</p>
+<p>Một lối tắt khác cho phần tử nhỏ mà vẫn có ý nghĩa là <strong>ARIA snapshot</strong> (<code>toMatchAriaSnapshot</code>): so cấu trúc ngữ nghĩa dạng văn bản, không phụ thuộc OS hay font, rất phù hợp để khẳng định &quot;trang có đúng các mục này&quot;.</p>
+<h2 id="loi-thuong-gap-anti-patterns">Lỗi thường gặp / anti-patterns</h2>
+<ol>
+<li><strong>Sinh baseline trên máy cá nhân rồi commit.</strong> Sẽ fail trên CI Linux. Chỉ dùng workflow <code>update-snapshots</code>.</li>
+<li><strong>Chạy <code>--update-snapshots</code> để làm CI xanh</strong> mà không xem diff.</li>
+<li><strong>Không <code>mask</code> vùng động.</strong> Mỗi build một con số khác là mỗi build một lần fail.</li>
+<li><strong>Chụp trước khi font/ảnh tải xong.</strong> Thêm <code>document.fonts.ready</code> và chờ phần tử chính hiển thị.</li>
+<li><strong>Nới ngưỡng để che flaky</strong> thay vì tìm nguyên nhân (hoạt ảnh, font, dữ liệu động).</li>
+<li><strong>Chụp toàn trang cho mọi test.</strong> Diff khổng lồ, khó đọc, dễ fail do thay đổi không liên quan.</li>
+<li><strong>Quên cố định viewport, <code>colorScheme</code>, locale, múi giờ.</strong> Ảnh khác nhau giữa các lần chạy.</li>
+<li><strong>Lệch phiên bản giữa <code>@playwright/test</code> và Docker image.</strong> Render khác đi, baseline fail hàng loạt.</li>
+<li><strong>Để agent AI cập nhật baseline.</strong> Đây là quyết định của con người.</li>
+<li><strong>Dùng visual test thay cho assertion chức năng.</strong> Ảnh giống nhau không có nghĩa nút hoạt động.</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Chạy <code>npx playwright test --project=visual</code> trong Docker bằng lệnh ở mục 3. Xem file trong <code>tests/visual/__screenshots__/</code>.</li>
+<li>Trong bản sao thử nghiệm, đổi màu nút <code>Sign in</code> trong <code>site/demo/demo.css</code>, chạy lại test và mở HTML report (<code>npm run report</code>) để đọc ba ảnh <em>expected / actual / diff</em>.</li>
+<li>Bỏ <code>mask: [homePage.stats]</code> khỏi test hero, build lại site và chạy hai lần liên tiếp. Quan sát hiện tượng nhiễu, rồi khôi phục <code>mask</code>.</li>
+<li>Thử chạy visual test ngay trên máy (không Docker) và ghi lại số pixel lệch so với baseline của CI. Điều này minh họa vì sao quy tắc &quot;không sinh baseline cục bộ&quot; tồn tại.</li>
+<li>Thêm một visual test cho trang todo có vài mục, với <code>mask</code> cho thời điểm/giá trị động. Cân nhắc trang này có đáng làm visual test hay nên dùng assertion DOM.</li>
+<li>Chạy workflow <code>update-snapshots</code> trên một nhánh thử, xem commit tự động và đọc diff ảnh trong PR.</li>
+<li>Thử <code>toMatchAriaSnapshot</code> trên form đăng nhập và so sánh độ ổn định với <code>toHaveScreenshot</code>.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Visual test chạy trong <code>mcr.microsoft.com/playwright:v1.64.1-noble</code>, tag khớp phiên bản <code>@playwright/test</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Baseline chỉ được sinh bởi workflow <code>update-snapshots</code>; không commit ảnh sinh cục bộ.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Viewport, <code>colorScheme</code>, <code>reducedMotion</code> được cố định trong project <code>visual</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> <code>animations: &#39;disabled&#39;</code>, chờ <code>document.fonts.ready</code>, và chờ phần tử chính hiển thị trước khi chụp.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mọi vùng động đều được <code>mask</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Chụp phần tử thay vì toàn trang khi có thể; ngưỡng thấp (<code>maxDiffPixelRatio</code> ~ 0.01) và có lý do khi nới.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mọi thay đổi baseline được review như code; agent AI không được cập nhật baseline.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Chỉ dùng visual test cho vài trang &quot;bộ mặt&quot;; phần còn lại dùng assertion DOM/ARIA.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="03-api-testing.html">← API Testing với Playwright — typed ApiClient, test dương/âm, cách ly dữ liệu và contract checks</a>
+        <a class="next" rel="next" href="05-k6-performance.html">k6 Performance - đo tải API với VUs, thresholds và CI →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-10-29T04:50:22.826Z",
+  "issues": [
+    {
+      "repo": "grafana/k6",
+      "number": 881,
+      "title": "HTTP/2 server push",
+      "url": "https://github.com/grafana/k6/issues/881",
+      "labels": [
+        "good first issue",
+        "feature",
+        "lower prio",
+        "new-http",
+        "triage"
+      ],
+      "updatedAt": "2026-08-18T23:46:21Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 4412,
+      "title": "Optimize tests run speed (especially the functional tests)",
+      "url": "https://github.com/grafana/k6/issues/4412",
+      "labels": [
+        "good first issue",
+        "tests",
+        "hacktoberfest",
+        "triage",
+        "area: browser"
+      ],
+      "updatedAt": "2026-09-23T19:47:34Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 4584,
+      "title": "Support sigv4 to push metric to AWS managed prometheus",
+      "url": "https://github.com/grafana/k6/issues/4584",
+      "labels": [
+        "good first issue",
+        "hacktoberfest",
+        "triage",
+        "area: prometheusrw"
+      ],
+      "updatedAt": "2026-07-29T13:20:34Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 2764,
+      "title": "Extend the `metrics.TagSet` API",
+      "url": "https://github.com/grafana/k6/issues/2764",
+      "labels": [
+        "good first issue",
+        "ux",
+        "feature",
+        "stale"
+      ],
+      "updatedAt": "2026-10-19T11:02:33Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 2296,
+      "title": "a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ?",
+      "url": "https://github.com/grafana/k6/issues/2296",
+      "labels": [
+        "enhancement",
+        "help wanted",
+        "feature",
+        "js-compat",
+        "stale"
+      ],
+      "updatedAt": "2026-10-19T13:44:13Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 1939,
+      "title": "Log output as xk6 extension",
+      "url": "https://github.com/grafana/k6/issues/1939",
+      "labels": [
+        "enhancement",
+        "help wanted",
+        "feature",
+        "stale"
+      ],
+      "updatedAt": "2026-10-19T09:16:23Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 1210,
+      "title": "Cookies not saved during NTLM auth negotiation",
+      "url": "https://github.com/grafana/k6/issues/1210",
+      "labels": [
+        "bug",
+        "help wanted",
+        "refactor",
+        "evaluation needed",
+        "stale"
+      ],
+      "updatedAt": "2026-10-19T09:01:55Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 921,
+      "title": "Better metrics about sleep and group",
+      "url": "https://github.com/grafana/k6/issues/921",
+      "labels": [
+        "enhancement",
+        "help wanted",
+        "stale"
+      ],
+      "updatedAt": "2026-10-19T08:59:06Z"
+    },
+    {
+      "repo": "grafana/k6",
+      "number": 238,
+      "title": "Support for QUIC protocol",
+      "url": "https://github.com/grafana/k6/issues/238",
+      "labels": [
+        "good first issue",
+        "feature",
+        "stale"
+      ],
+      "updatedAt": "2026-10-12T08:37:25Z"
+    }
+  ]
+}

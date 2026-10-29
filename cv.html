@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linh Nguyen · QA Automation CV</title>
+  <meta name="description" content="CV of Linh Nguyen, QA Automation Engineer (5+ years): Playwright, TypeScript, Python, API, CI/CD and agentic testing, with links to the evidence in this repository." />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <!-- Only the icons this page uses (the open-source cards are rendered by scripts/build-site.mjs). -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-pipeline" viewBox="0 0 48 48"><rect x="4" y="18" width="10" height="12" rx="3" /><rect x="19" y="10" width="10" height="12" rx="3" /><rect x="19" y="26" width="10" height="12" rx="3" /><rect x="34" y="18" width="10" height="12" rx="3" /><path d="M14 24h2l3-8M16 24l3 8M29 16l3 8h2M29 32l3-8" /></symbol>
+      <symbol id="i-puzzle" viewBox="0 0 48 48"><path d="M10 14h8a4 4 0 1 1 8 0h8v8a4 4 0 1 1 0 8v8h-8a4 4 0 1 0-8 0h-8v-8a4 4 0 1 0 0-8z" /></symbol>
+      <symbol id="i-book" viewBox="0 0 48 48"><path d="M6 10c6-2 12-2 18 2 6-4 12-4 18-2v28c-6-2-12-2-18 2-6-4-12-4-18-2z" /><path d="M24 12v28" /></symbol>
+      <symbol id="i-git" viewBox="0 0 48 48"><circle cx="14" cy="10" r="4" /><circle cx="14" cy="38" r="4" /><circle cx="34" cy="18" r="4" /><path d="M14 14v20M34 22c0 8-8 8-16 12" /></symbol>
+      <symbol id="i-wrench" viewBox="0 0 48 48"><path d="M31 6a11 11 0 0 0-10.5 14.5L6.5 34.5a4.5 4.5 0 0 0 6.5 6.5l14-14A11 11 0 0 0 41.5 17l-7 6.5-6-1.5-1.5-6 6.5-7A11 11 0 0 0 31 6z" /><circle cx="10" cy="38" r="1.6" class="f" /></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+      <symbol id="i-linkedin" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle cx="8" cy="7.8" r="1" class="f" /></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+    </defs>
+  </svg>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="./">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="./#services">Services</a></li>
+        <li><a href="./#lessons">Lessons</a></li>
+        <li><a href="report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="wrap">
+      <article class="cv" data-testid="cv">
+        <header class="cv-head">
+          <div>
+            <h1>Linh Nguyen</h1>
+            <p class="cv-role">QA Automation Engineer · 5+ years</p>
+            <p class="cv-location" data-testid="cv-location">Da Nang, Vietnam</p>
+            <p class="cv-profile" data-testid="cv-profile">
+              <a href="https://github.com/nguyenvanlinh14">github.com/nguyenvanlinh14</a>
+              <span aria-hidden="true">·</span>
+              <a href="https://www.linkedin.com/in/linh-nguyen-7495333b6/">linkedin.com/in/linh-nguyen-7495333b6</a>
+            </p>
+          </div>
+          <div class="cv-actions">
+            <button class="btn primary" type="button" id="print-cv" data-testid="print-cv">Download PDF</button>
+            <span class="cv-hint">Opens the print dialog: choose “Save as PDF”.</span>
+          </div>
+        </header>
+
+        <section id="summary" data-testid="cv-summary">
+          <h2>Summary</h2>
+          <p class="cv-summary">
+            Automation engineer (5+ years) with experience in large-scale test automation for the Japanese and
+            European/American markets. Proficient in Playwright (TypeScript) and Python, with a focus on developing agentic
+            automation solutions. Experienced in building test automation frameworks for AI chatbots and APIs, integrating
+            MCP and Claude Code. Passionate about exploring and applying AI tools to optimize workflow efficiency and to
+            train QA teams. This portfolio is a working example: page objects, API and visual layers, k6 performance
+            checks and a GitHub Actions pipeline that publishes its own test report.
+          </p>
+        </section>
+
+        <section id="experience" data-testid="cv-experience">
+          <h2>Experience</h2>
+
+          <article class="role" data-testid="cv-role">
+            <header class="role-head">
+              <h3>Automation Engineer · Playwright (TS) &amp; Python · MCP</h3>
+              <p class="role-dates">Apr 2025 – Present</p>
+            </header>
+            <p class="role-meta">Picon Technology Co., Ltd &amp; Human Brain Global (sister companies, same owner) · Da Nang, Vietnam</p>
+            <p class="eng-intro">Human Brain Global · from Jun 2026</p>
+            <ul class="role-points">
+              <li><b>AI-driven products &amp; data platforms:</b> leads automation testing for AI-driven products and data-intensive platforms, including a Japanese stock market data platform for the Tokyo Stock Exchange (TSE).</li>
+            </ul>
+            <p class="eng-intro">Picon Technology · from Apr 2025</p>
+            <ul class="role-points">
+              <li><b>Scalable automation development:</b> leads automation testing for a major Japanese employment incident management system (CMS &amp; PWA) and a recruitment ecosystem including CMS platforms and worker applications for managing job offers (similar to Timee).</li>
+              <li><b>AI chatbot &amp; API verification:</b> architects and maintains a Python-based framework that validates chatbot response logic and content accuracy by integrating automated workflows with AI platform APIs.</li>
+              <li><b>Advanced Playwright architecture &amp; CI/CD:</b> designs end-to-end testing systems with Playwright (TypeScript) using the Page Object Model and Model Context Protocol (MCP); orchestrates CI/CD pipelines across Dev, Test and Staging environments.</li>
+              <li><b>Technical standardization:</b> authors skill.md documentation for frameworks and projects for knowledge transfer and codebase management.</li>
+              <li><b>Mentoring &amp; training:</b> leads the QA team’s transition to an agentic automation mindset through the application of AI agents.</li>
+              <li><b>AI tooling:</b> uses Antigravity, Claude Code and NotebookLM for technical research and complex test scenarios.</li>
+            </ul>
+            <ul class="role-points role-extra">
+              <li data-testid="cv-case-study-link">Designed an AI-agent-driven QA workflow (human QC + Claude Code) — <a href="case-study.html">case study →</a></li>
+            </ul>
+          </article>
+
+          <article class="role" data-testid="cv-role">
+            <header class="role-head">
+              <h3>Freelance Automation QE (independent)</h3>
+              <p class="role-dates">2019 – Jan 2026</p>
+            </header>
+            <p class="role-meta">Selenium · Cypress · JS · TS</p>
+            <ul class="engagements" aria-label="Freelance engagements">
+              <li data-testid="cv-engagement">
+                <p class="eng-head"><b>Freelance ERP</b><span class="eng-role">Automation QE (Web)</span><span class="role-dates">Jul 2019 – Jan 2020</span></p>
+                <p>Executed 300+ end-to-end test cases for an ERP system, transitioning from Selenium to Protractor.</p>
+              </li>
+              <li data-testid="cv-engagement">
+                <p class="eng-head"><b>Mable.com.au</b><span class="eng-role">Automation Tester</span><span class="role-dates">Feb 2020 – Jun 2022</span></p>
+                <p>Led Cypress automation for web and mobile (Ionic 4), 500+ test cases per platform. API tests (REST to GraphQL) for user management, jobs, agreements and timesheets. CI/CD with Cypress Dashboard across multiple environments.</p>
+              </li>
+              <li data-testid="cv-engagement">
+                <p class="eng-head"><b>Sonic.ederma.au</b><span class="eng-role">Integration Tester</span><span class="role-dates">Jul 2022 – Dec 2022</span></p>
+                <p>Executed 300+ Cypress test cases for patient drafts and lesion submissions.</p>
+              </li>
+              <li data-testid="cv-engagement">
+                <p class="eng-head"><b>Workout Tracking Mobile App</b><span class="role-dates">Jul 2022 – Jan 2023</span></p>
+                <p>Automated login, navigation and settings using the Page Object Model (POM) with WebdriverIO, Appium and Jasmine.</p>
+              </li>
+              <li data-testid="cv-engagement">
+                <p class="eng-head"><b>E-learning · Good to Great Schools Australia</b><span class="role-dates">Feb 2024 – Nov 2025</span></p>
+                <p>Cypress E2E tests for member signup, webinars and reports. Azure Pipelines for TEST/STAGING. Migrated from Azure to Kinsta, moving the E2E tests to a Bitbucket repository.</p>
+              </li>
+            </ul>
+          </article>
+
+          <article class="role" data-testid="cv-role">
+            <header class="role-head">
+              <h3>QA Automation Tester (Android)</h3>
+              <p class="role-dates">Until 2019 · ~5 years</p>
+            </header>
+            <p class="role-meta">Gameloft DAD</p>
+            <p>Automated test scripts in JavaScript (ES6) for mobile games. Automation coverage: Dungeon Hunter 5 (37%), War Planet Online (40%), Modern Combat 5 (20%).</p>
+          </article>
+        </section>
+
+        <section id="skills" data-testid="cv-skills">
+          <h2>Skills</h2>
+          <div class="skill-group">
+            <h3>Test automation</h3>
+            <ul class="skills"><li>Playwright</li><li>Cypress</li><li>Selenium</li><li>Cucumber</li><li>WebdriverIO</li><li>Appium</li><li>Jasmine</li><li>Protractor</li><li>Page Object Model</li><li>Fixtures</li><li>Data builders</li><li>Visual testing</li></ul>
+          </div>
+          <div class="skill-group">
+            <h3>API</h3>
+            <ul class="skills"><li>REST API testing</li><li>GraphQL</li><li>Typed API client</li><li>Negative cases (401 / 422)</li></ul>
+          </div>
+          <div class="skill-group">
+            <h3>Performance</h3>
+            <ul class="skills"><li>k6</li><li>Smoke and load tests</li><li>Thresholds (p95, error rate)</li></ul>
+          </div>
+          <div class="skill-group">
+            <h3>CI/CD &amp; infra</h3>
+            <ul class="skills"><li>GitHub Actions</li><li>Bitbucket Pipelines</li><li>Azure Pipelines</li><li>Docker and Compose</li><li>GitHub Pages</li><li>HTML / JSON / JUnit reports</li></ul>
+          </div>
+          <div class="skill-group">
+            <h3>AI-assisted QA</h3>
+            <ul class="skills"><li>Claude Code sub-agents</li><li>MCP</li><li>Playwright MCP</li><li>AI chatbot testing</li><li>AI failure triage</li><li>CLAUDE.md rules</li></ul>
+          </div>
+          <div class="skill-group">
+            <h3>Languages</h3>
+            <ul class="skills"><li>TypeScript</li><li>JavaScript</li><li>Python</li><li class="learning">Go <small>learning</small></li></ul>
+          </div>
+        </section>
+
+        <section id="work" data-testid="cv-work">
+          <h2>Selected work</h2>
+          <h3 class="cv-title"><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">nguyenvanlinh14/qa-agent-portfolio</a></h3>
+          <p>
+            Playwright framework (page objects, fixtures, data builders, typed API client, visual tests) planned, generated
+            and healed with Claude Code sub-agents. Every change passes a human review; GitHub Actions builds, tests and deploys it.
+          </p>
+          <ul class="facts">
+            <li><b>328</b><span>tests</span></li>
+            <li><b>3</b><span>layers</span></li>
+            <li><b>4</b><span>AI agents</span></li>
+            <li><b>11</b><span>lessons</span></li>
+          </ul>
+          <div class="c-links">
+            <a class="pill-link" href="report/" rel="noopener">Live report<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+            <a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions" rel="noopener">CI runs<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+            <a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests" rel="noopener">tests/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+            <a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/k6" rel="noopener">k6/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+            <a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/.claude/agents" rel="noopener">agents/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+          </div>
+          <p class="build">main · 91887fc · 2026-10-29</p>
+        </section>
+
+        <section id="oss" data-testid="cv-oss">
+          <h2>Open source</h2>
+          <div class="contribs">
+            <article class="contrib" data-testid="contribution" data-stage="proposed">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>grafana/k6#4260</b><small>deriveBits: bit lengths not multiple of 8</small></div></div>
+            <ol class="track" aria-label="grafana/k6#4260 progress"><li class="current" aria-current="step"><span>Comment</span></li><li class="todo"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/grafana/k6/issues/4260" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/k6-4260.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="proposed">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-pipeline" /></svg><div class="c-id"><b>grafana/k6#3062</b><small>Test k6 installation in CI</small></div></div>
+            <ol class="track" aria-label="grafana/k6#3062 progress"><li class="current" aria-current="step"><span>Comment</span></li><li class="todo"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/grafana/k6/issues/3062" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/k6-3062.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions/runs/40499430856" rel="noopener">Run<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="pr">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>volcano-sh/volcano#6171</b><small>Unit tests for the Job state machine</small></div></div>
+            <ol class="track" aria-label="volcano-sh/volcano#6171 progress"><li class="done"><span>Comment</span></li><li class="current" aria-current="step"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/volcano-sh/volcano/issues/6171" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/volcano-job-state-tests.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/volcano-sh/volcano/pull/6171" rel="noopener">PR<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="merged">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>meshery/meshery#22619</b><small>Replace waitForTimeout with a web-first assertion</small></div></div>
+            <ol class="track" aria-label="meshery/meshery#22619 progress"><li class="done"><span>Comment</span></li><li class="done"><span>PR</span></li><li class="done"><span>Review</span></li><li class="done"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/meshery/meshery/issues/22619" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-userpref-no-sleep.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/meshery/meshery/pull/22619" rel="noopener">PR<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="pr">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>meshery/meshery#22628</b><small>Web-first URL assertion in logout spec</small></div></div>
+            <ol class="track" aria-label="meshery/meshery#22628 progress"><li class="done"><span>Comment</span></li><li class="current" aria-current="step"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/meshery/meshery/issues/22628" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-logout-web-first.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/meshery/meshery/pull/22628" rel="noopener">PR<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          </div>
+        </section>
+
+        <section id="teaching" data-testid="cv-teaching">
+          <h2>Teaching</h2>
+          <p>
+            <a href="./#lessons">11 lessons in Vietnamese</a>: AI agents in QA, Playwright + POM, API testing,
+            visual testing, k6, Docker, CI/CD and test design patterns. Written from this repository’s own code.
+          </p>
+        </section>
+
+        <div class="cv-pair">
+          <section id="education" data-testid="cv-education">
+            <h2>Education</h2>
+            <p><b>Van Lang University</b><br />Bachelor of Technology</p>
+          </section>
+
+          <section id="certifications" data-testid="cv-certifications">
+            <h2>Certifications</h2>
+            <p>Google · Coursera — courses of the <a href="https://www.coursera.org/professional-certificates/google-ai">Google AI Professional Certificate</a>:</p>
+            <ul class="plain-list">
+              <li>AI Fundamentals</li>
+              <li>AI for Brainstorming and Planning</li>
+              <li>AI for Writing and Communicating</li>
+              <li>AI for Content Creation</li>
+              <li>AI for App Building</li>
+            </ul>
+          </section>
+        </div>
+
+        <section id="contact" data-testid="cv-contact">
+          <h2>Contact</h2>
+          <p>
+            <a href="https://www.linkedin.com/in/linh-nguyen-7495333b6/">LinkedIn</a> or
+            <a href="https://github.com/nguyenvanlinh14">GitHub</a>, or
+            <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/issues/new">open an issue</a> /
+            <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/discussions">start a discussion</a> on this repository.
+          </p>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+    document.getElementById('print-cv').addEventListener('click', () => window.print());
+  </script>
+</body>
+</html>

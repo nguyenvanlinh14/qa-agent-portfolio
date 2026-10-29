@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linh Nguyen · AI-Agent QA Workflow Case Study</title>
+  <meta name="description" content="Case study: an AI-agent-driven QA workflow (human QC + Claude Code) for a multi-tenant stock-screening SaaS. The agent does the legwork, the QC keeps the decisions. Details anonymised." />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="assets/style.css" />
+  <script src="assets/fx.js" defer></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <!-- Only the icons this page uses. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-git" viewBox="0 0 48 48"><circle cx="14" cy="10" r="4" /><circle cx="14" cy="38" r="4" /><circle cx="34" cy="18" r="4" /><path d="M14 14v20M34 22c0 8-8 8-16 12" /></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+      <symbol id="i-linkedin" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle cx="8" cy="7.8" r="1" class="f" /></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+    </defs>
+  </svg>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="./">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="./#workflow">Workflow</a></li>
+        <li><a href="cv.html">CV</a></li>
+        <li><a href="report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="wrap">
+      <article class="case" data-testid="case-study">
+        <header class="case-head">
+          <span class="eyebrow" data-testid="case-eyebrow">Case study · AI-agent QA workflow</span>
+          <h1 data-testid="case-title">The agent does the legwork. I keep the decisions.</h1>
+          <p class="case-context" data-testid="case-context">Multi-tenant B2B SaaS for Japanese stock screening (client names withheld)</p>
+          <dl class="case-meta">
+            <div><dt>Team</dt><dd>One QC (me) and Claude Code, working in the QA repository</dd></div>
+            <div><dt>Environments</dt><dd>DEV → TEST (pre-production) → PROD</dd></div>
+            <div><dt>Roles tested</dt><dd>Super Admin; per tenant Owner, Moderator, Member</dd></div>
+          </dl>
+        </header>
+
+        <section id="problem" data-testid="case-problem">
+          <h2>Problem</h2>
+          <p class="lead-in">
+            In one sprint my API-level regression stayed green while the UI showed an error toast after a successful delete.
+            The API was right, but the user still saw a failure.
+          </p>
+          <p>
+            The second problem was the release itself. Checks were manual and the evidence was scattered, so it was hard to
+            prove afterwards what had been checked and where.
+          </p>
+          <p>
+            The product multiplies the effort. Each client tenant has its own branded user site (ranking, stock analysis,
+            watchlist, dashboard, backtest, alerts, AI chat) next to a shared admin site (members, packages, screening rules,
+            notifications, datasets for the AI chat, audit log). Features depend on the member package, for example Essential
+            or Premium, and the TEST environment is pre-production but used by real customers.
+          </p>
+        </section>
+
+        <section id="approach" data-testid="case-approach">
+          <h2>Approach</h2>
+          <p>
+            The agent works as an end user, as a QC and as a QA-automation engineer. I keep every decision that carries risk.
+            Everything the agent produces is backed by evidence: a screenshot with the page URL and the environment, or a video
+            for bugs.
+          </p>
+          <div class="case-split">
+            <div class="case-card decide">
+              <h3>I decide</h3>
+              <ul>
+                <li>Approving test cases</li>
+                <li>Go / No-go for a release</li>
+                <li>Any data change on PROD</li>
+                <li>Any conflict between a requirement and the current system</li>
+              </ul>
+            </div>
+            <div class="case-card does">
+              <h3>The agent does</h3>
+              <ul>
+                <li>Walks the product role by role</li>
+                <li>Maps scope and asks when it is unclear</li>
+                <li>Writes cases and automation, runs and triages them</li>
+                <li>Collects evidence and reports facts</li>
+              </ul>
+            </div>
+          </div>
+          <p class="note">
+            The same split is drawn as a swimlane diagram in <a href="./#workflow">Agents in production</a> on the home page.
+          </p>
+
+          <h3>Workflow A · Build the test suite for a feature</h3>
+          <div class="table-wrap">
+            <table data-testid="workflow-table-a">
+              <thead><tr><th scope="col">#</th><th scope="col">Who</th><th scope="col">Step</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><span class="who qc">QC</span></td><td>I create a secured <code>.env</code> per environment and tenant with the test accounts of every role (git-ignored, owner-only file permissions) and declare the guardrails: forbidden environment and tenant pairs, which accounts may change data, and whether PROD may be changed.</td></tr>
+                <tr><td>2</td><td><span class="who agent">Agent</span></td><td>Walks through the product as an end user, role by role, with the <code>.env</code> accounts. The result is a map of screens, flows and current behaviour with screenshots (“as is”, not yet “correct”).</td></tr>
+                <tr><td>3</td><td><span class="who qc">QC</span></td><td>I add the requirements: client request, prototype and tickets.</td></tr>
+                <tr><td>4</td><td><span class="who agent">Agent</span></td><td>Maps the impact scope (which screens, roles and packages are affected or not) and asks me about anything unclear. No test case is written while the scope is unclear.</td></tr>
+                <tr><td>5</td><td><span class="who agent">Agent</span></td><td>Writes the test cases per feature as a QC. Each case is tagged with its source: requirement, then prototype, then current system. A conflict between sources becomes a question, never a silent choice.</td></tr>
+                <tr><td>6–8</td><td><span class="who both">QC + Agent</span></td><td>I review, the agent updates, and I review again until the suite is approved.</td></tr>
+                <tr><td>9</td><td><span class="who agent">Agent</span></td><td>Writes the automation as a QA-automation engineer. It runs the scripts against the real environment until they are stable, separates script errors from product errors, restores and re-verifies every data change, tags the scripts and registers them in the coverage map.</td></tr>
+                <tr><td>10</td><td><span class="who qc">QC</span></td><td>I review the scripts and loop until they are accepted.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Workflow B · Run a feature in each test cycle</h3>
+          <div class="table-wrap">
+            <table data-testid="workflow-table-b">
+              <thead><tr><th scope="col">#</th><th scope="col">Who</th><th scope="col">Step</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><span class="who agent">Agent</span></td><td>Walks through the feature as an end user.</td></tr>
+                <tr><td>2</td><td><span class="who agent">Agent</span></td><td>Compares the walkthrough with the test suite before running it: new UI, changed labels, changed flows.</td></tr>
+                <tr><td>3</td><td><span class="who agent">Agent</span></td><td>Fixes small changes (selector, label) in the script and notes them. Big changes go to me as a question.</td></tr>
+                <tr><td>4</td><td><span class="who qc">QC</span></td><td>I answer: an intended change (update the tests) or a bug.</td></tr>
+                <tr><td>5</td><td><span class="who agent">Agent</span></td><td>Runs and manages the suite: parallelism, sessions, retries, background runs.</td></tr>
+                <tr><td>6</td><td><span class="who agent">Agent</span></td><td>Triages failures. It collapses duplicates into one finding, separates environment failures (expired session, mass 5xx) from product bugs and script bugs, re-runs flaky cases, and checks the bug registry so a known bug is not reported twice.</td></tr>
+                <tr><td>7</td><td><span class="who agent">Agent</span></td><td>For a new bug, records a video of the reproduction (optionally narrated) and writes a report in the team template: Device, OS, Prerequisite, Account, STEPS, ACTUAL, EXPECT, SCOPE.</td></tr>
+                <tr><td>8</td><td><span class="who agent">Agent</span></td><td>Restores every test change (watchlists, rules, presets, packages, names, notification switches) and verifies it.</td></tr>
+                <tr><td>9</td><td><span class="who agent">Agent</span></td><td>Reports as xlsx or HTML, facts only, with evidence on each row.</td></tr>
+                <tr><td>10</td><td><span class="who qc">QC</span></td><td>I review the report.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Workflow C · Production release</h3>
+          <div class="table-wrap">
+            <table data-testid="workflow-table-c">
+              <thead><tr><th scope="col">#</th><th scope="col">Who</th><th scope="col">Step</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><span class="who agent">Agent</span></td><td>Pulls the release scope from the ticket tracker through its REST API, using my personal API key (kept in a git-ignored file, never printed), and groups the tickets by release item.</td></tr>
+                <tr><td>2</td><td><span class="who agent">Agent</span></td><td>Before the release, on TEST: one evidence screenshot and check per ticket, plus the full UI regression. Every image carries the URL and an environment label.</td></tr>
+                <tr><td>3</td><td><span class="who qc">QC</span></td><td>I decide Go / No-go.</td></tr>
+                <tr><td>4</td><td><span class="who agent">Agent</span></td><td>After the release, UAT on PROD: the same ticket checks and the same regression flows, with test accounts only. All changes are put back and checked.</td></tr>
+                <tr><td>5</td><td><span class="who agent">Agent</span></td><td>Updates the tickets from the checklist. Passed: comment “Passed on PROD” with a screenshot, then close. Failed or not verifiable on PROD: screenshot only, and the ticket stays open for me.</td></tr>
+                <tr><td>6</td><td><span class="who qc">QC</span></td><td>I handle the open tickets.</td></tr>
+                <tr><td>7</td><td><span class="who agent">Agent</span></td><td>Exports the release checklist (xlsx: Summary, Tickets (TEST), Regression (TEST), UAT PROD) with a screenshot in every executed row.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="techniques" data-testid="case-techniques">
+          <h2>Key techniques</h2>
+
+          <div class="tech">
+            <h3>UI smoke regression with a UI guard</h3>
+            <p>
+              One real user flow per feature and role: 69 tests across 2 sites and 6 roles. After every step a guard checks
+              that there is no error text on screen, no API 5xx or unexpected 4xx, and no JavaScript or console error. On
+              failure it takes a screenshot. I introduced it after the sprint where the API-level regression missed the toast
+              error on a successful delete.
+            </p>
+          </div>
+
+          <div class="tech">
+            <h3>Mutate and restore on a shared pre-production tenant</h3>
+            <p>
+              Every flow that writes data restores it in a <code>finally</code> block and asserts the restore. That covers the
+              watchlist, rules (as drafts only), condition presets, datasets, chat threads, scheduled notifications, member
+              packages and the profile name. I never kill a long run midway, because the restore would not run.
+            </p>
+            <div class="bp-panel bp-flow" data-style="blueprint" data-testid="flow-figure">
+              <svg class="bp-dim" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true">
+                <path class="bp-stroke" pathLength="1" d="M0 7H1000" />
+                <path class="bp-tick" d="M0.5 1V13M1000 1V13M500 3.5V10.5" />
+              </svg>
+              <ol class="flow" aria-label="Mutate and restore sequence">
+                <li>Change data</li><li>Run the flow</li><li>Restore in <code>finally</code></li><li>Assert the restore</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="tech">
+            <h3>Evidence that proves where it was taken</h3>
+            <p>
+              Headless screenshots have no address bar. The agent stamps a browser-style bar on each one with the exact page
+              URL and a label: <b>ENV · tenant · role · time (JST)</b>. Red means PROD, blue means TEST.
+            </p>
+            <div class="stamps" data-testid="stamp-mock">
+              <figure class="stamp-fig bp-panel" data-style="blueprint">
+                <svg viewBox="-34 -34 540 252" role="img" aria-labelledby="stamp-test-t">
+                  <title id="stamp-test-t">Mock of a TEST screenshot with a blue stamped bar</title>
+                  <rect class="m-bg bp-stroke" pathLength="1" width="460" height="200" />
+                  <rect class="m-bar bp-stroke" pathLength="1" width="460" height="44" />
+                  <circle class="bp-stroke" pathLength="1" cx="18" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="36" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="54" cy="22" r="5" />
+                  <rect class="m-pill bp-stroke" pathLength="1" x="76" y="11" width="366" height="22" rx="11" />
+                  <text class="m-url bp-fade" x="92" y="27">https://tenant-a.example/…</text>
+                  <rect class="m-stamp-test bp-stroke" pathLength="1" y="44" width="460" height="30" />
+                  <text class="m-label bp-fade" x="14" y="64">TEST · tenant A · Owner · 10:42 JST</text>
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="98" width="150" height="10" rx="5" />
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="118" width="240" height="8" rx="4" />
+                  <rect class="m-block bp-stroke" pathLength="1" x="20" y="142" width="420" height="44" rx="8" />
+                  <!-- blueprint marks: width / height dimensions, two numbered call-outs, sheet tag -->
+                  <g class="bp-note" aria-hidden="true">
+                    <path class="bp-stroke" pathLength="1" d="M0 -16H460" /><path class="bp-tick" d="M0 -22V-10M460 -22V-10" />
+                    <text class="bp-fade" x="230" y="-22" text-anchor="middle">460</text>
+                    <path class="bp-stroke" pathLength="1" d="M-16 0V200" /><path class="bp-tick" d="M-22 0H-10M-22 200H-10" />
+                    <text class="bp-fade" transform="rotate(-90)" x="-100" y="-22" text-anchor="middle">200</text>
+                    <path class="bp-leader bp-tick" d="M446 22H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="22" r="9" /><text class="bp-fade" x="484" y="26" text-anchor="middle">A</text>
+                    <path class="bp-leader bp-tick" d="M462 59H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="59" r="9" /><text class="bp-fade" x="484" y="63" text-anchor="middle">B</text>
+                    <text class="bp-fade" x="0" y="212">FIG 1</text>
+                    <text class="bp-fade" x="460" y="212" text-anchor="end">1:1</text>
+                  </g>
+                </svg>
+                <figcaption>Mock, TEST: placeholder text, not a real page.</figcaption>
+              </figure>
+              <figure class="stamp-fig bp-panel" data-style="blueprint">
+                <svg viewBox="-34 -34 540 252" role="img" aria-labelledby="stamp-prod-t">
+                  <title id="stamp-prod-t">Mock of a PROD screenshot with a red stamped bar</title>
+                  <rect class="m-bg bp-stroke" pathLength="1" width="460" height="200" />
+                  <rect class="m-bar bp-stroke" pathLength="1" width="460" height="44" />
+                  <circle class="bp-stroke" pathLength="1" cx="18" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="36" cy="22" r="5" /><circle class="bp-stroke" pathLength="1" cx="54" cy="22" r="5" />
+                  <rect class="m-pill bp-stroke" pathLength="1" x="76" y="11" width="366" height="22" rx="11" />
+                  <text class="m-url bp-fade" x="92" y="27">https://tenant-b.example/…</text>
+                  <rect class="m-stamp-prod bp-stroke" pathLength="1" y="44" width="460" height="30" />
+                  <text class="m-label bp-fade" x="14" y="64">PROD · tenant B · Member · 14:05 JST</text>
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="98" width="190" height="10" rx="5" />
+                  <rect class="m-line bp-stroke" pathLength="1" x="20" y="118" width="200" height="8" rx="4" />
+                  <rect class="m-block bp-stroke" pathLength="1" x="20" y="142" width="420" height="44" rx="8" />
+                  <!-- blueprint marks: width / height dimensions, two numbered call-outs, sheet tag -->
+                  <g class="bp-note" aria-hidden="true">
+                    <path class="bp-stroke" pathLength="1" d="M0 -16H460" /><path class="bp-tick" d="M0 -22V-10M460 -22V-10" />
+                    <text class="bp-fade" x="230" y="-22" text-anchor="middle">460</text>
+                    <path class="bp-stroke" pathLength="1" d="M-16 0V200" /><path class="bp-tick" d="M-22 0H-10M-22 200H-10" />
+                    <text class="bp-fade" transform="rotate(-90)" x="-100" y="-22" text-anchor="middle">200</text>
+                    <path class="bp-leader bp-tick" d="M446 22H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="22" r="9" /><text class="bp-fade" x="484" y="26" text-anchor="middle">A</text>
+                    <path class="bp-leader bp-tick" d="M462 59H474" /><circle class="bp-stroke" pathLength="1" cx="484" cy="59" r="9" /><text class="bp-fade" x="484" y="63" text-anchor="middle">B</text>
+                    <text class="bp-fade" x="0" y="212">FIG 2</text>
+                    <text class="bp-fade" x="460" y="212" text-anchor="end">1:1</text>
+                  </g>
+                </svg>
+                <figcaption>Mock, PROD: placeholder text, not a real page.</figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <div class="tech">
+            <h3>Tag strategy that keeps maintenance low</h3>
+            <ul class="tags">
+              <li><code>@regression</code> UI smoke only</li>
+              <li><code>@deep</code> detailed data comparisons</li>
+              <li><code>@market-data</code> external market-data checks, such as stock exchange new listings and delistings</li>
+            </ul>
+            <p>All three are selectable in one manual CI workflow.</p>
+          </div>
+
+          <div class="tech">
+            <h3>Coverage map as a CI gate</h3>
+            <p>
+              A JSON coverage map is the source of truth. A sync script regenerates the coverage document from the map and
+              from <code>playwright test --list</code>, and a CI workflow fails any pull request where they drift. Spec files
+              must not read secrets or caches at import time, so the listing works on CI without credentials.
+            </p>
+          </div>
+
+          <div class="tech">
+            <h3>Guardrails enforced by tooling</h3>
+            <p>
+              Instructions alone are not enough. A pre-command hook blocks a forbidden PROD tenant, test data uses only my own
+              test accounts, and risky or outward-facing actions are confirmed with me first.
+            </p>
+          </div>
+        </section>
+
+        <section id="results" data-testid="case-results">
+          <h2>Results</h2>
+          <div class="stats case-stats" data-testid="case-stats">
+            <div class="stat" data-testid="case-stat"><b>82%</b><span>sub-features automated</span></div>
+            <div class="stat" data-testid="case-stat"><b>~1,890</b><span>automated cases</span></div>
+            <div class="stat" data-testid="case-stat"><b>69</b><span>UI regression flows</span></div>
+            <div class="stat" data-testid="case-stat"><b>17/17</b><span>tickets passed on TEST</span></div>
+            <div class="stat" data-testid="case-stat"><b>14</b><span>closed with PROD evidence</span></div>
+            <div class="stat" data-testid="case-stat"><b>22<small> min</small></b><span>full TEST regression</span></div>
+          </div>
+          <ul>
+            <li><b>Coverage:</b> 110 tracked sub-features, 90 automated (82%, or 87% including partial), about 1,890 automated test cases.</li>
+            <li><b>UI regression:</b> grew from 42 to 69 tests (admin site 13 flows, user site 10 flows × roles). New areas: AI chat, datasets, condition presets, draft rules, notifications, audit log, language and theme switch, account settings.</li>
+            <li><b>Release of 28 Oct 2026:</b> 17 tickets in scope, pulled automatically. TEST: 17/17 tickets passed; regression 53 passed, 16 not applicable, 0 failed. PROD UAT: 46 passed, 4 not applicable.</li>
+            <li><b>Closed by the agent:</b> 14 tickets were commented with PROD evidence and closed. 3 stayed open with evidence for me: one not verifiable with a Premium test account, one only partly checkable on PROD, and one where maintenance mode cannot be switched on PROD.</li>
+            <li><b>Run time:</b> a full TEST regression takes about 22 minutes. A PROD UAT run (smoke plus ticket evidence) takes about 15 minutes.</li>
+            <li><b>Re-verification:</b> all 5 dataset and AI-chat fixes were confirmed, and the agent raised open questions: a duplicate file name re-upload is not skipped, and ingesting about 7.5 MB takes about 15 minutes.</li>
+          </ul>
+          <h3>Triage example: 404 on Backtest</h3>
+          <p>
+            Timed reproductions narrowed a “404 on Backtest” bug down to a race. It only happens when the user clicks within
+            about 1 s of switching tabs: 7 of 7 attempts failed when clicking immediately, 0 of 10 failed after a pause of 1–3 s.
+            That finding set the severity correctly.
+          </p>
+        </section>
+
+        <section id="tools" data-testid="case-tools">
+          <h2>Tools</h2>
+          <ul class="tags">
+            <li>Claude Code (AI agent)</li>
+            <li>Playwright + TypeScript</li>
+            <li>Python (openpyxl, Pillow)</li>
+            <li>GitHub Actions</li>
+            <li>Ticket tracker REST API</li>
+            <li>xlsx / HTML reports</li>
+            <li>Video evidence with narration (TTS)</li>
+          </ul>
+          <p class="note">
+            No code or screenshots from the project are shown here. The Playwright framework in
+            <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">this repository</a> is a separate public demo.
+          </p>
+        </section>
+
+        <section id="lessons" data-testid="case-lessons">
+          <h2>Lessons</h2>
+          <ol class="lessons-list">
+            <li><b>Keep humans on decisions with risk.</b> Approvals, Go / No-go and any change on PROD stay with me.</li>
+            <li><b>Demand evidence that shows where it was taken.</b> A screenshot without its URL and environment proves little.</li>
+            <li><b>Restore what you change.</b> Shared environments stay trustworthy only if every test puts its data back.</li>
+            <li><b>Ask before testing when the scope is unclear.</b> A question costs minutes; a wrong test case costs a cycle.</li>
+          </ol>
+        </section>
+
+        <div class="case-end">
+          <p class="note" data-testid="case-note">Details anonymised; numbers are from the project, October 2026.</p>
+          <div class="cta">
+            <a class="btn primary" href="./#workflow">Agents in production<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+            <a class="btn" href="cv.html">CV</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot-links">
+        <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio"><svg class="ic" aria-hidden="true"><use href="#i-git" /></svg>nguyenvanlinh14/qa-agent-portfolio</a>
+        <a href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-linkedin" /></svg>LinkedIn</a>
+      </div>
+      <span>Linh Nguyen · QA Automation</span>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+</body>
+</html>

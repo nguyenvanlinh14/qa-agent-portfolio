@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API Testing với Playwright — typed ApiClient, test dương/âm, cách ly dữ liệu và contract checks · Linh.NV</title>
+  <meta name="description" content="API Testing với Playwright — typed ApiClient, test dương/âm, cách ly dữ liệu và contract checks" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="api-testing-voi-playwright-request-context">API Testing với Playwright request context</h1>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<p>Sau bài này bạn sẽ:</p>
+<ul>
+<li>Dùng <code>APIRequestContext</code> của Playwright để test REST API mà <strong>không cần mở trình duyệt</strong>.</li>
+<li>Xây một <strong>typed <code>ApiClient</code></strong> để spec ngắn gọn, có kiểu dữ liệu và dễ viết test âm tính.</li>
+<li>Viết bộ test <strong>positive / negative</strong> đúng mã trạng thái: 200/201/204, 400, 401, 404, 422.</li>
+<li>Đảm bảo <strong>cách ly dữ liệu</strong> giữa các test chạy song song và <strong>dọn dẹp</strong> những gì mình tạo ra.</li>
+<li>Thêm <strong>contract checks</strong> (kiểm tra hình dạng response) để bắt thay đổi phá vỡ hợp đồng API.</li>
+</ul>
+<p>API được test là SUT của repo, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/server/app.mjs">server/app.mjs</a>, chạy ở <code>http://localhost:4173</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Hành vi</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GET /api/health</code></td>
+<td><code>200 { status: &#39;ok&#39;, uptime }</code></td>
+</tr>
+<tr>
+<td><code>POST /api/auth/login</code> <code>{ email, password }</code></td>
+<td><code>200 { token, user: { email } }</code>; <code>400</code> thiếu trường; <code>401</code> sai thông tin</td>
+</tr>
+<tr>
+<td><code>GET /api/todos</code></td>
+<td>Danh sách todo <strong>của user hiện tại</strong>; <code>401</code> nếu không có Bearer token</td>
+</tr>
+<tr>
+<td><code>POST /api/todos</code> <code>{ title }</code></td>
+<td><code>201</code> todo mới; <code>422</code> nếu title rỗng hoặc dài hơn 120 ký tự</td>
+</tr>
+<tr>
+<td><code>GET/PATCH/DELETE /api/todos/:id</code></td>
+<td><code>200</code> / <code>200</code> / <code>204</code>; <code>404</code> nếu không tồn tại hoặc thuộc user khác</td>
+</tr>
+<tr>
+<td><code>POST /api/test/reset</code></td>
+<td>Xóa <strong>toàn bộ</strong> todo và token. <strong>Không</strong> gọi từ test chạy song song</td>
+</tr>
+</tbody></table>
+<p>Tài khoản demo công khai: <code>qa@demo.dev</code> / <code>Passw0rd!</code> (và <code>dev@demo.dev</code> với cùng mật khẩu, dùng cho test cách ly giữa hai user).</p>
+<h2 id="1-khai-niem">1. Khái niệm</h2>
+<h3 id="vi-sao-test-api-bang-playwright">Vì sao test API bằng Playwright?</h3>
+<p>Test API nhanh hơn UI hàng chục lần, ít flaky hơn, và chỉ ra lỗi chính xác hơn (lớp nào hỏng). Chúng cũng bổ trợ cho UI test: dùng API để <strong>chuẩn bị dữ liệu</strong> (tạo todo qua API thay vì click 10 lần) và để <strong>kiểm tra trạng thái</strong> sau thao tác UI. Playwright đã có sẵn <code>request</code> fixture, nên không cần thêm thư viện HTTP, và cùng một runner, cùng báo cáo, cùng cấu hình retry.</p>
+<p>Trong <code>playwright.config.ts</code>, project <code>api</code> không khai báo trình duyệt: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/playwright.config.ts">playwright.config.ts</a>.</p>
+<pre tabindex="0"><code class="language-ts">&#123; name: &#39;api&#39;, testMatch: &#39;api/**/*.spec.ts&#39; }</code></pre>
+<p><code>baseURL</code> lấy từ <code>use.baseURL</code>, nên mọi đường dẫn trong spec chỉ cần <code>/api/...</code>.</p>
+<h3 id="kim-tu-thap-test-va-vi-tri-cua-api-test">Kim tự tháp test và vị trí của API test</h3>
+<p>UI test kiểm tra &quot;người dùng làm được việc này không&quot;, API test kiểm tra &quot;hệ thống tuân thủ hợp đồng không&quot;. Một API test tốt phải trả lời được: <em>đầu vào nào</em>, <em>mã trạng thái nào</em>, <em>body có hình dạng gì</em>, <em>trạng thái hệ thống sau đó ra sao</em>.</p>
+<h2 id="2-typed-apiclient">2. Typed ApiClient</h2>
+<p>Gọi <code>request.post(...)</code> thẳng trong spec dẫn đến lặp URL, header, parse JSON và rất khó đọc. Giải pháp là một lớp mỏng bọc <code>APIRequestContext</code>: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/api-client.ts">tests/fixtures/api-client.ts</a>. Điểm thiết kế đáng học:</p>
+<pre tabindex="0"><code class="language-ts">export interface Todo &#123;
+  id: string;
+  title: string;
+  done: boolean;
+  owner: string;
+  createdAt: string;
+}
+
+/** Typed result: `body` on success (2xx), `error` message on failure. */
+export type ApiResult&lt;T&gt; =
+  | &#123; ok: true; status: number; body: T; error?: undefined }
+  | &#123; ok: false; status: number; body?: undefined; error: string };
+
+/** Returns the body of a successful result or fails loudly with the server&#39;s error. */
+export function unwrap&lt;T&gt;(result: ApiResult&lt;T&gt;): T &#123;
+  if (!result.ok) throw new Error(`Expected success but got $&#123;result.status}: $&#123;result.error}`);
+  return result.body;
+}</code></pre>
+<p>Ý tưởng chính: <strong>mỗi lời gọi trả về <code>ApiResult</code> thay vì ném lỗi khi gặp 4xx</strong>. Test âm tính cần <em>đọc</em> status 401/422, còn test dương tính dùng <code>unwrap()</code> để &quot;thành công hoặc nổ ngay với thông báo rõ ràng&quot;. Client có các phương thức tương ứng từng endpoint:</p>
+<pre tabindex="0"><code class="language-ts">export class ApiClient &#123;
+  constructor(private readonly request: APIRequestContext, private token?: string) &#123;}
+
+  withToken(token: string): ApiClient &#123; return new ApiClient(this.request, token); }
+  async signIn(credentials: Credentials): Promise&lt;ApiClient&gt; &#123; /* login rồi withToken */ }
+
+  async health(): Promise&lt;ApiResult&lt;HealthBody&gt;&gt; &#123; /* GET /api/health */ }
+  async login(email: string, password: string): Promise&lt;ApiResult&lt;LoginBody&gt;&gt; &#123; /* ... */ }
+  async loginRaw(data: unknown): Promise&lt;ApiResult&lt;LoginBody&gt;&gt; &#123; /* body tùy ý cho test âm */ }
+  async listTodos(): Promise&lt;ApiResult&lt;Todo[]&gt;&gt; &#123; /* ... */ }
+  async createTodo(title: string): Promise&lt;ApiResult&lt;Todo&gt;&gt; &#123; /* ... */ }
+  async updateTodo(id: string, patch: TodoPatch): Promise&lt;ApiResult&lt;Todo&gt;&gt; &#123; /* PATCH */ }
+  async deleteTodo(id: string): Promise&lt;ApiResult&lt;undefined&gt;&gt; &#123; /* ... */ }
+}</code></pre>
+<p><code>loginRaw(data: unknown)</code> là chi tiết nhỏ nhưng quan trọng: client có kiểu chặt cho đường dương, nhưng vẫn cho phép gửi body &quot;sai kiểu&quot; để test <code>400</code>.</p>
+<p>Các fixture dựng sẵn trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts">tests/fixtures/index.ts</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Fixture</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>api</code></td>
+<td>Client ẩn danh, không token</td>
+</tr>
+<tr>
+<td><code>qaApi</code></td>
+<td>Đã đăng nhập <code>qa@demo.dev</code></td>
+</tr>
+<tr>
+<td><code>devApi</code></td>
+<td>Đã đăng nhập <code>dev@demo.dev</code></td>
+</tr>
+</tbody></table>
+<h2 id="3-vi-du-chay-duoc-positive-tests">3. Ví dụ chạy được: positive tests</h2>
+<p>Tạo <code>tests/api/todos.spec.ts</code> (các spec API nằm trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/api">tests/api/</a>):</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect, unwrap } from &#39;../fixtures&#39;;
+import &#123; aTodo } from &#39;../data&#39;;
+
+test.describe(&#39;Todos API: happy path&#39;, () =&gt; &#123;
+  test(&#39;@smoke health endpoint reports ok&#39;, async (&#123; api }) =&gt; &#123;
+    const res = await api.health();
+    expect(res.status).toBe(200);
+    expect(res.body?.status).toBe(&#39;ok&#39;);
+  });
+
+  test(&#39;@smoke login returns a token and the user&#39;, async (&#123; api }) =&gt; &#123;
+    const res = await api.login(&#39;qa@demo.dev&#39;, &#39;Passw0rd!&#39;);
+    expect(res.status).toBe(200);
+    expect(res.body?.token).toEqual(expect.any(String));
+    expect(res.body?.user).toEqual(&#123; email: &#39;qa@demo.dev&#39; });
+  });
+
+  test(&#39;@smoke create then read a todo&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const &#123; title } = aTodo().build();
+    const created = unwrap(await qaApi.createTodo(title));
+
+    try &#123;
+      expect(created).toMatchObject(&#123; title, done: false, owner: &#39;qa@demo.dev&#39; });
+      const fetched = unwrap(await qaApi.getTodo(created.id));
+      expect(fetched).toEqual(created);
+    } finally &#123;
+      await qaApi.deleteTodo(created.id); // dọn dẹp dù assertion có fail
+    }
+  });
+
+  test(&#39;@regression patch marks a todo done&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const created = unwrap(await qaApi.createTodo(aTodo().build().title));
+    try &#123;
+      const updated = unwrap(await qaApi.updateTodo(created.id, &#123; done: true }));
+      expect(updated.done).toBe(true);
+      expect(updated.title).toBe(created.title); // field khác không bị đổi
+    } finally &#123;
+      await qaApi.deleteTodo(created.id);
+    }
+  });
+
+  test(&#39;@regression delete removes the todo&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const created = unwrap(await qaApi.createTodo(aTodo().build().title));
+    const del = await qaApi.deleteTodo(created.id);
+    expect(del.status).toBe(204);
+    expect((await qaApi.getTodo(created.id)).status).toBe(404);
+  });
+});</code></pre>
+<p>Lưu ý: <code>expect(res.status).toBe(200)</code> là assertion thường (dữ liệu đã có sẵn trong bộ nhớ, không cần retry); khác với UI, nơi bạn luôn dùng web-first assertion.</p>
+<h2 id="4-negative-tests-400-401-404-422">4. Negative tests: 400 / 401 / 404 / 422</h2>
+<p>Test âm tính là nơi API test cho giá trị lớn nhất. Dùng <code>test.describe</code> + <code>for...of</code> (hoặc <code>test.step</code>) để tạo bảng case:</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect } from &#39;../fixtures&#39;;
+import &#123; aTodo, wrongPasswordUser, unknownUser } from &#39;../data&#39;;
+
+test.describe(&#39;Auth API: negative&#39;, () =&gt; &#123;
+  const badBodies: Array&lt;[string, unknown]&gt; = [
+    [&#39;missing password&#39;, &#123; email: &#39;qa@demo.dev&#39; }],
+    [&#39;missing email&#39;, &#123; password: &#39;Passw0rd!&#39; }],
+    [&#39;non-string fields&#39;, &#123; email: 123, password: true }],
+    [&#39;empty object&#39;, &#123;}],
+  ];
+
+  for (const [name, body] of badBodies) &#123;
+    test(`@regression login rejects $&#123;name} with 400`, async (&#123; api }) =&gt; &#123;
+      const res = await api.loginRaw(body);
+      expect(res.status).toBe(400);
+      expect(res.error).toBe(&#39;email and password are required&#39;);
+    });
+  }
+
+  test(&#39;@regression wrong password returns 401&#39;, async (&#123; api }) =&gt; &#123;
+    const &#123; email, password } = wrongPasswordUser();
+    const res = await api.login(email, password);
+    expect(res.status).toBe(401);
+    expect(res.error).toBe(&#39;invalid credentials&#39;);
+  });
+
+  test(&#39;@regression unknown user returns 401&#39;, async (&#123; api }) =&gt; &#123;
+    const &#123; email, password } = unknownUser();
+    expect((await api.login(email, password)).status).toBe(401);
+  });
+});
+
+test.describe(&#39;Todos API: negative&#39;, () =&gt; &#123;
+  test(&#39;@smoke todos require a token&#39;, async (&#123; api }) =&gt; &#123;
+    const res = await api.listTodos();
+    expect(res.status).toBe(401);
+  });
+
+  test(&#39;@regression a made-up token is rejected&#39;, async (&#123; api }) =&gt; &#123;
+    const res = await api.withToken(&#39;not-a-real-token&#39;).listTodos();
+    expect(res.status).toBe(401);
+  });
+
+  test(&#39;@regression blank title returns 422&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const res = await qaApi.createTodo(&#39;   &#39;);
+    expect(res.status).toBe(422);
+    expect(res.error).toBe(&#39;title is required&#39;);
+  });
+
+  test(&#39;@regression title over 120 chars returns 422&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const res = await qaApi.createTodo(aTodo().withTitleLength(121).build().title);
+    expect(res.status).toBe(422);
+  });
+
+  test(&#39;@regression title of exactly 120 chars is accepted (boundary)&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const res = await qaApi.createTodo(aTodo().withTitleLength(120).build().title);
+    expect(res.status).toBe(201);
+    if (res.ok) await qaApi.deleteTodo(res.body.id);
+  });
+
+  test(&#39;@regression unknown id returns 404&#39;, async (&#123; qaApi }) =&gt; &#123;
+    const res = await qaApi.getTodo(&#39;00000000-0000-0000-0000-000000000000&#39;);
+    expect(res.status).toBe(404);
+  });
+});</code></pre>
+<p>Điểm kỹ thuật: <strong>phân tích giá trị biên</strong> (120 chấp nhận, 121 từ chối), <strong>một sai phạm mỗi case</strong> (để biết chính xác điều kiện nào gây lỗi), và kiểm tra cả <strong>thông điệp lỗi</strong> chứ không chỉ mã trạng thái, nếu thông điệp là một phần hợp đồng.</p>
+<h2 id="5-cach-ly-du-lieu-va-don-dep">5. Cách ly dữ liệu và dọn dẹp</h2>
+<p>SUT lưu todo trong bộ nhớ, dùng chung cho mọi worker. Playwright chạy các file spec song song (<code>fullyParallel: true</code>), nên nếu hai test cùng giả định &quot;danh sách đang rỗng&quot;, chúng sẽ giẫm chân nhau.</p>
+<p>Ba nguyên tắc của repo:</p>
+<ol>
+<li><strong>Dữ liệu duy nhất cho mỗi test.</strong> <code>aTodo()</code> tạo tiêu đề dạng <code>Todo [3fa9c1d2]</code>; bạn không bao giờ assert &quot;danh sách có đúng 1 phần tử&quot; trên tài nguyên dùng chung, mà assert &quot;danh sách <em>chứa</em> todo của tôi&quot;:</li>
+</ol>
+<pre tabindex="0"><code class="language-ts">test(&#39;@regression created todo appears in the list&#39;, async (&#123; qaApi }) =&gt; &#123;
+  const created = unwrap(await qaApi.createTodo(aTodo().build().title));
+  try &#123;
+    const list = unwrap(await qaApi.listTodos());
+    expect(list.map((t) =&gt; t.id)).toContain(created.id);
+  } finally &#123;
+    await qaApi.deleteTodo(created.id);
+  }
+});</code></pre>
+<ol start="2">
+<li><strong>Cách ly theo user.</strong> Todo thuộc về <code>owner</code>; user khác không thấy và không sửa được. Đây là test an toàn quan trọng (kiểm soát truy cập), dùng hai fixture <code>qaApi</code> và <code>devApi</code>:</li>
+</ol>
+<pre tabindex="0"><code class="language-ts">test(&#39;@regression a user cannot see or touch another user\&#39;s todo&#39;, async (&#123; qaApi, devApi }) =&gt; &#123;
+  const mine = unwrap(await qaApi.createTodo(aTodo().build().title));
+  try &#123;
+    expect((await devApi.getTodo(mine.id)).status).toBe(404);
+    expect((await devApi.updateTodo(mine.id, &#123; done: true })).status).toBe(404);
+    expect((await devApi.deleteTodo(mine.id)).status).toBe(404);
+
+    const theirList = unwrap(await devApi.listTodos());
+    expect(theirList.map((t) =&gt; t.id)).not.toContain(mine.id);
+
+    expect(unwrap(await qaApi.getTodo(mine.id)).done).toBe(false); // vẫn nguyên vẹn
+  } finally &#123;
+    await qaApi.deleteTodo(mine.id);
+  }
+});</code></pre>
+<p>Server trả <code>404</code> (không phải <code>403</code>) cho tài nguyên của người khác, để không lộ sự tồn tại của nó; test này ghi lại quyết định thiết kế đó.</p>
+<ol start="3">
+<li><strong>Dọn dẹp trong <code>finally</code></strong> (hoặc fixture có teardown), để test fail giữa chừng không để rác lại. Với nhiều test cần dọn, bạn có thể viết một fixture:</li>
+</ol>
+<pre tabindex="0"><code class="language-ts">const test = base.extend&lt;&#123; todo: Todo }&gt;(&#123;
+  todo: async (&#123; qaApi }, use) =&gt; &#123;
+    const created = unwrap(await qaApi.createTodo(aTodo().build().title));
+    await use(created);
+    await qaApi.deleteTodo(created.id); // chạy cả khi test fail
+  },
+});</code></pre>
+<p><strong>Cấm <code>POST /api/test/reset</code> trong test song song</strong>: endpoint này xóa todo và token của <em>tất cả</em> test đang chạy, gây lỗi 401/404 ngẫu nhiên rất khó truy nguyên. Nó chỉ chấp nhận được trong một khối <code>describe.serial</code> là người dùng API duy nhất tại thời điểm đó (quy tắc 10 trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/CLAUDE.md">CLAUDE.md</a>).</p>
+<h2 id="6-contract-checks">6. Contract checks</h2>
+<p>Test chức năng nói &quot;hành vi đúng&quot;; <strong>contract check</strong> nói &quot;hình dạng đúng&quot;. Khi backend đổi tên field <code>createdAt</code> thành <code>created_at</code>, các test chỉ kiểm tra <code>title</code> vẫn xanh, trong khi client thật sự gãy. Hãy khóa hình dạng response:</p>
+<pre tabindex="0"><code class="language-ts">test(&#39;@regression todo response matches the contract&#39;, async (&#123; qaApi }) =&gt; &#123;
+  const created = unwrap(await qaApi.createTodo(aTodo().build().title));
+  try &#123;
+    expect(created).toEqual(&#123;
+      id: expect.stringMatching(/^[0-9a-f-]&#123;36}$/),
+      title: expect.any(String),
+      done: expect.any(Boolean),
+      owner: &#39;qa@demo.dev&#39;,
+      createdAt: expect.stringMatching(/^\d&#123;4}-\d&#123;2}-\d&#123;2}T/),
+    });
+    expect(Object.keys(created).sort()).toEqual([&#39;createdAt&#39;, &#39;done&#39;, &#39;id&#39;, &#39;owner&#39;, &#39;title&#39;]);
+  } finally &#123;
+    await qaApi.deleteTodo(created.id);
+  }
+});
+
+test(&#39;@regression error responses share one shape&#39;, async (&#123; api, qaApi }) =&gt; &#123;
+  for (const res of [await api.listTodos(), await qaApi.createTodo(&#39;&#39;), await qaApi.getTodo(&#39;nope&#39;)]) &#123;
+    expect(res.ok).toBe(false);
+    expect(res.error).toEqual(expect.any(String));
+  }
+});</code></pre>
+<p><code>toEqual</code> với asymmetric matcher (<code>expect.any</code>, <code>expect.stringMatching</code>) bắt cả field thiếu lẫn field thừa. Với API lớn hơn, bạn có thể thay bằng JSON Schema, nhưng nguyên tắc không đổi: <em>hợp đồng được kiểm tra bằng máy, không bằng mắt</em>. Cũng nhớ kiểm tra header khi nó quan trọng: <code>res.headers()[&#39;content-type&#39;]</code> chứa <code>application/json</code>.</p>
+<h2 id="7-dung-api-de-tang-toc-ui-test">7. Dùng API để tăng tốc UI test</h2>
+<p>Cùng <code>ApiClient</code> có thể chuẩn bị dữ liệu cho UI test (khi app dùng backend thật). Demo TaskFlow trên Pages lưu todo trong <code>localStorage</code> nên UI không đi qua <code>/api</code>, nhưng mô hình vẫn giống hệt: <strong>arrange bằng API, act bằng UI, assert bằng UI (và/hoặc API)</strong>. Điều này giúp UI test ngắn, ổn định và đúng một mục đích.</p>
+<p>Chạy:</p>
+<pre tabindex="0"><code class="language-bash">npx playwright test --project=api                 # toàn bộ API test
+npx playwright test --project=api --grep @smoke   # chỉ smoke
+npx playwright test tests/api/todos.spec.ts --repeat-each=5 --workers=4</code></pre>
+<p><code>--repeat-each</code> với nhiều worker là cách rẻ nhất để phát hiện test không cách ly được.</p>
+<h2 id="loi-thuong-gap-anti-patterns">Lỗi thường gặp / anti-patterns</h2>
+<ol>
+<li><strong>Chỉ test happy path.</strong> Phần lớn bug nằm ở 4xx: thiếu validate, sai mã trạng thái, lộ dữ liệu giữa user.</li>
+<li><strong>Chỉ assert status code.</strong> <code>200</code> với body rỗng vẫn là bug. Kiểm tra body và hình dạng.</li>
+<li><strong>Phụ thuộc thứ tự test</strong> (test B dùng todo do test A tạo). Mỗi test tự tạo và tự dọn.</li>
+<li><strong>Assert trên trạng thái dùng chung</strong> (&quot;danh sách có đúng 3 phần tử&quot;) khi chạy song song.</li>
+<li><strong>Gọi <code>/api/test/reset</code> trong test song song</strong>: phá dữ liệu của test khác.</li>
+<li><strong>Hard-code dữ liệu</strong> (<code>&#39;Buy milk&#39;</code>): va chạm giữa test và không đọc được ý định. Dùng <code>aTodo()</code>.</li>
+<li><strong>Không dọn dẹp</strong> khi test fail: dùng <code>try/finally</code> hoặc fixture có teardown.</li>
+<li><strong>Token thật trong repo.</strong> Chỉ dùng tài khoản demo công khai; secrets thật nằm ở biến môi trường.</li>
+<li><strong>Bắt lỗi bằng <code>try/catch</code> nuốt exception</strong>: test luôn xanh. Dùng <code>ApiResult</code> và <code>unwrap</code>.</li>
+<li><strong>Gộp nhiều sai phạm vào một case âm tính</strong>: không biết điều kiện nào được kiểm tra.</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Chạy <code>npm run serve</code> và thử tay bằng <code>curl</code>:<pre tabindex="0"><code class="language-bash">curl -s -X POST localhost:4173/api/auth/login -H &#39;content-type: application/json&#39; \
+  -d &#39;&#123;&quot;email&quot;:&quot;qa@demo.dev&quot;,&quot;password&quot;:&quot;Passw0rd!&quot;}&#39;</code></pre>
+Sau đó dùng token nhận được để gọi <code>GET /api/todos</code> với header <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+<li>Viết <code>tests/api/todos.spec.ts</code> gồm đủ năm test dương tính ở mục 3 và chạy với <code>--repeat-each=5</code>.</li>
+<li>Bổ sung bảng case âm tính cho <code>PATCH /api/todos/:id</code> (JSON sai, <code>done</code> không phải boolean). Quan sát server làm gì và quyết định test nên khẳng định điều gì.</li>
+<li>Viết test cách ly: <code>devApi</code> không thấy, không sửa, không xóa todo của <code>qaApi</code>.</li>
+<li>Viết contract test cho <code>GET /api/health</code> (có <code>status</code> là string và <code>uptime</code> là number dương).</li>
+<li>Thêm một fixture <code>todo</code> có teardown (mục 5) và dùng nó trong hai test.</li>
+<li>(Nâng cao) Thêm một test cố tình dùng <code>/api/test/reset</code> trong <code>describe.serial</code>, rồi chạy cùng bộ test song song và xem điều gì xảy ra. Vì sao quy tắc 10 tồn tại?</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Project <code>api</code> không mở trình duyệt; spec dùng <code>ApiClient</code> có kiểu, không gọi <code>request.*</code> thô.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mỗi endpoint có test dương <strong>và</strong> âm: 400, 401, 404, 422 và giá trị biên.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Assert cả status, body và (khi quan trọng) thông điệp lỗi.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dữ liệu duy nhất mỗi test (<code>aTodo()</code>); không phụ thuộc thứ tự.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dọn dẹp bằng <code>try/finally</code> hoặc fixture teardown.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Có test cách ly giữa hai user (<code>qaApi</code> vs <code>devApi</code>).</li>
+<li><input type="checkbox" disabled aria-label="To do"> Có contract check cho hình dạng response thành công và lỗi.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Không gọi <code>/api/test/reset</code> trong test song song; không có secret thật trong repo.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="02-playwright-pom.html">← Playwright + Page Object Model — fixtures, storageState, projects và web-first assertions</a>
+        <a class="next" rel="next" href="04-visual-testing.html">Visual Testing với toHaveScreenshot — baseline theo OS, Docker image chính thức và workflow update-snapshots →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

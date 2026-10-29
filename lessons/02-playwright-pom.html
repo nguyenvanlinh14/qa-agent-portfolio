@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Playwright + Page Object Model — fixtures, storageState, projects và web-first assertions · Linh.NV</title>
+  <meta name="description" content="Playwright + Page Object Model — fixtures, storageState, projects và web-first assertions" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="playwright-page-object-model">Playwright + Page Object Model</h1>
+<blockquote>
+<p><strong>Lưu ý:</strong> demo app hiện là MarketFlow; các ví dụ <code>TodoPage</code> trong bài minh họa cùng những pattern đó.</p>
+</blockquote>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<p>Sau bài này bạn sẽ:</p>
+<ul>
+<li>Tổ chức một framework Playwright theo <strong>Page Object Model (POM)</strong> gọn, dễ bảo trì.</li>
+<li>Dùng <strong>fixtures</strong> để tiêm page object và client API vào test thay vì tự <code>new</code> trong từng file.</li>
+<li>Đăng nhập <strong>một lần</strong> bằng <code>storageState</code> và chia sẻ cho cả bộ test UI qua <strong>projects + dependencies</strong>.</li>
+<li>Chọn locator đúng thứ tự ưu tiên và viết <strong>web-first assertions</strong> không cần <code>sleep</code>.</li>
+<li>Gắn tag <code>@smoke</code> / <code>@regression</code> để chạy tập con test.</li>
+</ul>
+<p>Ứng dụng được test là demo TaskFlow (<code>/demo/</code>): đăng nhập bằng <code>qa@demo.dev</code> / <code>Passw0rd!</code> (tài khoản demo công khai), sau đó thêm / đánh dấu / lọc / xóa todo. Toàn bộ code trong bài là code thật của repo (có rút gọn).</p>
+<h2 id="1-khai-niem">1. Khái niệm</h2>
+<h3 id="page-object-model-la-gi-va-khong-phai-la-gi">Page Object Model là gì, và không phải là gì</h3>
+<p>POM đóng gói <strong>cách tương tác với một trang</strong> (locator + hành động) vào một class, để test chỉ còn mô tả <strong>ý định</strong>:</p>
+<pre tabindex="0"><code class="language-ts">// Không POM: test biết quá nhiều về DOM
+await page.getByLabel(&#39;Email&#39;).fill(&#39;qa@demo.dev&#39;);
+await page.getByLabel(&#39;Password&#39;).fill(&#39;Passw0rd!&#39;);
+await page.getByRole(&#39;button&#39;, &#123; name: &#39;Sign in&#39; }).click();
+
+// Có POM: test nói về ý định
+await loginPage.login(users.qa);</code></pre>
+<p>Khi UI đổi, bạn sửa <strong>một</strong> chỗ trong page object thay vì 30 test. Nhưng POM cũng có ranh giới: <strong>page object cung cấp locator và hành động; assertion nằm trong spec</strong> (quy tắc số 7 của <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/CLAUDE.md">CLAUDE.md</a>). Nếu giấu <code>expect</code> trong page object, người đọc test không còn thấy kỳ vọng nằm ở đâu.</p>
+<h3 id="cau-truc-thu-muc-cua-repo">Cấu trúc thư mục của repo</h3>
+<pre tabindex="0"><code class="language-text">playwright.config.ts
+tests/
+  pages/       BasePage, HomePage, LoginPage, TodoPage, LessonPage
+  fixtures/    index.ts (test + expect mở rộng), api-client.ts
+  data/        factories.ts, todo-builder.ts
+  setup/       auth.setup.ts  → lưu playwright/.auth/user.json
+  ui/          spec UI        (project &quot;ui&quot;)
+  api/         spec API       (project &quot;api&quot;, bài 3)
+  visual/      spec ảnh chụp  (project &quot;visual&quot;, bài 4)</code></pre>
+<p>Cấu hình đầy đủ: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/playwright.config.ts">playwright.config.ts</a>.</p>
+<h2 id="2-page-object-basepage-va-cac-trang-con">2. Page Object: BasePage và các trang con</h2>
+<p><code>BasePage</code> giữ phần dùng chung; mỗi trang chỉ thêm locator và hành động của riêng nó. File thật: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/base.page.ts">base.page.ts</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/login.page.ts">login.page.ts</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/todo.page.ts">todo.page.ts</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/home.page.ts">home.page.ts</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/lesson.page.ts">lesson.page.ts</a>.</p>
+<pre tabindex="0"><code class="language-ts">// tests/pages/base.page.ts
+import type &#123; Page } from &#39;@playwright/test&#39;;
+
+export abstract class BasePage &#123;
+  /** Path relative to baseURL, e.g. &#39;/&#39; or &#39;/demo/&#39;. */
+  abstract readonly path: string;
+
+  constructor(protected readonly page: Page) &#123;}
+
+  async goto(): Promise&lt;void&gt; &#123;
+    await this.page.goto(this.path);
+  }
+}</code></pre>
+<pre tabindex="0"><code class="language-ts">// tests/pages/login.page.ts (rút gọn)
+export class LoginPage extends BasePage &#123;
+  readonly path = &#39;/demo/&#39;;
+  readonly email: Locator;
+  readonly password: Locator;
+  readonly submit: Locator;
+  readonly error: Locator;
+
+  constructor(page: Page) &#123;
+    super(page);
+    this.email = page.getByLabel(&#39;Email&#39;);
+    this.password = page.getByLabel(&#39;Password&#39;);
+    this.submit = page.getByRole(&#39;button&#39;, &#123; name: &#39;Sign in&#39; });
+    this.error = page.getByRole(&#39;alert&#39;);
+  }
+
+  async login(&#123; email, password }: Credentials): Promise&lt;void&gt; &#123;
+    await this.email.fill(email);
+    await this.password.fill(password);
+    await this.submit.click();
+  }
+}</code></pre>
+<pre tabindex="0"><code class="language-ts">// tests/pages/todo.page.ts (rút gọn)
+export class TodoPage extends BasePage &#123;
+  readonly path = &#39;/demo/todos.html&#39;;
+  readonly newTodo = this.page.getByLabel(&#39;New todo&#39;, &#123; exact: true });
+  readonly items = this.page.getByRole(&#39;list&#39;, &#123; name: &#39;Todo list&#39; }).getByRole(&#39;listitem&#39;);
+  readonly remaining = this.page.getByTestId(&#39;remaining&#39;);
+
+  async add(title: string) &#123;
+    await this.newTodo.fill(title);
+    await this.page.getByRole(&#39;button&#39;, &#123; name: &#39;Add&#39;, exact: true }).click();
+  }
+
+  item(title: string) &#123;
+    return this.items.filter(&#123; hasText: title });
+  }
+
+  async toggle(title: string) &#123;
+    await this.page.getByRole(&#39;checkbox&#39;, &#123; name: `Toggle $&#123;title}`, exact: true }).click();
+  }
+
+  async filter(name: &#39;All&#39; | &#39;Active&#39; | &#39;Done&#39;) &#123;
+    await this.page.getByRole(&#39;button&#39;, &#123; name, exact: true }).click();
+  }
+}</code></pre>
+<p>Chú ý hai chi tiết. Các nhãn <code>Toggle &lt;title&gt;</code> / <code>Delete &lt;title&gt;</code> đến từ <code>aria-label</code> trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/site/demo/todos.html">site/demo/todos.html</a>: dùng <code>getByRole</code> với <em>tên truy cập</em> vừa ổn định vừa buộc app phải accessible. Còn <code>exact: true</code> tránh việc nút <code>Add</code> khớp nhầm với một nút khác có chữ &quot;Add&quot; trong tên.</p>
+<p>Cũng nhờ POM, hành động như &quot;mở trang với danh sách rỗng&quot; trở thành một phương thức có tên (<code>todoPage.open()</code> xóa <code>taskflow.todos</code> trong localStorage rồi reload) thay vì ba dòng lặp lại ở mỗi test.</p>
+<h2 id="3-fixtures-tiem-dependency-thay-vi-new">3. Fixtures: tiêm dependency thay vì <code>new</code></h2>
+<p>Fixture là cơ chế &quot;dependency injection&quot; của Playwright. Thay vì mỗi test tự khởi tạo page object, ta mở rộng <code>test</code> một lần ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts">tests/fixtures/index.ts</a>:</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test as base, expect } from &#39;@playwright/test&#39;;
+import &#123; ApiClient } from &#39;./api-client&#39;;
+import &#123; users } from &#39;../data/factories&#39;;
+import &#123; HomePage, LessonPage, LoginPage, TodoPage } from &#39;../pages&#39;;
+
+interface Fixtures &#123;
+  homePage: HomePage;
+  loginPage: LoginPage;
+  todoPage: TodoPage;
+  lessonPage: LessonPage;
+  api: ApiClient;    // client ẩn danh (không token)
+  qaApi: ApiClient;  // đã đăng nhập qa@demo.dev
+  devApi: ApiClient; // đã đăng nhập dev@demo.dev
+}
+
+export const test = base.extend&lt;Fixtures&gt;(&#123;
+  homePage: async (&#123; page }, use) =&gt; use(new HomePage(page)),
+  loginPage: async (&#123; page }, use) =&gt; use(new LoginPage(page)),
+  todoPage: async (&#123; page }, use) =&gt; use(new TodoPage(page)),
+  lessonPage: async (&#123; page }, use) =&gt; use(new LessonPage(page)),
+  api: async (&#123; request }, use) =&gt; use(new ApiClient(request)),
+  qaApi: async (&#123; request }, use) =&gt; use(await new ApiClient(request).signIn(users.qa)),
+  devApi: async (&#123; request }, use) =&gt; use(await new ApiClient(request).signIn(users.dev)),
+});
+
+export &#123; expect };</code></pre>
+<p>Lợi ích: (1) test ngắn gọn, chỉ khai báo thứ nó cần; (2) fixture <strong>lazy</strong>, chỉ được tạo khi test dùng, nên test UI không tốn công đăng nhập API; (3) có bước teardown sau <code>use()</code> nếu cần dọn dẹp; (4) kiểu TypeScript đầy đủ, nên agent AI (bài 1) gợi ý chính xác hơn vì thấy rõ &quot;hợp đồng&quot; của từng fixture.</p>
+<p>Mọi spec import <code>test</code> từ đây, <strong>không</strong> import trực tiếp từ <code>@playwright/test</code>:</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect } from &#39;../fixtures&#39;;
+import &#123; wrongPasswordUser } from &#39;../data/factories&#39;;
+
+test(&#39;@regression wrong password shows an error&#39;, async (&#123; loginPage, page }) =&gt; &#123;
+  await loginPage.goto();
+  await loginPage.login(wrongPasswordUser());
+  await expect(loginPage.error).toHaveText(&#39;Invalid email or password&#39;);
+  await expect(page).toHaveURL(/\/demo\/$/);
+});</code></pre>
+<h2 id="4-storagestate-projects-dependencies-dang-nhap-mot-lan">4. storageState + projects/dependencies: đăng nhập một lần</h2>
+<p>Đăng nhập bằng UI trong mỗi test vừa chậm vừa dễ flaky. Cách chuẩn: một project <code>setup</code> đăng nhập và lưu trạng thái ra file; các project khác khai báo <code>dependencies: [&#39;setup&#39;]</code> rồi dùng lại file đó. Demo TaskFlow giữ phiên trong <code>localStorage</code>, và <code>storageState</code> lưu được cả localStorage của origin.</p>
+<pre tabindex="0"><code class="language-ts">// tests/setup/auth.setup.ts
+import &#123; test as setup } from &#39;../fixtures&#39;;
+import &#123; users } from &#39;../data/factories&#39;;
+import &#123; AUTH_FILE } from &#39;../../playwright.config&#39;;
+
+setup(&#39;log into the demo app and store the session&#39;, async (&#123; loginPage }) =&gt; &#123;
+  await loginPage.goto();
+  await loginPage.login(users.qa);
+  await loginPage.expectLoggedIn();
+  await loginPage.page.context().storageState(&#123; path: AUTH_FILE });
+});</code></pre>
+<pre tabindex="0"><code class="language-ts">// playwright.config.ts (rút gọn)
+export const AUTH_FILE = &#39;playwright/.auth/user.json&#39;;
+
+export default defineConfig(&#123;
+  testDir: &#39;./tests&#39;,
+  fullyParallel: true,
+  projects: [
+    &#123; name: &#39;setup&#39;, testMatch: /.*\.setup\.ts/, use: &#123; ...devices[&#39;Desktop Chrome&#39;] } },
+    &#123;
+      name: &#39;ui&#39;,
+      testMatch: &#39;ui/**/*.spec.ts&#39;,
+      dependencies: [&#39;setup&#39;],
+      use: &#123; ...devices[&#39;Desktop Chrome&#39;], storageState: AUTH_FILE },
+    },
+    &#123; name: &#39;api&#39;, testMatch: &#39;api/**/*.spec.ts&#39; },
+    &#123; name: &#39;visual&#39;, testMatch: &#39;visual/**/*.spec.ts&#39;, use: &#123; /* ... */ } },
+  ],
+});</code></pre>
+<p>Hai điểm cần nhớ:</p>
+<ul>
+<li><code>playwright/.auth/</code> chứa phiên đăng nhập, phải nằm trong <code>.gitignore</code> (repo đã làm).</li>
+<li>Test <strong>đăng nhập</strong> thì ngược lại: phải chạy với phiên trống. Xem <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/ui/login.spec.ts">tests/ui/login.spec.ts</a>:</li>
+</ul>
+<pre tabindex="0"><code class="language-ts">test.describe(&#39;Login (anonymous visitor)&#39;, () =&gt; &#123;
+  // Negative and positive login flows must not reuse the stored session.
+  test.use(&#123; storageState: &#123; cookies: [], origins: [] } });
+  // ...
+});</code></pre>
+<p>Chạy thử:</p>
+<pre tabindex="0"><code class="language-bash">npx playwright test --project=ui          # tự chạy setup trước
+npx playwright test --project=ui --ui     # chế độ UI để debug
+npx playwright show-report                # mở HTML report</code></pre>
+<p>Các spec UI của repo nằm ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/ui">tests/ui/</a>.</p>
+<h2 id="5-locator-priority">5. Locator priority</h2>
+<p>Thứ tự ưu tiên (đúng như trong <code>CLAUDE.md</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Ưu tiên</th>
+<th>Locator</th>
+<th>Khi nào dùng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>getByRole(&#39;button&#39;, { name })</code></td>
+<td>Mọi thứ có role: nút, link, heading, checkbox, list</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>getByLabel(...)</code></td>
+<td>Ô nhập form</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>getByTestId(&#39;remaining&#39;)</code></td>
+<td>Không có role/nhãn đủ rõ; dùng <code>data-testid</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>getByText</code>, <code>getByPlaceholder</code></td>
+<td>Chỉ khi các cách trên không khớp</td>
+</tr>
+<tr>
+<td>5</td>
+<td>CSS</td>
+<td>Phương án cuối, kèm comment giải thích. Không XPath</td>
+</tr>
+</tbody></table>
+<p>Vì sao? Role + name giống cách người dùng và công nghệ hỗ trợ nhìn trang; còn CSS như <code>.btn.primary:nth-child(2)</code> vỡ ngay khi đổi style. Hãy thu hẹp phạm vi bằng chaining và <code>filter()</code> thay vì <code>nth()</code>:</p>
+<pre tabindex="0"><code class="language-ts">const row = page.getByRole(&#39;listitem&#39;).filter(&#123; hasText: title });
+await row.getByRole(&#39;checkbox&#39;).check();</code></pre>
+<h2 id="6-web-first-assertions">6. Web-first assertions</h2>
+<p><code>expect(locator)</code> tự <strong>retry</strong> đến khi đúng hoặc hết timeout (7 giây trong cấu hình của repo), nên bạn không cần <code>waitForTimeout</code>:</p>
+<pre tabindex="0"><code class="language-ts">// Tốt: retry tự động
+await expect(todoPage.items).toHaveCount(2);
+await expect(todoPage.remaining).toHaveText(&#39;1 item left&#39;);
+await expect(todoPage.item(title)).toBeVisible();
+await expect(page).toHaveURL(/\/demo\/todos\.html$/);
+
+// Xấu: chụp một lần rồi so sánh -&gt; flaky
+expect(await todoPage.items.count()).toBe(2);
+
+// Xấu: ngủ cố định
+await page.waitForTimeout(2000);</code></pre>
+<p>Một spec hoàn chỉnh, rút từ <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/ui/todos.spec.ts">tests/ui/todos.spec.ts</a>:</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect } from &#39;../fixtures&#39;;
+import &#123; aTodo } from &#39;../data&#39;;
+
+test.describe(&#39;Todos&#39;, () =&gt; &#123;
+  test.beforeEach(async (&#123; todoPage }) =&gt; &#123;
+    await todoPage.open();
+  });
+
+  test(&#39;@smoke adding a todo lists it&#39;, async (&#123; todoPage }) =&gt; &#123;
+    const &#123; title } = aTodo().build();
+    await todoPage.add(title);
+    await expect(todoPage.item(title)).toBeVisible();
+    await expect(todoPage.newTodo).toBeEmpty();
+  });
+
+  test(&#39;@regression remaining counter tracks open todos&#39;, async (&#123; todoPage }) =&gt; &#123;
+    const first = aTodo().build().title;
+    const second = aTodo().build().title;
+    await expect(todoPage.remaining).toHaveText(&#39;0 items left&#39;);
+    await todoPage.add(first);
+    await expect(todoPage.remaining).toHaveText(&#39;1 item left&#39;);
+    await todoPage.add(second);
+    await todoPage.toggle(first);
+    await expect(todoPage.remaining).toHaveText(&#39;1 item left&#39;);
+  });
+});</code></pre>
+<p>Dữ liệu sinh bằng builder trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/data/todo-builder.ts">tests/data/</a>: <code>aTodo()</code> cho sẵn tiêu đề duy nhất (<code>&quot;Todo [3fa9c1d2]&quot;</code>), và bạn chỉ ghi đè thứ test thật sự quan tâm (<code>withPrefix(&#39;Open&#39;)</code>, <code>done()</code>...). Nhờ đó mỗi test có dữ liệu riêng và không đụng nhau khi chạy song song.</p>
+<h2 id="7-tags">7. Tags</h2>
+<p>Gắn tag ngay đầu tên test (hoặc dùng tùy chọn <code>{ tag: &#39;@smoke&#39; }</code>), rồi lọc bằng <code>--grep</code>:</p>
+<pre tabindex="0"><code class="language-bash">npx playwright test --grep @smoke             # nhanh, chạy sau mỗi commit
+npx playwright test --grep @regression        # đầy đủ, chạy trước release
+npx playwright test --grep-invert @slow       # bỏ nhóm chậm</code></pre>
+<p>Quy ước của repo: <code>@smoke</code> = vài chục giây, đường đi quan trọng nhất; <code>@regression</code> = phần còn lại. Mỗi test <strong>phải</strong> có một trong hai tag.</p>
+<h2 id="loi-thuong-gap-anti-patterns">Lỗi thường gặp / anti-patterns</h2>
+<ol>
+<li><strong>Page object &quot;thần thánh&quot;</strong>: một class 800 dòng cho cả app. Tách theo trang hoặc thành phần.</li>
+<li><strong>Assertion ẩn trong page object</strong> (<code>assertLoggedIn()</code> ở mọi nơi): khó tái sử dụng, nguồn kỳ vọng bị giấu. Trả về locator, để spec assert. (Repo có <code>expectLoggedIn()</code> ở <code>LoginPage</code> chỉ để dùng cho bước setup, nơi không có &quot;kỳ vọng nghiệp vụ&quot; nào đáng bàn.)</li>
+<li><strong><code>waitForTimeout</code> / <code>sleep</code></strong>: luôn có web-first assertion thay thế.</li>
+<li><strong>Locator theo CSS hoặc index</strong> (<code>.nth(3)</code>): vỡ khi thứ tự đổi.</li>
+<li><strong>Đăng nhập qua UI trong mỗi test</strong>: dùng <code>storageState</code>.</li>
+<li><strong>Test phụ thuộc nhau</strong> (test 2 cần todo do test 1 tạo): mỗi test tự tạo dữ liệu của mình.</li>
+<li><strong>Import <code>test</code> từ <code>@playwright/test</code> ở một số file và từ fixtures ở file khác</strong>: bạn mất fixture; quy tắc số 8 trong <code>CLAUDE.md</code> cấm điều này.</li>
+<li><strong>Commit <code>playwright/.auth/user.json</code></strong>: lộ phiên đăng nhập.</li>
+<li><strong>Magic string</strong> (<code>&#39;Buy milk&#39;</code> rải rác): dùng builder để tiêu đề duy nhất và có ý nghĩa.</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Chạy <code>npx playwright test --project=ui --headed</code> và quan sát project <code>setup</code> chạy trước.</li>
+<li>Thêm test cho bộ lọc <strong>All</strong> vào <code>tests/ui/todos.spec.ts</code>, có tag <code>@regression</code>, dùng <code>aTodo()</code> và <code>todoPage.filter(...)</code>.</li>
+<li>Đổi nhãn nút &quot;Sign in&quot; trong bản sao của <code>site/demo/index.html</code> thành &quot;Log in&quot;. Bao nhiêu file test phải sửa? (Đáp án đúng khi POM tốt: một, <code>login.page.ts</code>.)</li>
+<li>Viết thêm một fixture <code>todoPageWithItems</code> đã <code>open()</code> và thêm sẵn hai todo, rồi dùng nó trong hai test.</li>
+<li>Viết test &quot;ký tự đặc biệt trong tiêu đề&quot; (<code>&lt;b&gt;x&lt;/b&gt;</code>) và kiểm tra nó hiển thị như văn bản, không như HTML.</li>
+<li>Chạy <code>npx playwright test --grep @smoke --repeat-each=5</code> để kiểm tra độ ổn định của nhóm smoke.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Mỗi trang là một page object kế thừa <code>BasePage</code>; chỉ có locator và hành động.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Spec import <code>test</code>/<code>expect</code> từ <code>tests/fixtures</code>, nhận <code>homePage</code>, <code>loginPage</code>, <code>todoPage</code>, <code>api</code> qua fixture.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Project <code>setup</code> đăng nhập một lần; <code>ui</code> dùng <code>dependencies: [&#39;setup&#39;]</code> + <code>storageState</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Test đăng nhập dùng <code>storageState</code> rỗng.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Locator theo thứ tự: role → label → test id → text → CSS.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Chỉ dùng web-first assertions; không <code>waitForTimeout</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dữ liệu từ builder/factory; test độc lập và chạy song song được.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mỗi test có tag <code>@smoke</code> hoặc <code>@regression</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> <code>playwright/.auth/</code> và <code>reports/</code> nằm trong <code>.gitignore</code>.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="01-ai-agents-in-qa.html">← AI Agents trong QA — Claude Code, Playwright MCP và quy trình plan → generate → review → heal → triage</a>
+        <a class="next" rel="next" href="03-api-testing.html">API Testing với Playwright — typed ApiClient, test dương/âm, cách ly dữ liệu và contract checks →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

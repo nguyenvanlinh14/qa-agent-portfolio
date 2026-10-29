@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live mode - theo dõi test và tải ngay khi đang chạy · Linh.NV</title>
+  <meta name="description" content="Live mode - theo dõi test và tải ngay khi đang chạy" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="live-mode-theo-doi-playwright-va-k6-ngay-khi-dang-chay">Live mode: theo dõi Playwright và k6 ngay khi đang chạy</h1>
+<p>Báo cáo HTML chỉ có khi lượt chạy đã kết thúc. Một bộ regression 20 phút hay một bài stress 15 phút mà phải chờ tới cuối mới biết &quot;đỏ ở đâu&quot; thì rất phí thời gian: lỗi môi trường (server sập, phiên đăng nhập hết hạn) nên được thấy ngay ở phút thứ nhất để dừng lại, không phải ở phút thứ hai mươi. Bài này dựng <strong>live mode</strong> cho cả hai phía: dashboard realtime cho Playwright và web dashboard của k6.</p>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<ul>
+<li>Viết một <strong>custom reporter</strong> của Playwright, đẩy sự kiện ra ngoài bằng Server-Sent Events (SSE).</li>
+<li>Ghi lại <strong>timeline</strong> của mỗi lượt chạy (JSONL) để phát lại (replay) sau đó, ví dụ trên GitHub Pages.</li>
+<li>Bật <strong>k6 web dashboard</strong> khi chạy và xuất cùng giao diện đó thành một file HTML cho CI.</li>
+<li>Biết nên nhìn gì trên dashboard để quyết định dừng hay chạy tiếp.</li>
+</ul>
+<h2 id="1-playwright-reporter-la-noi-moi-su-kien-di-qua">1. Playwright: reporter là nơi mọi sự kiện đi qua</h2>
+<p>Playwright gọi reporter ở từng mốc: <code>onBegin</code> (biết tổng số test, số worker), <code>onTestBegin</code>, <code>onStepBegin</code> (các <code>test.step</code> bạn tự viết), <code>onTestEnd</code> (status, outcome, duration, retry, lỗi) và <code>onEnd</code>. Reporter của repo là <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/reporters/live-reporter.ts"><code>reporters/live-reporter.ts</code></a>:</p>
+<pre tabindex="0"><code class="language-ts">onTestEnd(test: TestCase, result: TestResult): void &#123;
+  this.emit(&#123;
+    type: &#39;testEnd&#39;,
+    t: this.now(),                       // ms tính từ lúc bắt đầu chạy
+    id: `$&#123;test.id}#$&#123;result.retry}`,    // mỗi lần retry là một lần chạy riêng
+    status: result.status,               // passed | failed | timedOut | skipped | interrupted
+    outcome: test.outcome(),             // expected | unexpected | flaky | skipped
+    duration: result.duration,
+    retry: result.retry,
+    error: result.error?.message?.split(&#39;\n&#39;)[0],
+  });
+}</code></pre>
+<p><code>emit</code> làm hai việc: ghi thêm một dòng vào <code>reports/live-events.jsonl</code> và, khi <code>LIVE=1</code>, gửi dòng đó cho mọi trình duyệt đang nghe <code>/events</code>:</p>
+<pre tabindex="0"><code class="language-ts">for (const c of this.clients) c.write(`data: $&#123;line}\n\n`);   // định dạng SSE: &quot;data: ...\n\n&quot;</code></pre>
+<p>SSE đơn giản hơn WebSocket: một chiều server → trình duyệt, chạy trên HTTP thường, trình duyệt tự kết nối lại. Phía dashboard chỉ cần:</p>
+<pre tabindex="0"><code class="language-js">const es = new EventSource(&#39;/events&#39;);
+es.onmessage = (m) =&gt; &#123; apply(JSON.parse(m.data)); render(); };</code></pre>
+<p>Chạy thử:</p>
+<pre tabindex="0"><code class="language-bash">npm run test:live          # LIVE=1 playwright test, mở http://127.0.0.1:5667/?live=1</code></pre>
+<p>Hai chi tiết đáng học:</p>
+<ul>
+<li><strong>Mở dashboard giữa chừng vẫn đúng.</strong> Khi một client mới kết nối, reporter gửi lại toàn bộ sự kiện đã có trước khi gửi sự kiện mới. Dashboard là một hàm thuần <code>apply(event)</code> trên state, nên phát lại từ đầu luôn cho ra cùng kết quả.</li>
+<li><strong>Đếm theo outcome cuối cùng, không theo từng lần chạy.</strong> Một test fail rồi pass ở retry là <code>flaky</code>, không phải &quot;1 fail + 1 pass&quot;. Dashboard giữ map <code>test id (bỏ #retry) → outcome mới nhất</code>.</li>
+</ul>
+<p>Lưu ý: <code>--reporter=dot</code> trên dòng lệnh <strong>thay thế</strong> toàn bộ reporter trong config. Muốn giữ live mode thì khai báo cả hai: <code>--reporter=dot,./reporters/live-reporter.ts</code>.</p>
+<h3 id="khung-trinh-duyet-test-dang-nhin-thay-gi">Khung trình duyệt: test đang nhìn thấy gì</h3>
+<p>Con số pass / fail chưa đủ để người xem &quot;tin&quot; rằng test chạy trên trình duyệt thật. Fixture <code>page</code> (<a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts"><code>tests/fixtures/index.ts</code></a>) chụp một ảnh JPEG nhỏ của trang sau mỗi test UI, kèm <strong>URL chính xác</strong> lúc đó, và ghi thẳng ra <code>reports/live-frames/raw/&lt;testId&gt;-&lt;retry&gt;</code>. Reporter nhặt ảnh đó ở <code>onTestEnd</code>, đánh số theo thứ tự chạy, rồi gửi kèm sự kiện. Dashboard hiển thị ảnh trong một khung trình duyệt có thanh địa chỉ, và bấm vào thanh địa chỉ là mở đúng trang demo đó.</p>
+<p>Tại sao không dùng <code>testInfo.attach</code>? Vì attachment sẽ được nhúng vào <code>results.json</code> và HTML report (khoảng 250 ảnh mỗi lần chạy), còn gỡ attachment ra trong reporter thì làm HTML reporter lỗi. Trao đổi qua file riêng thì giữ report gọn. Khi phát lại trên site, URL <code>http://localhost:4173/...</code> của CI được đổi sang địa chỉ công khai của site, để người xem thấy và mở được trang thật.</p>
+<h2 id="2-replay-live-mode-cho-nguoi-khong-chay-test">2. Replay: live mode cho người không chạy test</h2>
+<p>File JSONL chính là &quot;băng ghi hình&quot; của lượt chạy. CI tải nó lên cùng các report khác; bước deploy chép nó thành <code>dist/live/latest-run.jsonl</code>, và trang <a href="https://nguyenvanlinh14.github.io/qa-agent-portfolio/live/"><code>/live/</code></a> phát lại với tốc độ 1×, 4×, 16× hoặc nhảy thẳng tới cuối. Người review PR, PO hay nhà tuyển dụng xem được lượt chạy &quot;như đang diễn ra&quot; mà không cần cài gì.</p>
+<p>Có sẵn hai bản ghi để thử: <code>sample-run.jsonl</code> (một lượt chạy thật, xanh hết) và <code>examples/failing-run.jsonl</code> (đủ 4 loại: pass, fail, flaky, skipped). Bản thứ hai được <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/ui/live.spec.ts"><code>tests/ui/live.spec.ts</code></a> dùng làm dữ liệu vàng (golden data).</p>
+<h2 id="3-k6-web-dashboard-co-san">3. k6: web dashboard có sẵn</h2>
+<p>Từ k6 v0.49, dashboard đã nằm sẵn trong k6, chỉ cần bật bằng biến môi trường:</p>
+<pre tabindex="0"><code class="language-bash">npm run k6:live
+# = K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_OPEN=true \
+#   K6_WEB_DASHBOARD_EXPORT=reports/k6-load-dashboard.html k6 run k6/load.js</code></pre>
+<ul>
+<li><code>K6_WEB_DASHBOARD=true</code>: mở dashboard ở <a href="http://127.0.0.1:5665">http://127.0.0.1:5665</a> trong lúc chạy (request rate, p95, VUs, lỗi theo thời gian).</li>
+<li><code>K6_WEB_DASHBOARD_EXPORT</code>: khi kết thúc, xuất <strong>cùng giao diện</strong> thành một file HTML độc lập. CI dùng cách này cho bài smoke, và site đăng nó ở <a href="https://nguyenvanlinh14.github.io/qa-agent-portfolio/perf/"><code>/perf/</code></a>.</li>
+</ul>
+<p>Trên dashboard k6, đọc theo thứ tự: <strong>lỗi</strong> (đường <code>http_req_failed</code> có nhô lên không) → <strong>p95 theo thời gian</strong> (tăng theo bậc VU hay tăng dần dù VU đứng yên, dấu hiệu rò rỉ) → <strong>request rate</strong> (VU tăng mà RPS không tăng nghĩa là hệ thống đã bão hoà).</p>
+<h2 id="4-stress-spike-va-so-sanh-truoc-sau">4. Stress, spike và so sánh trước / sau</h2>
+<ul>
+<li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/stress.js"><code>k6/stress.js</code></a>: tăng theo bậc 5 → 10 → 20 → 40 → 80 VU, có <code>abortOnFail</code> khi lỗi vượt 5% để không &quot;đánh&quot; tiếp một hệ thống đã gãy.</li>
+<li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/spike.js"><code>k6/spike.js</code></a>: nền thấp → tăng vọt → về lại nền. Mỗi request được gắn tag <code>phase</code> (baseline / surge / recovery), và threshold nằm ở <strong>recovery</strong>: hệ thống không chỉ cần sống sót qua đợt tăng vọt mà còn phải hồi phục.</li>
+<li>Mỗi request có tag <code>endpoint</code>, và <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/lib/journey.js"><code>k6/lib/journey.js</code></a> tạo một threshold cho từng endpoint, nên summary có p95 riêng của từng endpoint.</li>
+<li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/scripts/k6-compare.mjs"><code>scripts/k6-compare.mjs</code></a> so hai summary theo từng endpoint. Một endpoint chỉ bị đánh dấu <strong>WORSE</strong> khi vừa chậm hơn quá ×1.2 <strong>vừa</strong> chậm thêm ít nhất 5 ms, để nhiễu dưới mili giây không làm đỏ cổng chất lượng.</li>
+</ul>
+<pre tabindex="0"><code class="language-bash">STEPS=2,5 STEP=5s k6 run k6/stress.js &amp;&amp; cp reports/k6-stress-summary.json reports/before/
+# ... sửa code ...
+k6 run k6/stress.js
+npm run k6:compare -- reports/before/k6-stress-summary.json reports/k6-stress-summary.json</code></pre>
+<p>Workflow <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.github/workflows/perf.yml"><code>perf.yml</code></a> chạy stress / spike / load theo yêu cầu (workflow_dispatch) và lưu dashboard cùng summary làm artifact.</p>
+<h2 id="loi-thuong-gap">Lỗi thường gặp</h2>
+<ol>
+<li><strong>Dashboard chỉ hiện số tổng.</strong> Không biết worker nào đang kẹt ở test nào thì không phân biệt được &quot;chậm&quot; với &quot;treo&quot;. Hãy hiện test đang chạy và thời gian đã chạy của từng worker.</li>
+<li><strong>Đếm retry như test riêng.</strong> Tổng sẽ vượt quá số test và tỉ lệ pass sai. Hãy đếm theo outcome cuối cùng.</li>
+<li><strong>Bỏ qua timeline.</strong> Không lưu sự kiện thì sau khi chạy xong không ai xem lại được &quot;lúc nào bắt đầu đỏ&quot;.</li>
+<li><strong>So sánh perf bằng mắt.</strong> Hai lần chạy luôn lệch vài phần trăm. Cần ngưỡng tương đối <strong>và</strong> ngưỡng tuyệt đối, so theo từng endpoint.</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Chạy <code>npm run test:live</code>, mở dashboard ở phút thứ hai và kiểm tra nó hiện đúng những gì đã xảy ra trước đó.</li>
+<li>Thêm vào reporter sự kiện <code>stdout</code> (<code>onStdOut</code>) và hiện log của test đang chạy trên dashboard.</li>
+<li>Chạy <code>k6 run k6/spike.js</code> với <code>PEAK=200</code> và đọc p95 của pha recovery so với baseline.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Reporter ghi JSONL ở mọi lượt chạy; SSE chỉ bật khi <code>LIVE=1</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dashboard là hàm thuần trên chuỗi sự kiện: live và replay dùng chung code.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Đếm theo outcome cuối (flaky ≠ fail + pass).</li>
+<li><input type="checkbox" disabled aria-label="To do"> k6: bật <code>K6_WEB_DASHBOARD</code> khi chạy tay, <code>K6_WEB_DASHBOARD_EXPORT</code> trong CI.</li>
+<li><input type="checkbox" disabled aria-label="To do"> So sánh perf theo endpoint, có ngưỡng tương đối và tuyệt đối.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="08-test-design-patterns.html">← Design patterns trong test automation - POM, Builder, Fixture, Strategy và hơn thế</a>
+        <a class="next" rel="next" href="10-video-evidence.html">Bug evidence - video có giọng đọc, phụ đề karaoke và dedupe →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

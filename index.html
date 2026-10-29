@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linh Nguyen · AI-Agent QA Automation</title>
+  <meta name="description" content="QA Automation Engineer portfolio: Playwright framework built and maintained with AI agents (Claude Code, Playwright MCP, Playwright Test Agents) — POM, API, visual testing, CI reports." />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <!-- three.js + three-vrm for the 3D guide (assets/guide3d.js), copied into assets/vendor/ by the build; only fetched when the guide opens -->
+  <script type="importmap">
+    { "imports": {
+      "three": "./assets/vendor/three/three.module.js",
+      "three/addons/": "./assets/vendor/three/addons/",
+      "@pixiv/three-vrm": "./assets/vendor/three-vrm/three-vrm.module.min.js"
+    } }
+  </script>
+  <link rel="stylesheet" href="assets/style.css" />
+  <script src="assets/fx.js" defer></script>
+  <script src="assets/guide.js" defer></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <!-- Hand-drawn icon set, reused by tiles and lesson cards via <use href="#i-…"> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="g-brand" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="var(--accent)" /><stop offset="1" stop-color="var(--accent-2)" />
+      </linearGradient>
+    </defs>
+    <symbol id="i-agent" viewBox="0 0 48 48"><rect x="10" y="14" width="28" height="22" rx="7" /><circle cx="19" cy="25" r="2.6" class="f" /><circle cx="29" cy="25" r="2.6" class="f" /><path d="M24 14V8M20 8h8M6 22v8M42 22v8M19 31h10" /></symbol>
+    <symbol id="i-mcp" viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="28" rx="4" /><path d="M6 16h36" /><circle cx="11" cy="12.5" r="1" class="f" /><circle cx="15" cy="12.5" r="1" class="f" /><path d="M20 23l-5 4 5 4M28 23l5 4-5 4" /><path d="M18 41h12" /></symbol>
+    <symbol id="i-rules" viewBox="0 0 48 48"><path d="M12 6h18l8 8v28H12z" /><path d="M30 6v8h8" /><path d="M18 22l3 3 5-6M18 32l3 3 5-6" /><path d="M30 24h3M30 34h3" /></symbol>
+    <symbol id="i-ci" viewBox="0 0 48 48"><circle cx="12" cy="12" r="5" /><circle cx="12" cy="36" r="5" /><circle cx="36" cy="24" r="5" /><path d="M12 17v14M17 12c10 0 12 6 14 10M17 36c10 0 12-6 14-10" /></symbol>
+    <symbol id="i-pom" viewBox="0 0 48 48"><rect x="6" y="8" width="36" height="32" rx="4" /><path d="M6 16h36M18 16v24" /><path d="M23 23h13M23 29h13M23 35h8M10 22h4M10 28h4" /></symbol>
+    <symbol id="i-api" viewBox="0 0 48 48"><path d="M8 16h22M8 16l6-6M8 16l6 6" /><path d="M40 32H18M40 32l-6-6M40 32l-6 6" /><circle cx="38" cy="14" r="3" class="f" /><circle cx="10" cy="34" r="3" class="f" /></symbol>
+    <symbol id="i-eye" viewBox="0 0 48 48"><path d="M4 24s7-12 20-12 20 12 20 12-7 12-20 12S4 24 4 24z" /><circle cx="24" cy="24" r="6" /><circle cx="24" cy="24" r="2" class="f" /></symbol>
+    <symbol id="i-data" viewBox="0 0 48 48"><ellipse cx="24" cy="12" rx="14" ry="5" /><path d="M10 12v24c0 3 6 5 14 5s14-2 14-5V12" /><path d="M10 24c0 3 6 5 14 5s14-2 14-5" /></symbol>
+    <symbol id="i-gauge" viewBox="0 0 48 48"><path d="M8 34a16 16 0 1 1 32 0" /><path d="M24 34l9-11" /><circle cx="24" cy="34" r="3" class="f" /><path d="M12 22l2 1.5M36 22l-2 1.5M24 16v2.5" /></symbol>
+    <symbol id="i-docker" viewBox="0 0 48 48"><path d="M4 26h36c2 0 4-3 4-5-2 0-4 0-5 2-1-3-3-4-3-4l-2 4H4c0 9 7 15 18 15 9 0 15-4 18-12" /><rect x="10" y="19" width="5" height="5" /><rect x="16" y="19" width="5" height="5" /><rect x="22" y="19" width="5" height="5" /><rect x="16" y="13" width="5" height="5" /><rect x="22" y="13" width="5" height="5" /></symbol>
+    <symbol id="i-pipeline" viewBox="0 0 48 48"><rect x="4" y="18" width="10" height="12" rx="3" /><rect x="19" y="10" width="10" height="12" rx="3" /><rect x="19" y="26" width="10" height="12" rx="3" /><rect x="34" y="18" width="10" height="12" rx="3" /><path d="M14 24h2l3-8M16 24l3 8M29 16l3 8h2M29 32l3-8" /></symbol>
+    <symbol id="i-puzzle" viewBox="0 0 48 48"><path d="M10 14h8a4 4 0 1 1 8 0h8v8a4 4 0 1 1 0 8v8h-8a4 4 0 1 0-8 0h-8v-8a4 4 0 1 0 0-8z" /></symbol>
+    <symbol id="i-book" viewBox="0 0 48 48"><path d="M6 10c6-2 12-2 18 2 6-4 12-4 18-2v28c-6-2-12-2-18 2-6-4-12-4-18-2z" /><path d="M24 12v28" /></symbol>
+    <symbol id="i-git" viewBox="0 0 48 48"><circle cx="14" cy="10" r="4" /><circle cx="14" cy="38" r="4" /><circle cx="34" cy="18" r="4" /><path d="M14 14v20M34 22c0 8-8 8-16 12" /></symbol>
+    <symbol id="i-wrench" viewBox="0 0 48 48"><path d="M31 6a11 11 0 0 0-10.5 14.5L6.5 34.5a4.5 4.5 0 0 0 6.5 6.5l14-14A11 11 0 0 0 41.5 17l-7 6.5-6-1.5-1.5-6 6.5-7A11 11 0 0 0 31 6z" /><circle cx="10" cy="38" r="1.6" class="f" /></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" class="f" /></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-linkedin" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle cx="8" cy="7.8" r="1" class="f" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </svg>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="./">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="live/" class="nav-hot" data-testid="nav-live">Live</a></li>
+        <li><a href="evidence/" class="nav-hot" data-testid="nav-evidence">Evidence</a></li>
+        <li><a href="#agents">Agents</a></li>
+        <li><a href="#workflow">Workflow</a></li>
+        <li><a href="#ci">Pipeline</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#lessons">Lessons</a></li>
+        <li><a href="#oss">OSS</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <canvas class="particles" aria-hidden="true" data-testid="hero-particles"></canvas>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow" data-testid="hero-eyebrow">QA Automation · 5+ yrs · Agentic Testing</span>
+        <h1 data-testid="hero-title">Agents write the tests. <span class="grad">I own the quality.</span></h1>
+        <div class="cta">
+          <a class="btn primary" href="report/" data-testid="cta-report"><svg class="ic"><use href="#i-play" /></svg>Live report</a>
+          <a class="btn" href="demo/" data-testid="cta-demo">Demo app</a>
+          <a class="btn" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio" data-testid="cta-repo">GitHub</a>
+        </div>
+      </div>
+
+      <!-- The AI-agent test loop: five stages on a ring, a token travels around it. -->
+      <figure class="loop-art" data-testid="agent-loop" role="img" aria-label="AI agent test loop: Plan, Generate, Review, Heal, Triage">
+        <svg viewBox="0 0 400 400">
+          <defs>
+            <radialGradient id="g-core" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="var(--accent)" stop-opacity=".55" />
+              <stop offset="1" stop-color="var(--accent)" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="200" cy="200" r="190" fill="url(#g-core)" class="halo" />
+          <circle cx="200" cy="200" r="140" class="ring" />
+          <circle cx="200" cy="200" r="140" class="ring-flow" />
+          <circle cx="200" cy="200" r="96" class="ring-inner" />
+          <g class="core">
+            <circle cx="200" cy="200" r="54" class="core-bg" />
+            <path d="M176 202l16 16 33-38" class="core-check" />
+          </g>
+          <!-- nodes at 72° intervals, starting at 12 o'clock (r = 140) -->
+          <g class="node n1"><circle cx="200" cy="60" r="30" /><text x="200" y="65">Plan</text></g>
+          <g class="node n2"><circle cx="333" cy="157" r="30" /><text x="333" y="162">Gen</text></g>
+          <g class="node n3"><circle cx="282" cy="313" r="30" /><text x="282" y="318">Review</text></g>
+          <g class="node n4"><circle cx="118" cy="313" r="30" /><text x="118" y="318">Heal</text></g>
+          <g class="node n5"><circle cx="67" cy="157" r="30" /><text x="67" y="162">Triage</text></g>
+          <circle r="9" class="token" />
+          <circle r="5" class="token token-2" />
+        </svg>
+        <figcaption class="human-tag"><span></span>human gate</figcaption>
+      </figure>
+    </div>
+
+    <div class="wrap">
+      <div class="stats" data-testid="stats">
+        <div class="stat"><b data-count="328">328</b><span>tests</span></div>
+        <div class="stat"><b data-count="3">3</b><span>layers</span></div>
+        <div class="stat"><b data-count="4">4</b><span>AI agents</span></div>
+        <div class="stat"><b data-count="11">11</b><span>lessons</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Reels: muted autoplay while on screen (IntersectionObserver in assets/fx.js), tap the sound button to listen. -->
+    <section id="reels" data-testid="reels">
+      <div class="wrap">
+        <h2>Reels</h2>
+        <p class="sub">Swipe through. Each reel is recorded by the pipeline itself and opens the real page.</p>
+        <div class="reels" role="list" aria-label="Reels">
+          <article class="reel" role="listitem" data-testid="reel" data-reel="evidence">
+            <div class="reel-frame">
+              <video muted loop playsinline preload="none" poster="reels/watchlist-remove-not-saved.jpg" aria-label="Bug evidence video: a removed watchlist stock comes back after a reload, with English narration and subtitles">
+                <source src="reels/watchlist-remove-not-saved.mp4" type="video/mp4" />
+              </video>
+              <button class="reel-sound" type="button" aria-pressed="false" aria-label="Turn sound on" data-testid="reel-sound">
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path class="on" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" /><path class="off" d="M17 9l5 6M22 9l-5 6" /></svg>
+              </button>
+            </div>
+            <span class="reel-tag">Bug evidence · narrated</span>
+            <b>A removed stock comes back after a reload</b>
+            <a href="evidence/" data-testid="reel-link">Open the evidence and bug report</a>
+          </article>
+          <article class="reel" role="listitem" data-testid="reel" data-reel="live">
+            <div class="reel-frame">
+              <video muted loop playsinline preload="none" poster="reels/live-run.jpg" aria-label="Screen recording: the live run dashboard replaying a full Playwright run, with the browser view of each tested page">
+                <source src="reels/live-run.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <span class="reel-tag">Live run · Playwright</span>
+            <b>Every test streamed, with the page it tested</b>
+            <a href="live/" data-testid="reel-link">Open the live dashboard</a>
+          </article>
+          <article class="reel" role="listitem" data-testid="reel" data-reel="k6">
+            <div class="reel-frame">
+              <video muted loop playsinline preload="none" poster="reels/k6-dashboard.jpg" aria-label="Screen recording: the k6 web dashboard of a spike test, scrolling through the charts">
+                <source src="reels/k6-dashboard.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <span class="reel-tag">Performance · k6</span>
+            <b>Spike test: surge, then recovery</b>
+            <a href="perf/" data-testid="reel-link">Open the k6 dashboards</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="agents">
+      <div class="wrap">
+        <h2>Agents in the loop</h2>
+        <div class="tiles">
+          <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/.claude/agents"><svg class="big"><use href="#i-agent" /></svg><b>4 sub-agents</b><small>plan · generate · heal · triage</small></a>
+          <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.mcp.json"><svg class="big"><use href="#i-mcp" /></svg><b>Playwright MCP</b><small>real browser, no guessing</small></a>
+          <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/CLAUDE.md"><svg class="big"><use href="#i-rules" /></svg><b>CLAUDE.md</b><small>rules agents obey</small></a>
+          <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/scripts/ai-triage.mjs"><svg class="big"><use href="#i-ci" /></svg><b>AI triage</b><small>root cause on red CI</small></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow" data-testid="agent-workflow" data-style="blueprint">
+      <div class="wrap">
+        <h2>Agents in production</h2>
+        <div class="swim bp-panel" data-testid="blueprint-panel" role="group" aria-label="Who does what in three QA workflows">
+          <svg class="bp-dim" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true">
+            <path class="bp-stroke" pathLength="1" d="M0 7H1000" />
+            <path class="bp-tick" d="M0.5 1V13M1000 1V13M500 3.5V10.5" />
+          </svg>
+          <div class="band qc" aria-hidden="true"></div>
+          <div class="band agent" aria-hidden="true"></div>
+          <p class="swim-label qc" aria-hidden="true"><span></span>QC<br />decides</p>
+          <p class="swim-label agent" aria-hidden="true"><span></span>Agent<br />does</p>
+            <article class="wf" data-testid="workflow" data-sheet="A-01" aria-label="Workflow A: Build the suite">
+              <header class="wf-head"><span class="wf-id" aria-hidden="true">A</span><h3>Build the suite</h3><small>per feature</small></header>
+              <div class="sw-lane qc">
+                <p class="sw-lane-tag">QC — decides</p>
+                <ol class="steps">
+                  <li class="step" value="1">Guardrails + .env</li>
+                  <li class="step" value="3">Requirements</li>
+                  <li class="step" value="6">Approve cases</li>
+                  <li class="step" value="8">Accept scripts</li>
+                </ol>
+              </div>
+              <div class="hand" aria-hidden="true">
+                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path class="bp-stroke" pathLength="1" d="M5 20l7 9 7-9" /></svg>
+                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path class="bp-stroke" pathLength="1" d="M5 16l7-9 7 9" /></svg>
+              </div>
+              <div class="sw-lane agent">
+                <p class="sw-lane-tag">Agent — does</p>
+                <ol class="steps">
+                  <li class="step" value="2">Walk as each role</li>
+                  <li class="step" value="4">Map scope + ask</li>
+                  <li class="step" value="5">Write cases</li>
+                  <li class="step" value="7">Write &amp; stabilise specs</li>
+                </ol>
+              </div>
+            </article>
+            <article class="wf" data-testid="workflow" data-sheet="B-02" aria-label="Workflow B: Test cycle">
+              <header class="wf-head"><span class="wf-id" aria-hidden="true">B</span><h3>Test cycle</h3><small>each cycle</small></header>
+              <div class="sw-lane qc">
+                <p class="sw-lane-tag">QC — decides</p>
+                <ol class="steps">
+                  <li class="step" value="3">Intended or bug?</li>
+                  <li class="step" value="9">Review</li>
+                </ol>
+              </div>
+              <div class="hand" aria-hidden="true">
+                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path class="bp-stroke" pathLength="1" d="M5 20l7 9 7-9" /></svg>
+                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path class="bp-stroke" pathLength="1" d="M5 16l7-9 7 9" /></svg>
+              </div>
+              <div class="sw-lane agent">
+                <p class="sw-lane-tag">Agent — does</p>
+                <ol class="steps">
+                  <li class="step" value="1">Walk + diff</li>
+                  <li class="step" value="2">Fix small / ask big</li>
+                  <li class="step" value="4">Run suite</li>
+                  <li class="step" value="5">Triage failures</li>
+                  <li class="step" value="6">Video bug report</li>
+                  <li class="step" value="7">Restore data</li>
+                  <li class="step" value="8">Facts-only report</li>
+                </ol>
+              </div>
+            </article>
+            <article class="wf" data-testid="workflow" data-sheet="C-03" aria-label="Workflow C: Release">
+              <header class="wf-head"><span class="wf-id" aria-hidden="true">C</span><h3>Release</h3><small>each release</small></header>
+              <div class="sw-lane qc">
+                <p class="sw-lane-tag">QC — decides</p>
+                <ol class="steps">
+                  <li class="step" value="3">Go / No-go</li>
+                  <li class="step" value="6">Handle open tickets</li>
+                </ol>
+              </div>
+              <div class="hand" aria-hidden="true">
+                <svg viewBox="0 0 24 36"><path class="s" d="M12 3v21" /><path class="bp-stroke" pathLength="1" d="M5 20l7 9 7-9" /></svg>
+                <svg viewBox="0 0 24 36" class="up"><path class="s" d="M12 33V12" /><path class="bp-stroke" pathLength="1" d="M5 16l7-9 7 9" /></svg>
+              </div>
+              <div class="sw-lane agent">
+                <p class="sw-lane-tag">Agent — does</p>
+                <ol class="steps">
+                  <li class="step" value="1">Pull release scope</li>
+                  <li class="step" value="2">TEST evidence + regression</li>
+                  <li class="step" value="4">PROD UAT</li>
+                  <li class="step" value="5">Close passed tickets</li>
+                  <li class="step" value="7">Export checklist</li>
+                </ol>
+              </div>
+            </article>
+        </div>
+
+        <div class="stats wf-stats" data-testid="workflow-stats">
+          <div class="stat" data-testid="workflow-stat"><b><i data-count="82">82</i>%</b><span>sub-features automated</span></div>
+          <div class="stat" data-testid="workflow-stat"><b>~<i data-count="1890" data-group>1,890</i></b><span>automated cases</span></div>
+          <div class="stat" data-testid="workflow-stat"><b data-count="69">69</b><span>UI regression flows</span></div>
+          <div class="stat" data-testid="workflow-stat"><b><i data-count="17">17</i>/17</b><span>tickets passed on TEST</span></div>
+          <div class="stat" data-testid="workflow-stat"><b data-count="14">14</b><span>closed with PROD evidence</span></div>
+          <div class="stat" data-testid="workflow-stat"><b><i data-count="22">22</i><small> min</small></b><span>full TEST regression</span></div>
+        </div>
+
+        <div class="cta">
+          <a class="btn primary" href="case-study.html" data-testid="cta-case-study">Case study<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="framework">
+      <div class="wrap">
+        <h2>Framework</h2>
+        <div class="fw">
+          <!-- Isometric layer stack: four slabs (UI, API, Visual, k6, bottom to top in the DOM), test packets climb through them. -->
+          <figure class="iso" data-testid="iso-stack" role="img" aria-label="Test layers stacked: UI, API, Visual, k6">
+            <svg viewBox="0 0 300 340" aria-hidden="true">
+              <defs>
+                <path id="iso-top" d="M110 -50 L210 0 L110 50 L10 0 Z" />
+                <path id="iso-rim" d="M110 -36 L196 0 L110 36 L24 0 Z" />
+                <path id="iso-left" d="M10 0 L110 50 V66 L10 16 Z" />
+                <path id="iso-right" d="M110 50 L210 0 V16 L110 66 Z" />
+                <g id="iso-pkt">
+                  <path class="pl" d="M-7 -2.5 L0 1 V8 L-7 4.5 Z" />
+                  <path class="pr" d="M7 -2.5 L0 1 V8 L7 4.5 Z" />
+                  <path class="pt" d="M0 -6 L7 -2.5 L0 1 L-7 -2.5 Z" />
+                </g>
+              </defs>
+              <ellipse class="ground" cx="110" cy="318" rx="112" ry="22" />
+              <g class="slab k6" data-testid="iso-layer" style="--i: 3; --gd: 0.43s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="258" /><use href="#iso-right" class="sr" y="258" /><use href="#iso-top" class="st" y="258" />
+                  <use href="#iso-rim" class="rim" y="258" /><use href="#iso-top" class="glow" y="258" />
+                  <circle class="pip" cx="110" cy="294" r="2.2" /><circle class="pip" cx="92" cy="285" r="2.2" /><circle class="pip" cx="128" cy="285" r="2.2" />
+                  <path class="lead" d="M213 266 H224" />
+                  <g class="lbl"><use href="#i-gauge" x="228" y="256" width="15" height="15" /><text x="248" y="268">k6</text></g>
+                </g>
+              </g>
+              <g class="slab visual" data-testid="iso-layer" style="--i: 2; --gd: 1.52s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="192" /><use href="#iso-right" class="sr" y="192" /><use href="#iso-top" class="st" y="192" />
+                  <use href="#iso-rim" class="rim" y="192" /><use href="#iso-top" class="glow" y="192" />
+                  <circle class="pip" cx="110" cy="228" r="2.2" /><circle class="pip" cx="92" cy="219" r="2.2" /><circle class="pip" cx="128" cy="219" r="2.2" />
+                  <path class="lead" d="M213 200 H224" />
+                  <g class="lbl"><use href="#i-eye" x="228" y="190" width="15" height="15" /><text x="248" y="202">Visual</text></g>
+                </g>
+              </g>
+              <g class="slab api" data-testid="iso-layer" style="--i: 1; --gd: 2.61s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="126" /><use href="#iso-right" class="sr" y="126" /><use href="#iso-top" class="st" y="126" />
+                  <use href="#iso-rim" class="rim" y="126" /><use href="#iso-top" class="glow" y="126" />
+                  <circle class="pip" cx="110" cy="162" r="2.2" /><circle class="pip" cx="92" cy="153" r="2.2" /><circle class="pip" cx="128" cy="153" r="2.2" />
+                  <path class="lead" d="M213 134 H224" />
+                  <g class="lbl"><use href="#i-api" x="228" y="124" width="15" height="15" /><text x="248" y="136">API</text></g>
+                </g>
+              </g>
+              <g class="slab ui" data-testid="iso-layer" style="--i: 0; --gd: 3.7s">
+                <g class="slab-in">
+                  <use href="#iso-left" class="sl" y="60" /><use href="#iso-right" class="sr" y="60" /><use href="#iso-top" class="st" y="60" />
+                  <use href="#iso-rim" class="rim" y="60" /><use href="#iso-top" class="glow" y="60" />
+                  <circle class="pip" cx="110" cy="96" r="2.2" /><circle class="pip" cx="92" cy="87" r="2.2" /><circle class="pip" cx="128" cy="87" r="2.2" />
+                  <path class="lead" d="M213 68 H224" />
+                  <g class="lbl"><use href="#i-pom" x="228" y="58" width="15" height="15" /><text x="248" y="70">UI</text></g>
+                </g>
+              </g>
+              <path class="axis" d="M110 306 V12" />
+              <g class="pkt" style="--p: -50px; --pd: 0s"><use href="#iso-pkt" x="110" y="296" /></g>
+              <g class="pkt" style="--p: -170px; --pd: -2.4s"><use href="#iso-pkt" x="110" y="296" /></g>
+            </svg>
+          </figure>
+          <div class="tiles">
+            <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/pages"><svg class="big"><use href="#i-pom" /></svg><b>Page Objects</b><small>UI · fixtures</small></a>
+            <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/api"><svg class="big"><use href="#i-api" /></svg><b>API</b><small>typed client</small></a>
+            <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/visual"><svg class="big"><use href="#i-eye" /></svg><b>Visual</b><small>pixel diffs</small></a>
+            <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/k6"><svg class="big"><use href="#i-gauge" /></svg><b>k6</b><small>p95 &lt; 300 ms</small></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ci">
+      <div class="wrap">
+        <h2>Pipeline</h2>
+        <ol class="pipeline" data-testid="pipeline">
+          <li class="stage"><span class="dot"></span><b>Typecheck</b><small>tsc</small></li>
+          <li class="stage split">
+            <div class="lane"><span class="dot"></span><b>Tests</b><small>ui · api · visual</small></div>
+            <div class="lane"><span class="dot"></span><b>k6</b><small>smoke</small></div>
+          </li>
+          <li class="stage ai"><span class="dot"></span><b>AI triage</b><small>on failure</small></li>
+          <li class="stage"><span class="dot"></span><b>Deploy</b><small>Pages</small></li>
+        </ol>
+        <p class="build" data-testid="build-info">main · 91887fc · 2026-10-29</p>
+
+        <div class="previews">
+          <a class="window" href="report/" data-testid="report-preview" aria-label="Open the Playwright HTML report">
+            <div class="chrome"><i></i><i></i><i></i><span>report/</span></div>
+            <div class="mini-report">
+              <div class="mr-head">
+                <span class="mr-pill ok">Passed <b>328</b></span>
+                <span class="mr-pill bad">Failed <b>0</b></span>
+                <span class="mr-pill flaky">Flaky <b>0</b></span>
+              </div>
+              <div class="mr-row ok"><i></i><span>[ui] @regression home (light) has no accessibility violations beyond the known baseline</span><em>3.9s</em></div>
+              <div class="mr-row ok"><i></i><span>[ui] @smoke home (dark) has no accessibility violations beyond the known baseline</span><em>4.1s</em></div>
+              <div class="mr-row ok"><i></i><span>[ui] @regression case study (light) has no accessibility violations beyond the known baseline</span><em>1.9s</em></div>
+              <div class="mr-row ok"><i></i><span>[ui] @regression case study (dark) has no accessibility violations beyond the known baseline</span><em>1.8s</em></div>
+              <div class="mr-row ok"><i></i><span>[ui] @regression cv (light) has no accessibility violations beyond the known baseline</span><em>1.9s</em></div>
+              <div class="mr-row ok"><i></i><span>[ui] @regression cv (dark) has no accessibility violations beyond the known baseline</span><em>1.8s</em></div>
+            </div>
+          </a>
+          <a class="window" href="demo/" data-testid="demo-preview" aria-label="Open the MarketFlow demo app">
+            <div class="chrome"><i></i><i></i><i></i><span>demo/</span></div>
+            <div class="mini-demo" aria-hidden="true">
+              <div class="mb-card">
+                <div class="mb-head"><b>MarketFlow</b><span>VN30 (simulated) <em>+1.38%</em></span></div>
+                <div class="mb-row mb-h"><span>Ticker</span><span>Last</span><span>%Chg</span></div>
+                <div class="mb-row ceil"><span>ACB</span><span>26.20</span><span>+6.94%</span></div>
+                <div class="mb-row up"><span>FPT</span><span>103.70</span><span>+5.82%</span></div>
+                <div class="mb-row ref"><span>SAB</span><span>52.00</span><span>0.00%</span></div>
+                <div class="mb-row down"><span>GAS</span><span>70.20</span><span>-1.13%</span></div>
+                <div class="mb-row floor"><span>MBB</span><span>24.65</span><span>-6.98%</span></div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="observe" data-testid="observe">
+      <div class="wrap">
+        <h2>Watch it run</h2>
+        <p class="sub">Live while it runs, replayable after it ends, with evidence a client can watch without the code.</p>
+        <div class="tiles">
+          <a class="tile" href="live/" data-testid="observe-live"><svg class="big"><use href="#i-ci" /></svg><b>Live run</b><small>Playwright, streamed · CI replay</small></a>
+          <a class="tile" href="perf/" data-testid="observe-k6"><svg class="big"><use href="#i-gauge" /></svg><b>k6 dashboard</b><small>live · stress · spike</small></a>
+          <a class="tile" href="evidence/" data-testid="observe-evidence"><svg class="big"><use href="#i-play" /></svg><b>Bug evidence</b><small>narrated video · captions</small></a>
+          <a class="tile" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/ui/a11y.spec.ts" data-testid="observe-a11y"><svg class="big"><use href="#i-rules" /></svg><b>Accessibility</b><small>axe · WCAG 2.1 AA</small></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="services" data-testid="services">
+      <div class="wrap">
+        <h2>Services</h2>
+        <div class="tiles services">
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-pom" /></svg>
+            <b>Playwright framework setup</b>
+            <small>POM, fixtures, API + visual tests</small>
+            <div class="c-links"><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests" rel="noopener">tests/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-pipeline" /></svg>
+            <b>CI/CD for tests</b>
+            <small>GitHub Actions, Docker, reports on Pages</small>
+            <div class="c-links"><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/.github/workflows" rel="noopener">workflows/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-gauge" /></svg>
+            <b>Performance testing with k6</b>
+            <small>thresholds, CI gates</small>
+            <div class="c-links"><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/k6" rel="noopener">k6/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="tile service" data-testid="service-tile">
+            <svg class="big" aria-hidden="true"><use href="#i-agent" /></svg>
+            <b>AI agents in QA</b>
+            <small>Claude Code sub-agents, Playwright MCP, AI failure triage</small>
+            <div class="c-links"><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/.claude/agents" rel="noopener">agents/<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/scripts/ai-triage.mjs" rel="noopener">ai-triage<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="cv.html" data-testid="cta-work">Work with me<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
+          <a class="btn" href="https://github.com/nguyenvanlinh14" data-testid="cta-github">GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="lessons">
+      <div class="wrap">
+        <h2>Lessons <small class="lang">VI</small></h2>
+        <div class="lesson-grid" data-testid="lesson-list">
+          <a class="lesson" href="lessons/01-ai-agents-in-qa.html" data-testid="lesson-card"><span class="num">01</span><svg class="big" aria-hidden="true"><use href="#i-agent"/></svg><b>AI Agents</b></a>
+          <a class="lesson" href="lessons/02-playwright-pom.html" data-testid="lesson-card"><span class="num">02</span><svg class="big" aria-hidden="true"><use href="#i-pom"/></svg><b>Playwright + POM</b></a>
+          <a class="lesson" href="lessons/03-api-testing.html" data-testid="lesson-card"><span class="num">03</span><svg class="big" aria-hidden="true"><use href="#i-api"/></svg><b>API Testing</b></a>
+          <a class="lesson" href="lessons/04-visual-testing.html" data-testid="lesson-card"><span class="num">04</span><svg class="big" aria-hidden="true"><use href="#i-eye"/></svg><b>Visual Testing</b></a>
+          <a class="lesson" href="lessons/05-k6-performance.html" data-testid="lesson-card"><span class="num">05</span><svg class="big" aria-hidden="true"><use href="#i-gauge"/></svg><b>k6 Performance</b></a>
+          <a class="lesson" href="lessons/06-docker-for-qa.html" data-testid="lesson-card"><span class="num">06</span><svg class="big" aria-hidden="true"><use href="#i-docker"/></svg><b>Docker cho QA</b></a>
+          <a class="lesson" href="lessons/07-cicd-architecture.html" data-testid="lesson-card"><span class="num">07</span><svg class="big" aria-hidden="true"><use href="#i-pipeline"/></svg><b>Kiến trúc CI/CD</b></a>
+          <a class="lesson" href="lessons/08-test-design-patterns.html" data-testid="lesson-card"><span class="num">08</span><svg class="big" aria-hidden="true"><use href="#i-puzzle"/></svg><b>Design Patterns</b></a>
+          <a class="lesson" href="lessons/09-live-mode.html" data-testid="lesson-card"><span class="num">09</span><svg class="big" aria-hidden="true"><use href="#i-ci"/></svg><b>Live Mode</b></a>
+          <a class="lesson" href="lessons/10-video-evidence.html" data-testid="lesson-card"><span class="num">10</span><svg class="big" aria-hidden="true"><use href="#i-book"/></svg><b>Video Evidence</b></a>
+          <a class="lesson" href="lessons/11-accessibility.html" data-testid="lesson-card"><span class="num">11</span><svg class="big" aria-hidden="true"><use href="#i-rules"/></svg><b>Accessibility</b></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="oss">
+      <div class="wrap">
+        <h2>Open source</h2>
+        <div class="contribs" data-testid="oss-contributions">
+          <article class="contrib" data-testid="contribution" data-stage="proposed">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>grafana/k6#4260</b><small>deriveBits: bit lengths not multiple of 8</small></div></div>
+            <ol class="track" aria-label="grafana/k6#4260 progress"><li class="current" aria-current="step"><span>Comment</span></li><li class="todo"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/grafana/k6/issues/4260" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/k6-4260.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="proposed">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-pipeline" /></svg><div class="c-id"><b>grafana/k6#3062</b><small>Test k6 installation in CI</small></div></div>
+            <ol class="track" aria-label="grafana/k6#3062 progress"><li class="current" aria-current="step"><span>Comment</span></li><li class="todo"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/grafana/k6/issues/3062" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/k6-3062.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions/runs/40499430856" rel="noopener">Run<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="pr">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>volcano-sh/volcano#6171</b><small>Unit tests for the Job state machine</small></div></div>
+            <ol class="track" aria-label="volcano-sh/volcano#6171 progress"><li class="done"><span>Comment</span></li><li class="current" aria-current="step"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/volcano-sh/volcano/issues/6171" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/volcano-job-state-tests.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/volcano-sh/volcano/pull/6171" rel="noopener">PR<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="merged">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>meshery/meshery#22619</b><small>Replace waitForTimeout with a web-first assertion</small></div></div>
+            <ol class="track" aria-label="meshery/meshery#22619 progress"><li class="done"><span>Comment</span></li><li class="done"><span>PR</span></li><li class="done"><span>Review</span></li><li class="done"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/meshery/meshery/issues/22619" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-userpref-no-sleep.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/meshery/meshery/pull/22619" rel="noopener">PR<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+          <article class="contrib" data-testid="contribution" data-stage="pr">
+            <div class="c-head"><svg class="big" aria-hidden="true"><use href="#i-wrench" /></svg><div class="c-id"><b>meshery/meshery#22628</b><small>Web-first URL assertion in logout spec</small></div></div>
+            <ol class="track" aria-label="meshery/meshery#22628 progress"><li class="done"><span>Comment</span></li><li class="current" aria-current="step"><span>PR</span></li><li class="todo"><span>Review</span></li><li class="todo"><span>Merged</span></li></ol>
+            <div class="c-links"><a class="pill-link" href="https://github.com/meshery/meshery/issues/22628" rel="noopener">Issue<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/drafts/meshery-logout-web-first.md" rel="noopener">Draft<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="pill-link" href="https://github.com/meshery/meshery/pull/22628" rel="noopener">PR<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a></div>
+          </article>
+        </div>
+        <h3 class="mini">Up next</h3>
+        <div class="chips" data-testid="oss-issues">
+          <a class="chip" href="https://github.com/grafana/k6/issues/881" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#881 HTTP/2 server push</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/4412" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#4412 Optimize tests run speed (especially the…</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/4584" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#4584 Support sigv4 to push metric to AWS manag…</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/2764" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#2764 Extend the `metrics.TagSet` API</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/2296" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#2296 a Roadmap to target higher ES standards?…</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/1939" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#1939 Log output as xk6 extension</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/1210" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#1210 Cookies not saved during NTLM auth negoti…</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/921" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#921 Better metrics about sleep and group</span></a>
+          <a class="chip" href="https://github.com/grafana/k6/issues/238" data-testid="oss-chip"><span class="chip-repo">k6</span><span class="chip-title">#238 Support for QUIC protocol</span></a>
+        </div>
+        <a class="more" href="lessons/open-source-playbook.html">Playbook <svg class="ic"><use href="#i-arrow" /></svg></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot-links">
+        <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio"><svg class="ic"><use href="#i-git" /></svg>nguyenvanlinh14/qa-agent-portfolio</a>
+        <a href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" data-testid="footer-linkedin"><svg class="ic" aria-hidden="true"><use href="#i-linkedin" /></svg>LinkedIn</a>
+      </div>
+      <span>Built by GitHub Actions · tested by its own suite</span>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      document.querySelector('.theme-toggle').addEventListener('click', () => {
+        const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+        try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+      });
+
+      // Count stats up from 0 the first time they scroll into view. The final value is
+      // already in the HTML, so no-JS and reduced-motion visitors see the real number.
+      if (reduce || !('IntersectionObserver' in window)) return;
+      const counters = [...document.querySelectorAll('[data-count]')].filter((el) => /^\d+$/.test(el.dataset.count));
+      const io = new IntersectionObserver((entries) => {
+        for (const { isIntersecting, target } of entries) {
+          if (!isIntersecting) continue;
+          io.unobserve(target);
+          const end = Number(target.dataset.count);
+          const start = performance.now();
+          const tick = (now) => {
+            const p = Math.min(1, (now - start) / 1200);
+            const n = Math.round(end * (1 - Math.pow(1 - p, 3)));
+            target.textContent = target.hasAttribute('data-group') ? n.toLocaleString('en-US') : String(n);
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      });
+      counters.forEach((el) => io.observe(el));
+    })();
+  </script>
+</body>
+</html>
