@@ -77,7 +77,12 @@ async function events(item) {
     for (const r of runs.filter((r) => ['failure', 'timed_out', 'action_required'].includes(r.conclusion))) {
       out.push({ id: `ci${sha}${r.id}`, user: { login: 'CI' }, at: r.completed_at ?? pr.updated_at, url: r.html_url, what: `check **${r.name}** ${r.conclusion} on ${sha}`, body: r.output?.title ?? '' });
     }
-    const done = runs.length && runs.every((r) => r.status === 'completed');
+    // Prow, DCO, Netlify and similar report through commit statuses, not check runs.
+    const statuses = (await gh(`${base}/commits/${pr.head.sha}/status`)).statuses ?? [];
+    for (const s of statuses.filter((s) => s.state === 'failure' || s.state === 'error')) {
+      out.push({ id: `st${sha}${s.id}`, user: { login: 'CI' }, at: s.updated_at, url: s.target_url ?? `${issue.html_url}/checks`, what: `status **${s.context}** ${s.state} on ${sha}`, body: s.description ?? '' });
+    }
+    const done = runs.length && runs.every((r) => r.status === 'completed') && statuses.every((s) => s.state === 'success');
     if (done && runs.every((r) => ['success', 'skipped', 'neutral'].includes(r.conclusion))) {
       out.push({ id: `cigreen${sha}`, user: { login: 'CI' }, at: pr.updated_at, url: `${issue.html_url}/checks`, what: `all ${runs.length} checks passed on ${sha} ✅`, body: '' });
     }
