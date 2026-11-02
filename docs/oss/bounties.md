@@ -6,7 +6,7 @@ icon: git
 
 # Paid OSS bounties
 
-Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-bounties.mjs`) vào 2026-10-27. Script tìm các issue đang mở có nhãn bounty (ví dụ `💎 Bounty` của Algora, hoặc `[$250]` trong tiêu đề của Expensify), chưa ai nhận, cập nhật trong 120 ngày gần đây. Trước khi chấm điểm, script lọc độ tin cậy của repo để loại các repo "bounty farm" (repo lập ra chỉ để câu lượt attempt): chỉ giữ repo có từ 200★ trở lên, được tạo cách đây ít nhất 6 tháng, không phải fork hay repo đã archive, tên repo không chứa bounty/hunter/livefire/airdrop. Lịch sử đã trả thưởng được tra bằng số issue có nhãn `💰 Rewarded` của repo (cột Paid before; `0 ⚠` nghĩa là chưa thấy bằng chứng repo từng trả tiền). Issue có hơn 15 người attempt được tách sang mục Crowded, không xếp hạng. Điểm 0-100: tiền thưởng (tối đa 25, thang log, trần $1000), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 30), độ tin cậy của repo (tối đa 25: số sao và lịch sử trả thưởng), độ mới (tối đa 10), độ phù hợp với QA automation (tối đa 10: ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli), trừ điểm nếu chưa rõ số tiền, mô tả quá dài hoặc chưa rõ quy định AI. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.
+Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-bounties.mjs`) vào 2026-11-02. Script tìm các issue đang mở có nhãn bounty (ví dụ `💎 Bounty` của Algora, hoặc `[$250]` trong tiêu đề của Expensify), chưa ai nhận, cập nhật trong 120 ngày gần đây. Trước khi chấm điểm, script lọc độ tin cậy của repo để loại các repo "bounty farm" (repo lập ra chỉ để câu lượt attempt): chỉ giữ repo có từ 200★ trở lên, được tạo cách đây ít nhất 6 tháng, không phải fork hay repo đã archive, tên repo không chứa bounty/hunter/livefire/airdrop. Lịch sử đã trả thưởng được tra bằng số issue có nhãn `💰 Rewarded` của repo (cột Paid before; `0 ⚠` nghĩa là chưa thấy bằng chứng repo từng trả tiền). Issue có hơn 15 người attempt được tách sang mục Crowded, không xếp hạng. Điểm 0-100: tiền thưởng (tối đa 25, thang log, trần $1000), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 30), độ tin cậy của repo (tối đa 25: số sao và lịch sử trả thưởng), độ mới (tối đa 10), độ phù hợp với QA automation (tối đa 10: ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli), trừ điểm nếu chưa rõ số tiền, mô tả quá dài hoặc chưa rõ quy định AI. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.
 
 > Lưu ý: bounty rất cạnh tranh, số tiền và số lượt attempt có thể đã đổi từ lúc tạo trang. Hãy đọc kỹ CONTRIBUTING và luật của repo trước khi làm, luôn khai báo (disclose) khi có AI hỗ trợ, và đừng spam `/attempt`. Bộ lọc chỉ giảm rủi ro, không thay thế việc tự kiểm tra repo và người ra bounty. Mục AI: `disclose` nghĩa là repo yêu cầu khai báo, `unknown` nghĩa là chưa tìm thấy quy định rõ ràng. Mục Paid before: `Upwork` nghĩa là repo trả qua Upwork (không có nhãn để đếm), `?` nghĩa là chưa tra được.
 
@@ -14,11 +14,20 @@ Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-b
 
 | Score | $ | Issue | Title | Attempts | ★ stars | Paid before | Lang | AI | Updated |
 |---:|---:|---|---|---:|---:|---:|---|---|---|
-| 53 | $300 | [go-gitea/gitea#4898](https://github.com/go-gitea/gitea/issues/4898) | Add inline comments on commits | 10 | 59k | 5 | Go | disclose | 2026-07-05 |
-| 34 | ? | [shanalikhan/code-settings-sync#413](https://github.com/shanalikhan/code-settings-sync/issues/413) | Suggestion: Allow upload to repository | 1 | 4.1k | 0 ⚠ | TypeScript | unknown | 2026-10-13 |
-| 33 | ? | [Ikalus1988/MisakaNet#1258](https://github.com/Ikalus1988/MisakaNet/issues/1258) | Start here: give your coding agent a failure memory (MCP, 60 seconds) | 1 | 543 | 0 ⚠ | Python | unknown | 2026-10-27 |
-| 31 | ? | [FreezingMoon/AncientBeast#1772](https://github.com/FreezingMoon/AncientBeast/issues/1772) | showcase ability targeting area better \[bounty: 16 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-27 |
-| 24 | ? | [livepeer/go-livepeer#1815](https://github.com/livepeer/go-livepeer/issues/1815) | livepeer_cli: Show estimated tx cost in a confirmation step | 2 | 587 | 0 ⚠ | Go | unknown | 2026-10-11 |
+| 63 | $300 | [go-gitea/gitea#4898](https://github.com/go-gitea/gitea/issues/4898) | Add inline comments on commits | 10 | 59k | 5 | Go | disclose | 2026-11-01 |
+| 42 | ? | [fyne-io/fyne#142](https://github.com/fyne-io/fyne/issues/142) | Add drag and drop support | 0 | 29k | 0 ⚠ | Go | unknown | 2026-11-01 |
+| 42 | ? | [fyne-io/fyne#1062](https://github.com/fyne-io/fyne/issues/1062) | Android apps are lagging when enter text and scrolling | 0 | 29k | 0 ⚠ | Go | unknown | 2026-10-27 |
+| 38 | $3.5 | [FreezingMoon/AncientBeast#1445](https://github.com/FreezingMoon/AncientBeast/issues/1445) | Disturbing Sound sprite \[bounty: 31 XTR\] | 4 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 36 | ? | [ajv-validator/ajv#1745](https://github.com/ajv-validator/ajv/issues/1745) | Support $dynamicAnchor and $recursiveAnchor in any schema location (not only root) | 1 | 15k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 33 | ? | [Ikalus1988/MisakaNet#1258](https://github.com/Ikalus1988/MisakaNet/issues/1258) | Start here: give your coding agent a failure memory (MCP, 60 seconds) | 1 | 550 | 0 ⚠ | Python | unknown | 2026-10-30 |
+| 33 | ? | [shanalikhan/code-settings-sync#413](https://github.com/shanalikhan/code-settings-sync/issues/413) | Suggestion: Allow upload to repository | 1 | 4.1k | 0 ⚠ | TypeScript | unknown | 2026-10-13 |
+| 31 | ? | [FreezingMoon/AncientBeast#2250](https://github.com/FreezingMoon/AncientBeast/issues/2250) | hexagon coordinate view tweaks \[bounty: 7 XTR\] | 3 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 31 | ? | [FreezingMoon/AncientBeast#2530](https://github.com/FreezingMoon/AncientBeast/issues/2530) | no music on iPhone \[bounty: 7 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 31 | ? | [FreezingMoon/AncientBeast#2016](https://github.com/FreezingMoon/AncientBeast/issues/2016) | ability icons snap if skipping during upgrade \[bounty: 7 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 31 | ? | [FreezingMoon/AncientBeast#1996](https://github.com/FreezingMoon/AncientBeast/issues/1996) | less draconian card update function \[bounty: 20 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 31 | ? | [FreezingMoon/AncientBeast#1772](https://github.com/FreezingMoon/AncientBeast/issues/1772) | showcase ability targeting area better \[bounty: 16 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-30 |
+| 23 | ? | [FreezingMoon/AncientBeast#2092](https://github.com/FreezingMoon/AncientBeast/issues/2092) | less distracting HUD when in the background \[bounty: 8 XTR\] | 4 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-10-31 |
+| 23 | ? | [livepeer/go-livepeer#1815](https://github.com/livepeer/go-livepeer/issues/1815) | livepeer_cli: Show estimated tx cost in a confirmation step | 2 | 587 | 0 ⚠ | Go | unknown | 2026-10-11 |
 | 17 | ? | [stashapp/stash#3530](https://github.com/stashapp/stash/issues/3530) | Support multiple scenes in a single file | 4 | 13k | 0 ⚠ | Go | unknown | 2026-09-28 |
 | 14 | ? | [stashapp/stash#571](https://github.com/stashapp/stash/issues/571) | Support for multiple performer images | 4 | 13k | 0 ⚠ | Go | unknown | 2026-08-24 |
 
@@ -30,15 +39,15 @@ Quá đông người, không xếp hạng (hiện 6 issue, chỉ liệt kê 6 is
 |---:|---|---:|
 | $250 | [onyx-dot-app/onyx#2281](https://github.com/onyx-dot-app/onyx/issues/2281) | 50 |
 | $50 | [arakoodev/EdgeChains#290](https://github.com/arakoodev/EdgeChains/issues/290) | 64 |
-| $30 | [arakoodev/EdgeChains#273](https://github.com/arakoodev/EdgeChains/issues/273) | 60 |
-| $25 | [arakoodev/EdgeChains#279](https://github.com/arakoodev/EdgeChains/issues/279) | 27 |
-| $20 | [highlight/highlight#8032](https://github.com/highlight/highlight/issues/8032) | 50 |
-| $15 | [flydelabs/flyde#112](https://github.com/flydelabs/flyde/issues/112) | 32 |
+| $30 | [arakoodev/EdgeChains#273](https://github.com/arakoodev/EdgeChains/issues/273) | 62 |
+| $25 | [arakoodev/EdgeChains#279](https://github.com/arakoodev/EdgeChains/issues/279) | 32 |
+| $20 | [highlight/highlight#8032](https://github.com/highlight/highlight/issues/8032) | 61 |
+| $15 | [flydelabs/flyde#112](https://github.com/flydelabs/flyde/issues/112) | 37 |
 
 ## Top 10 chi tiết
 
 <details>
-<summary><b>53</b> · $300 · go-gitea/gitea#4898: Add inline comments on commits</summary>
+<summary><b>63</b> · $300 · go-gitea/gitea#4898: Add inline comments on commits</summary>
 
 [Mở issue trên GitHub](https://github.com/go-gitea/gitea/issues/4898)
 
@@ -60,22 +69,74 @@ Update: there were some attempts but they failed to make attachment management r
 </details>
 
 <details>
-<summary><b>34</b> · ? · shanalikhan/code-settings-sync#413: Suggestion: Allow upload to repository</summary>
+<summary><b>42</b> · ? · fyne-io/fyne#142: Add drag and drop support</summary>
 
-[Mở issue trên GitHub](https://github.com/shanalikhan/code-settings-sync/issues/413)
+[Mở issue trên GitHub](https://github.com/fyne-io/fyne/issues/142)
 
 ```text
-[<img alt="Issuehunt badges" src="https://img.shields.io/badge/IssueHunt-%24200%20Funded-%2300A156.svg" />](https://oss.issuehunt.io/r/shanalikhan/code-settings-sync/issues/413)
+Add the events for these gestures.
 
-By @shanalikhan
+Explore further what's required to integrate with system DnD
+```
 
-Before starting this feature, Settings Sync required code requires refactoring. You can take https://github.com/shanalikhan/code-settings-sync/pull/937 as a baseline for refactoring to start working.
+</details>
 
-Following are the feature i see for git sync.
+<details>
+<summary><b>42</b> · ? · fyne-io/fyne#1062: Android apps are lagging when enter text and scrolling</summary>
 
-Originally by @smbkr
+[Mở issue trên GitHub](https://github.com/fyne-io/fyne/issues/1062)
 
-It would be useful to be able to upload the settings to a repo instead of a gist, the way that JetBrains IDEs sync, so that the change
+```text
+Since recent changes that enforce layout the general responsiveness, particularly around text and scroll, has gone down.
+
+Some optimisations that exist in glfw may not have been ported to mobile.
+```
+
+</details>
+
+<details>
+<summary><b>38</b> · $3.5 · FreezingMoon/AncientBeast#1445: Disturbing Sound sprite \[bounty: 31 XTR\]</summary>
+
+[Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/1445)
+
+```text
+Chimera's Disturbing Sound is a range attack and should have a missile sprite.
+
+This is composed of two sprites: the musical note will be displayed inside the circle, but only the circle will be rotating (clockwise by default is moving towards right side).
+
+Files in `assets/units/sprites/`:
+`Chimera - Disturbing Sound - circle.png`
+`Chimera - Disturbing Sound - note.png`
+
+Based on https://opengameart.org/content/music-magic-effect#comment-78455
+```
+
+</details>
+
+<details>
+<summary><b>36</b> · ? · ajv-validator/ajv#1745: Support $dynamicAnchor and $recursiveAnchor in any schema location (not only root)</summary>
+
+[Mở issue trên GitHub](https://github.com/ajv-validator/ajv/issues/1745)
+
+```text
+**What version of Ajv are you using? Does the issue happen if you use the latest version?**
+8.6.2, which should be the latest
+
+**Ajv options object**
+
+See https://github.com/OAI/OpenAPI-Specification/pull/2489 for a discussion on the options.
+
+**JSON Schema**
+
+The OpenAPI 3.1 schema defined here: https://github.com/OAI/OpenAPI-Specification/blob/main/schemas/v3.1/schema.json
+
+I'm not proficient enough to make this a minimal reproduction example.
+
+**Sample data**
+
+the OpenApi v3.1 webhook example here: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.1/webhook-example.json
+
+**
 ```
 
 </details>
@@ -102,63 +163,63 @@ It would be useful to be able to upload the settings to a repo instead of a gist
 </details>
 
 <details>
-<summary><b>31</b> · ? · FreezingMoon/AncientBeast#1772: showcase ability targeting area better \[bounty: 16 XTR\]</summary>
+<summary><b>33</b> · ? · shanalikhan/code-settings-sync#413: Suggestion: Allow upload to repository</summary>
 
-[Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/1772)
+[Mở issue trên GitHub](https://github.com/shanalikhan/code-settings-sync/issues/413)
 
 ```text
-Area abilities, such as Godlet Printer, should show dashed hexagons for occupied hexagons within range to better reflect total area.
+[<img alt="Issuehunt badges" src="https://img.shields.io/badge/IssueHunt-%24200%20Funded-%2300A156.svg" />](https://oss.issuehunt.io/r/shanalikhan/code-settings-sync/issues/413)
+
+By @shanalikhan
+
+Before starting this feature, Settings Sync required code requires refactoring. You can take https://github.com/shanalikhan/code-settings-sync/pull/937 as a baseline for refactoring to start working.
+
+Following are the feature i see for git sync.
+
+Originally by @smbkr
+
+It would be useful to be able to upload the settings to a repo instead of a gist, the way that JetBrains IDEs sync, so that the change
 ```
 
 </details>
 
 <details>
-<summary><b>24</b> · ? · livepeer/go-livepeer#1815: livepeer_cli: Show estimated tx cost in a confirmation step</summary>
+<summary><b>31</b> · ? · FreezingMoon/AncientBeast#2250: hexagon coordinate view tweaks \[bounty: 7 XTR\]</summary>
 
-[Mở issue trên GitHub](https://github.com/livepeer/go-livepeer/issues/1815)
+[Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2250)
 
 ```text
-When you use livepeer_cli to tell the node to submit a transaction there is:
+Trying to improve the hexagon coordinate view, but not fully sure if this will work (or it could use tweaks along the way), so the bounty will be granted even if PR not merged if its according to specs (this rule kinda applies to most PRs), see this list:
 
-- No indication of how much the transaction will cost
-- No confirmation step checking with the user if they are sure they want to do this
+- units should no longer be in x-ray mode because that's tedious
+- coordinates should display on top of units to be properly visible
+- another grid with dashed hexes should display on top of units
+- dashed hexagons at 25% opacity for non-unit occupied places
 
-As a result, it is easy for the following to occur:
-
-- User spends more than they want to
-- User has to guess how much ETH they need for the transactions since the failure message don't indicate how much was needed. Related to https://github.com/livepeer/go-livepeer/issues/1783
+The view is visible when hovering the round marker indicator from unit queue or whi
 ```
 
 </details>
 
 <details>
-<summary><b>17</b> · ? · stashapp/stash#3530: Support multiple scenes in a single file</summary>
+<summary><b>31</b> · ? · FreezingMoon/AncientBeast#2530: no music on iPhone \[bounty: 7 XTR\]</summary>
 
-[Mở issue trên GitHub](https://github.com/stashapp/stash/issues/3530)
+[Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2530)
 
 ```text
-### **Is your feature request related to a problem? Please describe.**
-There are cases where a stash user would want to view scenes that may exist in a single file separately without re-encoding the source file into separate files so they can be viewed as separate scenes within stash 
-
-### **Describe the solution you'd like**
-The solution has been discussed a few times and usually revolves around utilizing a similar system to Markers to determine the start and end points of a "sub-scene" within a file that has multiple scenes while leaving the source file as is
-
-### **Describe alternatives you
+The game doesn't play any music on iOS/iPhone while using Chrome.
+Not sure if the SFX itself also works, as I don't own any Apple stuff...
 ```
 
 </details>
 
 <details>
-<summary><b>14</b> · ? · stashapp/stash#571: Support for multiple performer images</summary>
+<summary><b>31</b> · ? · FreezingMoon/AncientBeast#2016: ability icons snap if skipping during upgrade \[bounty: 7 XTR\]</summary>
 
-[Mở issue trên GitHub](https://github.com/stashapp/stash/issues/571)
+[Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2016)
 
 ```text
-It would be great to allow save a few images at performer entity and not just one like now. I like to ocassionally surf the net searching for great profile images for girls in my database, and it would be nice to keep more that one (maybe with a limit?) and show one randomly as default or visible each session (or something like that). I mean something that don't suppose extra work to devs, just to see a little more "variety" and "eyecandy".
-
-Maybe store a few images and the possibility to change the "default" manually from perfomers page? I dont know what would be more simple.
-
-Sorry for my en
+The smooth transition animation of ability icon gets disabled somehow when skipping turn during the ability upgrade animation (upgrade icon over the ability icon), causing the icon to snap in and out instantly next times depending if the ability is usable.
 ```
 
 </details>
