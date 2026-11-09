@@ -6,7 +6,7 @@ icon: git
 
 # OSS candidates
 
-Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-good-first-issues.mjs --detail`) vào 2026-11-02. Điểm càng cao càng đáng thử trước; xem cách tính trong [OSS Playbook](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/open-source-playbook.md).
+Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-good-first-issues.mjs --detail`) vào 2026-11-09. Điểm càng cao càng đáng thử trước; xem cách tính trong [OSS Playbook](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/open-source-playbook.md).
 
 ## microsoft/playwright
 
@@ -20,15 +20,15 @@ Không có issue phù hợp.
 
 | Score | Issue | Title | Labels | Comments | Updated |
 |---:|---|---|---|---:|---|
-| 82 | [#881](https://github.com/grafana/k6/issues/881) | HTTP/2 server push | `good first issue` `feature` `lower prio` `new-http` `triage` | 1 | 2026-08-18 |
-| 81 | [#4412](https://github.com/grafana/k6/issues/4412) | Optimize tests run speed (especially the functional tests) | `good first issue` `tests` `hacktoberfest` `triage` `area: browser` | 5 | 2026-09-23 |
+| 81 | [#881](https://github.com/grafana/k6/issues/881) | HTTP/2 server push | `good first issue` `feature` `lower prio` `new-http` `triage` | 1 | 2026-08-18 |
+| 80 | [#4412](https://github.com/grafana/k6/issues/4412) | Optimize tests run speed (especially the functional tests) | `good first issue` `tests` `hacktoberfest` `triage` `area: browser` | 5 | 2026-09-23 |
 | 79 | [#4584](https://github.com/grafana/k6/issues/4584) | Support sigv4 to push metric to AWS managed prometheus | `good first issue` `hacktoberfest` `triage` `area: prometheusrw` | 2 | 2026-07-29 |
 | 78 | [#2764](https://github.com/grafana/k6/issues/2764) | Extend the \`metrics.TagSet\` API | `good first issue` `ux` `feature` `stale` | 4 | 2026-10-19 |
 | 73 | [#2296](https://github.com/grafana/k6/issues/2296) | a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ? | `enhancement` `help wanted` `feature` `js-compat` `stale` | 5 | 2026-10-19 |
 | 73 | [#1939](https://github.com/grafana/k6/issues/1939) | Log output as xk6 extension | `enhancement` `help wanted` `feature` `stale` | 4 | 2026-10-19 |
 | 73 | [#1210](https://github.com/grafana/k6/issues/1210) | Cookies not saved during NTLM auth negotiation | `bug` `help wanted` `refactor` `evaluation needed` `stale` | 4 | 2026-10-19 |
 | 73 | [#921](https://github.com/grafana/k6/issues/921) | Better metrics about sleep and group | `enhancement` `help wanted` `stale` | 2 | 2026-10-19 |
-| 68 | [#238](https://github.com/grafana/k6/issues/238) | Support for QUIC protocol | `good first issue` `feature` `stale` | 7 | 2026-10-12 |
+| 67 | [#238](https://github.com/grafana/k6/issues/238) | Support for QUIC protocol | `good first issue` `feature` `stale` | 7 | 2026-10-12 |
 
 ## grafana/k6-docs
 
@@ -49,7 +49,7 @@ Không có issue phù hợp.
 ## Top 10
 
 <details>
-<summary><b>82</b> · grafana/k6#881: HTTP/2 server push</summary>
+<summary><b>81</b> · grafana/k6#881: HTTP/2 server push</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/881)
 
@@ -60,7 +60,7 @@ We probably should consider properly implementing [HTTP/2 Server Push](https://e
 </details>
 
 <details>
-<summary><b>81</b> · grafana/k6#4412: Optimize tests run speed (especially the functional tests)</summary>
+<summary><b>80</b> · grafana/k6#4412: Optimize tests run speed (especially the functional tests)</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/4412)
 
@@ -200,7 +200,7 @@ I propose that we:
 </details>
 
 <details>
-<summary><b>68</b> · grafana/k6#238: Support for QUIC protocol</summary>
+<summary><b>67</b> · grafana/k6#238: Support for QUIC protocol</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/238)
 
