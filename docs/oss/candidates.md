@@ -6,7 +6,7 @@ icon: git
 
 # OSS candidates
 
-Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-good-first-issues.mjs --detail`) vào 2026-11-09. Điểm càng cao càng đáng thử trước; xem cách tính trong [OSS Playbook](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/open-source-playbook.md).
+Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-good-first-issues.mjs --detail`) vào 2026-11-16. Điểm càng cao càng đáng thử trước; xem cách tính trong [OSS Playbook](https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/open-source-playbook.md).
 
 ## microsoft/playwright
 
@@ -20,15 +20,14 @@ Không có issue phù hợp.
 
 | Score | Issue | Title | Labels | Comments | Updated |
 |---:|---|---|---|---:|---|
-| 81 | [#881](https://github.com/grafana/k6/issues/881) | HTTP/2 server push | `good first issue` `feature` `lower prio` `new-http` `triage` | 1 | 2026-08-18 |
-| 80 | [#4412](https://github.com/grafana/k6/issues/4412) | Optimize tests run speed (especially the functional tests) | `good first issue` `tests` `hacktoberfest` `triage` `area: browser` | 5 | 2026-09-23 |
-| 79 | [#4584](https://github.com/grafana/k6/issues/4584) | Support sigv4 to push metric to AWS managed prometheus | `good first issue` `hacktoberfest` `triage` `area: prometheusrw` | 2 | 2026-07-29 |
-| 78 | [#2764](https://github.com/grafana/k6/issues/2764) | Extend the \`metrics.TagSet\` API | `good first issue` `ux` `feature` `stale` | 4 | 2026-10-19 |
-| 73 | [#2296](https://github.com/grafana/k6/issues/2296) | a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ? | `enhancement` `help wanted` `feature` `js-compat` `stale` | 5 | 2026-10-19 |
-| 73 | [#1939](https://github.com/grafana/k6/issues/1939) | Log output as xk6 extension | `enhancement` `help wanted` `feature` `stale` | 4 | 2026-10-19 |
-| 73 | [#1210](https://github.com/grafana/k6/issues/1210) | Cookies not saved during NTLM auth negotiation | `bug` `help wanted` `refactor` `evaluation needed` `stale` | 4 | 2026-10-19 |
-| 73 | [#921](https://github.com/grafana/k6/issues/921) | Better metrics about sleep and group | `enhancement` `help wanted` `stale` | 2 | 2026-10-19 |
-| 67 | [#238](https://github.com/grafana/k6/issues/238) | Support for QUIC protocol | `good first issue` `feature` `stale` | 7 | 2026-10-12 |
+| 80 | [#881](https://github.com/grafana/k6/issues/881) | HTTP/2 server push | `good first issue` `feature` `lower prio` `new-http` `triage` | 1 | 2026-08-18 |
+| 79 | [#4412](https://github.com/grafana/k6/issues/4412) | Optimize tests run speed (especially the functional tests) | `good first issue` `tests` `hacktoberfest` `triage` `area: browser` | 5 | 2026-09-23 |
+| 78 | [#4584](https://github.com/grafana/k6/issues/4584) | Support sigv4 to push metric to AWS managed prometheus | `good first issue` `hacktoberfest` `triage` `area: prometheusrw` | 2 | 2026-07-29 |
+| 77 | [#2764](https://github.com/grafana/k6/issues/2764) | Extend the \`metrics.TagSet\` API | `good first issue` `ux` `feature` `stale` | 4 | 2026-10-19 |
+| 72 | [#2296](https://github.com/grafana/k6/issues/2296) | a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ? | `enhancement` `help wanted` `feature` `js-compat` `stale` | 5 | 2026-10-19 |
+| 72 | [#1939](https://github.com/grafana/k6/issues/1939) | Log output as xk6 extension | `enhancement` `help wanted` `feature` `stale` | 4 | 2026-10-19 |
+| 72 | [#1210](https://github.com/grafana/k6/issues/1210) | Cookies not saved during NTLM auth negotiation | `bug` `help wanted` `refactor` `evaluation needed` `stale` | 4 | 2026-10-19 |
+| 72 | [#921](https://github.com/grafana/k6/issues/921) | Better metrics about sleep and group | `enhancement` `help wanted` `stale` | 2 | 2026-10-19 |
 
 ## grafana/k6-docs
 
@@ -49,7 +48,7 @@ Không có issue phù hợp.
 ## Top 10
 
 <details>
-<summary><b>81</b> · grafana/k6#881: HTTP/2 server push</summary>
+<summary><b>80</b> · grafana/k6#881: HTTP/2 server push</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/881)
 
@@ -60,7 +59,7 @@ We probably should consider properly implementing [HTTP/2 Server Push](https://e
 </details>
 
 <details>
-<summary><b>80</b> · grafana/k6#4412: Optimize tests run speed (especially the functional tests)</summary>
+<summary><b>79</b> · grafana/k6#4412: Optimize tests run speed (especially the functional tests)</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/4412)
 
@@ -89,7 +88,7 @@ TestWaitForFrameNa
 </details>
 
 <details>
-<summary><b>79</b> · grafana/k6#4584: Support sigv4 to push metric to AWS managed prometheus</summary>
+<summary><b>78</b> · grafana/k6#4584: Support sigv4 to push metric to AWS managed prometheus</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/4584)
 
@@ -102,7 +101,7 @@ https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote
 </details>
 
 <details>
-<summary><b>78</b> · grafana/k6#2764: Extend the \`metrics.TagSet\` API</summary>
+<summary><b>77</b> · grafana/k6#2764: Extend the \`metrics.TagSet\` API</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/2764)
 
@@ -125,7 +124,7 @@ Also, it seems like it
 </details>
 
 <details>
-<summary><b>73</b> · grafana/k6#2296: a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ?</summary>
+<summary><b>72</b> · grafana/k6#2296: a Roadmap to target higher ES standards? ES6+ ES7+ ES8+ or ES2020 ES2021+ ?</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/2296)
 
@@ -148,7 +147,7 @@ and have to i
 </details>
 
 <details>
-<summary><b>73</b> · grafana/k6#1939: Log output as xk6 extension</summary>
+<summary><b>72</b> · grafana/k6#1939: Log output as xk6 extension</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/1939)
 
@@ -171,7 +170,7 @@ Iván
 </details>
 
 <details>
-<summary><b>73</b> · grafana/k6#1210: Cookies not saved during NTLM auth negotiation</summary>
+<summary><b>72</b> · grafana/k6#1210: Cookies not saved during NTLM auth negotiation</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/1210)
 
@@ -184,7 +183,7 @@ So this might also be something that affects the digest authentication as well..
 </details>
 
 <details>
-<summary><b>73</b> · grafana/k6#921: Better metrics about sleep and group</summary>
+<summary><b>72</b> · grafana/k6#921: Better metrics about sleep and group</summary>
 
 [Mở issue trên GitHub](https://github.com/grafana/k6/issues/921)
 
@@ -195,27 +194,6 @@ I propose that we:
 2. Have the group know that there was n seconds of sleep in it's current execution - probably through some new methods on [lib.Group](https://github.com/loadimpact/k6/blob/9405ba29c68ced92c6b96974485d1541a8807f23/lib/models.go#L97-L122)
 3. Add new metric `group_sleep`? 
 4. Choose whether to remove the sleep time from the `group_duration` or add another metric that is the `group_duration` without the `group_sleep` or the reverse - have the `group_duration` be without the `group_sleep` but have another `full_group_duration` that includes the `group_sleep`
-```
-
-</details>
-
-<details>
-<summary><b>67</b> · grafana/k6#238: Support for QUIC protocol</summary>
-
-[Mở issue trên GitHub](https://github.com/grafana/k6/issues/238)
-
-```text
-Hi
-
-As discussed briefly in Slack, it'd be great to get support for the [QUIC](https://www.chromium.org/quic) transport protocol (currently an [IETF draft](https://tools.ietf.org/html/draft-hamilton-early-deployment-quic-00) though has a dedicated working group and very wide support so is extremely likely to be ratified before too long): 
-
-There's a potentially helpful QUIC lib for Go which is used by [Caddy](https://caddyserver.com/) - [quic-go](https://github.com/lucas-clemente/quic-go) (MIT license).
-
-QUIC is UDP-based so this might cause some issues/complexity and is worth calling out in docs as folks will need to ensure they allow udp:443 from load gen(s) to server(s)/LBs.
-
-Please let me know if you need any more info from me.
-
-Cheers
 ```
 
 </details>
