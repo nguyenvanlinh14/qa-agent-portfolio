@@ -6,7 +6,7 @@ icon: git
 
 # Paid OSS bounties
 
-Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-bounties.mjs`) vào 2026-11-16. Script tìm các issue đang mở có nhãn bounty (ví dụ `💎 Bounty` của Algora, hoặc `[$250]` trong tiêu đề của Expensify), chưa ai nhận, cập nhật trong 120 ngày gần đây. Trước khi chấm điểm, script lọc độ tin cậy của repo để loại các repo "bounty farm" (repo lập ra chỉ để câu lượt attempt): chỉ giữ repo có từ 200★ trở lên, được tạo cách đây ít nhất 6 tháng, không phải fork hay repo đã archive, tên repo không chứa bounty/hunter/livefire/airdrop. Lịch sử đã trả thưởng được tra bằng số issue có nhãn `💰 Rewarded` của repo (cột Paid before; `0 ⚠` nghĩa là chưa thấy bằng chứng repo từng trả tiền). Issue có hơn 15 người attempt được tách sang mục Crowded, không xếp hạng. Điểm 0-100: tiền thưởng (tối đa 25, thang log, trần $1000), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 30), độ tin cậy của repo (tối đa 25: số sao và lịch sử trả thưởng), độ mới (tối đa 10), độ phù hợp với QA automation (tối đa 10: ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli), trừ điểm nếu chưa rõ số tiền, mô tả quá dài hoặc chưa rõ quy định AI. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.
+Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-bounties.mjs`) vào 2026-11-23. Script tìm các issue đang mở có nhãn bounty (ví dụ `💎 Bounty` của Algora, hoặc `[$250]` trong tiêu đề của Expensify), chưa ai nhận, cập nhật trong 120 ngày gần đây. Trước khi chấm điểm, script lọc độ tin cậy của repo để loại các repo "bounty farm" (repo lập ra chỉ để câu lượt attempt): chỉ giữ repo có từ 200★ trở lên, được tạo cách đây ít nhất 6 tháng, không phải fork hay repo đã archive, tên repo không chứa bounty/hunter/livefire/airdrop. Lịch sử đã trả thưởng được tra bằng số issue có nhãn `💰 Rewarded` của repo (cột Paid before; `0 ⚠` nghĩa là chưa thấy bằng chứng repo từng trả tiền). Issue có hơn 15 người attempt được tách sang mục Crowded, không xếp hạng. Điểm 0-100: tiền thưởng (tối đa 25, thang log, trần $1000), mức cạnh tranh theo số người đã /attempt hoặc mở PR (tối đa 30), độ tin cậy của repo (tối đa 25: số sao và lịch sử trả thưởng), độ mới (tối đa 10), độ phù hợp với QA automation (tối đa 10: ngôn ngữ TypeScript/JavaScript/Go/Python và từ khóa test, Playwright, e2e, CI, flaky, lint, cli), trừ điểm nếu chưa rõ số tiền, mô tả quá dài hoặc chưa rõ quy định AI. Issue đã được trả thưởng và repo cấm nội dung do AI tạo ra đã bị loại.
 
 > Lưu ý: bounty rất cạnh tranh, số tiền và số lượt attempt có thể đã đổi từ lúc tạo trang. Hãy đọc kỹ CONTRIBUTING và luật của repo trước khi làm, luôn khai báo (disclose) khi có AI hỗ trợ, và đừng spam `/attempt`. Bộ lọc chỉ giảm rủi ro, không thay thế việc tự kiểm tra repo và người ra bounty. Mục AI: `disclose` nghĩa là repo yêu cầu khai báo, `unknown` nghĩa là chưa tìm thấy quy định rõ ràng. Mục Paid before: `Upwork` nghĩa là repo trả qua Upwork (không có nhãn để đếm), `?` nghĩa là chưa tra được.
 
@@ -15,16 +15,13 @@ Trang này được tạo tự động bởi workflow oss-scout (`scripts/find-b
 | Score | $ | Issue | Title | Attempts | ★ stars | Paid before | Lang | AI | Updated |
 |---:|---:|---|---|---:|---:|---:|---|---|---|
 | 61 | $300 | [go-gitea/gitea#4898](https://github.com/go-gitea/gitea/issues/4898) | Add inline comments on commits | 10 | 59k | 5 | Go | disclose | 2026-11-01 |
-| 41 | ? | [fyne-io/fyne#142](https://github.com/fyne-io/fyne/issues/142) | Add drag and drop support | 0 | 29k | 0 ⚠ | Go | unknown | 2026-11-01 |
-| 41 | ? | [fyne-io/fyne#1062](https://github.com/fyne-io/fyne/issues/1062) | Android apps are lagging when enter text and scrolling | 0 | 29k | 0 ⚠ | Go | unknown | 2026-10-27 |
-| 38 | ? | [Ikalus1988/MisakaNet#4874](https://github.com/Ikalus1988/MisakaNet/issues/4874) | \[Bounty\]\[$0\]\[corpus\] 48 篇 draft：每篇给一个 promote/retire 的判据 | 1 | 561 | 0 ⚠ | Python | unknown | 2026-11-15 |
-| 38 | ? | [Ikalus1988/MisakaNet#4876](https://github.com/Ikalus1988/MisakaNet/issues/4876) | \[Bounty\]\[$0\]\[corpus\] devops 20 篇缺 verify：补一条可执行的确认，或标记失效 | 1 | 561 | 0 ⚠ | Python | unknown | 2026-11-15 |
-| 33 | ? | [Ikalus1988/MisakaNet#1258](https://github.com/Ikalus1988/MisakaNet/issues/1258) | Start here: give your coding agent a failure memory (MCP, 60 seconds) | 1 | 561 | 0 ⚠ | Python | unknown | 2026-11-14 |
-| 31 | ? | [FreezingMoon/AncientBeast#2246](https://github.com/FreezingMoon/AncientBeast/issues/2246) | cursor state to showcase active unit better \[bounty: 6 XTR\] | 3 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-15 |
-| 31 | ? | [FreezingMoon/AncientBeast#2004](https://github.com/FreezingMoon/AncientBeast/issues/2004) | ability unit targeting tweaks \[bounty: 15 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-14 |
-| 23 | ? | [FreezingMoon/AncientBeast#2704](https://github.com/FreezingMoon/AncientBeast/issues/2704) | Undo Move mechanic \[bounty: 222 XTR\] | 5 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-14 |
-| 23 | ? | [FreezingMoon/AncientBeast#2537](https://github.com/FreezingMoon/AncientBeast/issues/2537) | indicate selected ability when targeting \[bounty: 14 XTR\] | 4 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-12 |
-| 22 | ? | [livepeer/go-livepeer#1815](https://github.com/livepeer/go-livepeer/issues/1815) | livepeer_cli: Show estimated tx cost in a confirmation step | 2 | 587 | 0 ⚠ | Go | unknown | 2026-10-11 |
+| 38 | ? | [Ikalus1988/MisakaNet#4876](https://github.com/Ikalus1988/MisakaNet/issues/4876) | \[Bounty\]\[$0\]\[corpus\] devops 20 篇缺 verify：补一条可执行的确认，或标记失效 | 1 | 567 | 0 ⚠ | Python | unknown | 2026-11-22 |
+| 38 | ? | [Ikalus1988/MisakaNet#4874](https://github.com/Ikalus1988/MisakaNet/issues/4874) | \[Bounty\]\[$0\]\[corpus\] 48 篇 draft：每篇给一个 promote/retire 的判据 | 1 | 567 | 0 ⚠ | Python | unknown | 2026-11-22 |
+| 33 | ? | [Ikalus1988/MisakaNet#1258](https://github.com/Ikalus1988/MisakaNet/issues/1258) | Start here: give your coding agent a failure memory (MCP, 60 seconds) | 1 | 567 | 0 ⚠ | Python | unknown | 2026-11-22 |
+| 30 | ? | [FreezingMoon/AncientBeast#2246](https://github.com/FreezingMoon/AncientBeast/issues/2246) | cursor state to showcase active unit better \[bounty: 6 XTR\] | 3 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-15 |
+| 30 | ? | [FreezingMoon/AncientBeast#2004](https://github.com/FreezingMoon/AncientBeast/issues/2004) | ability unit targeting tweaks \[bounty: 15 XTR\] | 2 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-14 |
+| 26 | ? | [shanalikhan/code-settings-sync#143](https://github.com/shanalikhan/code-settings-sync/issues/143) | Considering disabled extensions | 3 | 4.1k | ? | TypeScript | unknown | 2026-11-16 |
+| 22 | ? | [FreezingMoon/AncientBeast#2704](https://github.com/FreezingMoon/AncientBeast/issues/2704) | Undo Move mechanic \[bounty: 222 XTR\] | 4 | 1.9k | 0 ⚠ | TypeScript | unknown | 2026-11-14 |
 
 ## Crowded (>15 attempts)
 
@@ -64,27 +61,25 @@ Update: there were some attempts but they failed to make attachment management r
 </details>
 
 <details>
-<summary><b>41</b> · ? · fyne-io/fyne#142: Add drag and drop support</summary>
+<summary><b>38</b> · ? · Ikalus1988/MisakaNet#4876: \[Bounty\]\[$0\]\[corpus\] devops 20 篇缺 verify：补一条可执行的确认，或标记失效</summary>
 
-[Mở issue trên GitHub](https://github.com/fyne-io/fyne/issues/142)
-
-```text
-Add the events for these gestures.
-
-Explore further what's required to integrate with system DnD
-```
-
-</details>
-
-<details>
-<summary><b>41</b> · ? · fyne-io/fyne#1062: Android apps are lagging when enter text and scrolling</summary>
-
-[Mở issue trên GitHub](https://github.com/fyne-io/fyne/issues/1062)
+[Mở issue trên GitHub](https://github.com/Ikalus1988/MisakaNet/issues/4876)
 
 ```text
-Since recent changes that enforce layout the general responsiveness, particularly around text and scroll, has gone down.
+## 背景
 
-Some optimisations that exist in glfw may not have been ported to mobile.
+359 篇已发布课程**没有 `verify` 字段**——也就是"没人写过怎么确认这条经验成立"。语料的证据分级（`evidence_level`）因此有一半是自述。本任务从最大的一批开始：`domain: devops` 里 126 篇缺 `verify`，先取**创建时间最早的 20 篇**（越老越可能已经失效）。
+
+## 范围（20 篇）
+
+- `lessons/contrib/api-rate-limit-handling.md`
+- `lessons/contrib/gfw-tls-sni-blocking-tool-layer-ineffective.md`
+- `lessons/contrib/lesson-10-microservices-latency-math.md`
+- `lessons/contrib/lesson-11-github-commit-signing.md`
+- `lessons/contrib/lesson-13-aws-lambda-microvms.md`
+- `lessons/contrib/lesson-14-api-pagination-design.md`
+- `lessons/contrib/lesson-15-cloudflare-workflows-durable.md`
+- `lessons/contrib
 ```
 
 </details>
@@ -121,30 +116,6 @@ B 组另外开了一条跟踪 issue（不是赏金）：`#4889`。把 B 组塞�
 </details>
 
 <details>
-<summary><b>38</b> · ? · Ikalus1988/MisakaNet#4876: \[Bounty\]\[$0\]\[corpus\] devops 20 篇缺 verify：补一条可执行的确认，或标记失效</summary>
-
-[Mở issue trên GitHub](https://github.com/Ikalus1988/MisakaNet/issues/4876)
-
-```text
-## 背景
-
-359 篇已发布课程**没有 `verify` 字段**——也就是"没人写过怎么确认这条经验成立"。语料的证据分级（`evidence_level`）因此有一半是自述。本任务从最大的一批开始：`domain: devops` 里 126 篇缺 `verify`，先取**创建时间最早的 20 篇**（越老越可能已经失效）。
-
-## 范围（20 篇）
-
-- `lessons/contrib/api-rate-limit-handling.md`
-- `lessons/contrib/gfw-tls-sni-blocking-tool-layer-ineffective.md`
-- `lessons/contrib/lesson-10-microservices-latency-math.md`
-- `lessons/contrib/lesson-11-github-commit-signing.md`
-- `lessons/contrib/lesson-13-aws-lambda-microvms.md`
-- `lessons/contrib/lesson-14-api-pagination-design.md`
-- `lessons/contrib/lesson-15-cloudflare-workflows-durable.md`
-- `lessons/contrib
-```
-
-</details>
-
-<details>
 <summary><b>33</b> · ? · Ikalus1988/MisakaNet#1258: Start here: give your coding agent a failure memory (MCP, 60 seconds)</summary>
 
 [Mở issue trên GitHub](https://github.com/Ikalus1988/MisakaNet/issues/1258)
@@ -166,7 +137,7 @@ B 组另外开了一条跟踪 issue（不是赏金）：`#4889`。把 B 组塞�
 </details>
 
 <details>
-<summary><b>31</b> · ? · FreezingMoon/AncientBeast#2246: cursor state to showcase active unit better \[bounty: 6 XTR\]</summary>
+<summary><b>30</b> · ? · FreezingMoon/AncientBeast#2246: cursor state to showcase active unit better \[bounty: 6 XTR\]</summary>
 
 [Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2246)
 
@@ -177,7 +148,7 @@ When hovering active unit, the cursor should turn into a ["progress" type of poi
 </details>
 
 <details>
-<summary><b>31</b> · ? · FreezingMoon/AncientBeast#2004: ability unit targeting tweaks \[bounty: 15 XTR\]</summary>
+<summary><b>30</b> · ? · FreezingMoon/AncientBeast#2004: ability unit targeting tweaks \[bounty: 15 XTR\]</summary>
 
 [Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2004)
 
@@ -188,7 +159,34 @@ When targeting an ability, the target hexagons should be using an overlapped non
 </details>
 
 <details>
-<summary><b>23</b> · ? · FreezingMoon/AncientBeast#2704: Undo Move mechanic \[bounty: 222 XTR\]</summary>
+<summary><b>26</b> · ? · shanalikhan/code-settings-sync#143: Considering disabled extensions</summary>
+
+[Mở issue trên GitHub](https://github.com/shanalikhan/code-settings-sync/issues/143)
+
+```text
+[<img alt="Issuehunt badges" src="https://img.shields.io/badge/IssueHunt-%24120%20Funded-%2300A156.svg" />](https://oss.issuehunt.io/r/shanalikhan/code-settings-sync/issues/143)
+
+**Visual Studio Code Version :** 1.7.1
+**Code Sync Settings Version :** 2.3.8
+**Operating System :** W10
+**Occurs On:** [Upload / Download]
+**Proxy Enabled:** No
+
+As of version 1.7, VSCode introduced _[disabled extensions](http://code.visualstudio.com/updates/v1_7#_disable-extensions)_. 
+
+We're excited to find these supported by this beloved plugin soon, hopefully! ;) Thank you!
+
+---
+
+<details>
+<summary>
+<b>IssueHunt
+```
+
+</details>
+
+<details>
+<summary><b>22</b> · ? · FreezingMoon/AncientBeast#2704: Undo Move mechanic \[bounty: 222 XTR\]</summary>
 
 [Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2704)
 
@@ -198,21 +196,6 @@ As of #2701 brainstorm, there should be a feature to undo the very last action, 
 Icon for the action:
 https://game-icons.net/1x1/delapouite/backward-time.html
 Standard icon style: no background, white foreground, 4px black stroke.
-```
-
-</details>
-
-<details>
-<summary><b>23</b> · ? · FreezingMoon/AncientBeast#2537: indicate selected ability when targeting \[bounty: 14 XTR\]</summary>
-
-[Mở issue trên GitHub](https://github.com/FreezingMoon/AncientBeast/issues/2537)
-
-```text
-When targeting an ability, the ability's icon should be showcased above the hexagon hovered (along with its frame).
-
-Should be temporary (like the yellow text tooltip is basically); he cancel one should show icon as well, the cancel.svg
-
-Relies on #1584 probably, so we can load svg files as textures, based on that, icons could be added on the fly #678
 ```
 
 </details>
