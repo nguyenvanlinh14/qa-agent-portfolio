@@ -1,0 +1,24 @@
+{
+  "id": "watchlist-remove-not-saved",
+  "title": "Watchlist: a removed stock comes back after a reload",
+  "signature": "watchlist | removal not persisted | removed ticker ≠ absent after reload",
+  "device": "MacBook (Chromium, Playwright), 1280 × 720",
+  "os": "macOS / Linux CI",
+  "prerequisite": "MarketFlow demo opened with ?defect=watchlist-remove-not-saved; empty watchlist",
+  "account": "qa@demo.dev (demo account)",
+  "scope": "Watchlist page only. Removing from the board star or the stock page is not affected.",
+  "steps": [
+    "First, sign in with the QA test account.",
+    "On the market board, add ACB and FPT to the watchlist with the star buttons.",
+    "Open the watchlist. Both stocks are listed.",
+    "Now remove FPT with its star. The row disappears, and the count shows one stock.",
+    "Reload the page."
+  ],
+  "actual": "FPT is back on the watchlist. The removal was never saved.",
+  "expected": "FPT stays removed after a reload, and the count stays at one stock.",
+  "video": "watchlist-remove-not-saved.mp4",
+  "captions": "watchlist-remove-not-saved.vtt",
+  "poster": "watchlist-remove-not-saved.jpg",
+  "durationMs": 41903,
+  "recorded": "2026-10-28"
+}

@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>k6 Performance - đo tải API với VUs, thresholds và CI · Linh.NV</title>
+  <meta name="description" content="k6 Performance - đo tải API với VUs, thresholds và CI" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="k6-performance-do-tai-api-voi-vus-thresholds-va-ci">k6 Performance: đo tải API với VUs, thresholds và CI</h1>
+<p>Test chức năng trả lời câu hỏi &quot;nó có chạy đúng không?&quot;. Test hiệu năng trả lời câu hỏi khác: &quot;nó còn chạy đúng và đủ nhanh khi có nhiều người dùng cùng lúc không?&quot;. Trong bài này bạn sẽ dùng <strong>k6</strong> (của Grafana) để viết kịch bản tải bằng JavaScript, đặt ngưỡng pass/fail (thresholds) và chạy nó trong CI như một cổng chất lượng thực sự.</p>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<p>Sau bài này bạn có thể:</p>
+<ul>
+<li>Giải thích được VU (virtual user), iteration, stage và vì sao chúng khác với &quot;số request&quot;.</li>
+<li>Viết <code>check</code> và <code>threshold</code> để biến kết quả đo thành pass/fail tự động (p95 &lt; 300ms, tỉ lệ lỗi &lt; 1%).</li>
+<li>Phân biệt smoke, load, stress, soak test và biết khi nào dùng loại nào.</li>
+<li>Dùng <code>group</code>, <code>tags</code> để kết quả có cấu trúc, và <code>handleSummary</code> để xuất báo cáo.</li>
+<li>Chạy k6 trong GitHub Actions với biến <code>BASE_URL</code> và đọc được bảng kết quả.</li>
+</ul>
+<h2 id="khai-niem">Khái niệm</h2>
+<h3 id="vu-iteration-duration">VU, iteration, duration</h3>
+<ul>
+<li><strong>VU (virtual user)</strong>: một &quot;người dùng ảo&quot; chạy hàm <code>default</code> của bạn lặp đi lặp lại. 10 VUs nghĩa là 10 luồng chạy song song.</li>
+<li><strong>Iteration</strong>: một lần chạy trọn vẹn hàm <code>default</code> (ví dụ: login, tạo todo, xoá todo). Một iteration có thể gồm nhiều request.</li>
+<li><strong>Duration</strong>: tổng thời gian chạy. Hết thời gian k6 dừng, kể cả khi iteration đang dở (có <code>gracefulStop</code>).</li>
+</ul>
+<p>Nên nhớ: số request/giây (RPS) là <strong>hệ quả</strong> của số VU nhân với tốc độ mỗi iteration. Nếu bạn muốn cố định RPS thì dùng executor <code>constant-arrival-rate</code>, còn mặc định k6 điều khiển theo VU.</p>
+<h3 id="stages-kich-ban-tang-giam-tai">Stages: kịch bản tăng/giảm tải</h3>
+<p><code>stages</code> mô tả đường cong tải: tăng dần (ramp-up), giữ ổn định (steady), giảm dần (ramp-down).</p>
+<pre tabindex="0"><code class="language-js">export const options = &#123;
+  stages: [
+    &#123; duration: &#39;30s&#39;, target: 20 }, // tăng lên 20 VUs
+    &#123; duration: &#39;1m&#39;,  target: 20 }, // giữ 20 VUs
+    &#123; duration: &#39;10s&#39;, target: 0 },  // giảm về 0
+  ],
+};</code></pre>
+<h3 id="checks-va-thresholds-dung-nham-hai-thu-nay">Checks và thresholds, đừng nhầm hai thứ này</h3>
+<ul>
+<li><strong>check</strong>: một khẳng định trên từng response (<code>status === 200</code>). Check fail <strong>không</strong> làm test fail; nó chỉ ghi lại tỉ lệ pass.</li>
+<li><strong>threshold</strong>: điều kiện trên <strong>metric tổng hợp</strong> (<code>p(95)&lt;300</code>). Threshold vi phạm thì k6 thoát với exit code khác 0, tức là CI đỏ.</li>
+</ul>
+<p>Vì vậy một kịch bản đúng luôn có cả hai: check để biết <em>cái gì</em> sai, threshold để <em>quyết định</em> pass/fail. Muốn check cũng chặn được build, hãy đặt threshold lên metric <code>checks</code>: <code>checks: [&#39;rate&gt;0.99&#39;]</code>.</p>
+<h3 id="metrics-quan-trong">Metrics quan trọng</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>http_req_duration</code></td>
+<td>Tổng thời gian request, đây là metric để đặt p95</td>
+</tr>
+<tr>
+<td><code>http_req_failed</code></td>
+<td>Tỉ lệ request lỗi (status &gt;= 400 hoặc lỗi mạng)</td>
+</tr>
+<tr>
+<td><code>http_reqs</code></td>
+<td>Tổng số request, kèm tốc độ/giây</td>
+</tr>
+<tr>
+<td><code>iteration_duration</code></td>
+<td>Thời gian cho cả một iteration</td>
+</tr>
+<tr>
+<td><code>vus</code></td>
+<td>Số VU đang hoạt động</td>
+</tr>
+</tbody></table>
+<p>Hãy nhìn <strong>percentile</strong> (p90, p95, p99) chứ đừng chỉ nhìn trung bình. Trung bình 80ms có thể che giấu việc 5% người dùng chờ tới 2 giây.</p>
+<h3 id="bon-loai-bai-test-hieu-nang">Bốn loại bài test hiệu năng</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Mục đích</th>
+<th>Hình dạng</th>
+<th>Khi nào chạy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Smoke</strong></td>
+<td>Kịch bản có chạy nổi không, hệ thống có sống không</td>
+<td>1-2 VUs, 30 giây</td>
+<td>Mọi commit/PR</td>
+</tr>
+<tr>
+<td><strong>Load</strong></td>
+<td>Hệ thống chịu được tải <em>dự kiến</em> không</td>
+<td>Ramp lên tải bình thường, giữ vài phút</td>
+<td>Mỗi đêm, hoặc trước release</td>
+</tr>
+<tr>
+<td><strong>Stress</strong></td>
+<td>Điểm gãy ở đâu, hồi phục thế nào</td>
+<td>Tăng liên tục vượt ngưỡng dự kiến</td>
+<td>Định kỳ, khi đổi kiến trúc</td>
+</tr>
+<tr>
+<td><strong>Soak</strong></td>
+<td>Rò rỉ bộ nhớ, tài nguyên cạn dần</td>
+<td>Tải vừa phải nhưng kéo dài hàng giờ</td>
+<td>Trước các bản lớn</td>
+</tr>
+</tbody></table>
+<p>Trong repo này CI chạy <strong>smoke</strong> trên mỗi push (nhanh, ổn định) và để <strong>load</strong> chạy thủ công hoặc theo lịch. Stress/soak chỉ là biến thể của <code>options</code>, bạn sẽ tự viết ở phần bài tập.</p>
+<h2 id="vi-du-chay-duoc">Ví dụ chạy được</h2>
+<p>SUT của repo (<a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/server/app.mjs"><code>server/app.mjs</code></a>) lắng nghe ở cổng 4173 với <code>/api/health</code>, <code>/api/auth/login</code> và <code>/api/todos</code>. Hai file k6 nhắm vào API này.</p>
+<h3 id="1-smoke-k6-smoke-js">1. Smoke: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/smoke.js"><code>k6/smoke.js</code></a></h3>
+<p>Smoke test chạy 2 VUs trong 30 giây, mỗi iteration đi hết một hành trình API: health, đăng nhập, tạo todo, liệt kê, đánh dấu xong, xoá. Dưới đây là phần cốt lõi (rút gọn):</p>
+<pre tabindex="0"><code class="language-js">import http from &#39;k6/http&#39;;
+import &#123; check, group, sleep } from &#39;k6&#39;;
+import &#123; textSummary } from &#39;https://jslib.k6.io/k6-summary/0.1.0/index.js&#39;;
+
+const BASE_URL = __ENV.BASE_URL || &#39;http://localhost:4173&#39;;
+const JSON_HEADERS = &#123; &#39;Content-Type&#39;: &#39;application/json&#39; };
+
+export const options = &#123;
+  scenarios: &#123;
+    smoke: &#123; executor: &#39;constant-vus&#39;, vus: 2, duration: &#39;30s&#39; },
+  },
+  thresholds: &#123;
+    http_req_duration: [&#39;p(95)&lt;300&#39;],  // p95 dưới 300ms
+    http_req_failed: [&#39;rate&lt;0.01&#39;],    // lỗi dưới 1 phần trăm
+    checks: [&#39;rate&gt;0.99&#39;],
+    &#39;http_req_duration&#123;group:::todos}&#39;: [&#39;p(95)&lt;300&#39;], // threshold riêng cho một group
+  },
+  tags: &#123; suite: &#39;smoke&#39; },
+};
+
+export default function () &#123;
+  let token;
+
+  group(&#39;health&#39;, () =&gt; &#123;
+    const res = http.get(`$&#123;BASE_URL}/api/health`, &#123; tags: &#123; endpoint: &#39;health&#39; } });
+    check(res, &#123;
+      &#39;health: status 200&#39;: (r) =&gt; r.status === 200,
+      &#39;health: status ok&#39;: (r) =&gt; r.json(&#39;status&#39;) === &#39;ok&#39;,
+    });
+  });
+
+  group(&#39;auth&#39;, () =&gt; &#123;
+    const res = http.post(
+      `$&#123;BASE_URL}/api/auth/login`,
+      JSON.stringify(&#123; email: &#39;qa@demo.dev&#39;, password: &#39;Passw0rd!&#39; }),
+      &#123; headers: JSON_HEADERS, tags: &#123; endpoint: &#39;login&#39; } },
+    );
+    check(res, &#123; &#39;login: status 200&#39;: (r) =&gt; r.status === 200 });
+    token = res.json(&#39;token&#39;);
+  });
+
+  group(&#39;todos&#39;, () =&gt; &#123;
+    const headers = &#123; ...JSON_HEADERS, Authorization: `Bearer $&#123;token}` };
+    const created = http.post(
+      `$&#123;BASE_URL}/api/todos`,
+      JSON.stringify(&#123; title: `k6 smoke $&#123;__VU}-$&#123;__ITER}` }),
+      &#123; headers, tags: &#123; endpoint: &#39;todos_create&#39; } },
+    );
+    check(created, &#123; &#39;create: status 201&#39;: (r) =&gt; r.status === 201 });
+    const id = created.json(&#39;id&#39;);
+    // ... list, PATCH done:true, DELETE (xem file thật)
+    http.del(`$&#123;BASE_URL}/api/todos/$&#123;id}`, null, &#123; headers, tags: &#123; endpoint: &#39;todos_delete&#39; } });
+  });
+
+  sleep(1);
+}
+
+export function handleSummary(data) &#123;
+  return &#123;
+    &#39;reports/k6-smoke-summary.json&#39;: JSON.stringify(data, null, 2),
+    stdout: textSummary(data, &#123; indent: &#39; &#39;, enableColors: false }),
+  };
+}</code></pre>
+<p>Chú ý <code>__ENV.BASE_URL</code>: cùng một script chạy được trên máy local, trong Docker (<code>http://sut:4173</code>) và trong CI. Đừng bao giờ hard-code host.</p>
+<h3 id="2-load-voi-stages-group-va-tags-k6-load-js">2. Load với stages, group và tags: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/load.js"><code>k6/load.js</code></a></h3>
+<pre tabindex="0"><code class="language-js">export const options = &#123;
+  stages: [
+    &#123; duration: &#39;20s&#39;, target: 10 }, // warm up
+    &#123; duration: &#39;30s&#39;, target: 20 }, // tăng lên đỉnh
+    &#123; duration: &#39;50s&#39;, target: 20 }, // giữ đỉnh
+    &#123; duration: &#39;20s&#39;, target: 0 },  // giảm về 0
+  ],
+  thresholds: &#123;
+    http_req_duration: [&#39;p(95)&lt;300&#39;],
+    http_req_failed: [&#39;rate&lt;0.01&#39;],
+    checks: [&#39;rate&gt;0.99&#39;],
+    &#39;http_req_duration&#123;group:::todos}&#39;: [&#39;p(95)&lt;300&#39;],
+  },
+  tags: &#123; suite: &#39;load&#39; },
+};
+
+export default function () &#123;
+  // group &#39;health&#39; -&gt; group &#39;auth&#39; (login) -&gt; group &#39;todos&#39;:
+  //   tạo 3 todo, GET danh sách, PATCH todo đầu tiên, DELETE cả 3
+  // ...
+  sleep(Math.random() * 1.5 + 0.5); // think time ngẫu nhiên 0.5-2 giây
+}</code></pre>
+<p>Vài điểm đáng học (đối chiếu với code thật):</p>
+<ul>
+<li>Mỗi iteration <strong>tự dọn</strong> những gì nó tạo ra (tạo 3, xoá 3), nên dữ liệu trên SUT không phình ra theo thời gian chạy.</li>
+<li><code>tags: { endpoint: &#39;todos_create&#39; }</code> gom các URL động (<code>/api/todos/&lt;uuid&gt;</code>) về một nhóm metric. Nếu không đặt tag, mỗi UUID thành một dòng metric riêng, bảng kết quả sẽ bùng nổ (cardinality). Tag cấp <code>options</code> (<code>suite: &#39;load&#39;</code>) gắn nhãn cho cả lần chạy.</li>
+<li><code>&#39;http_req_duration{group:::todos}&#39;</code> là threshold trên <strong>một group</strong>: cú pháp <code>group:::tên</code> (ba dấu hai chấm) là quy ước của k6 cho tag <code>group</code>.</li>
+<li><code>group</code> còn sinh metric <code>group_duration</code>, giúp bạn so sánh các bước của hành trình.</li>
+<li><code>sleep</code> ngẫu nhiên mô phỏng think time của người dùng thay vì bắn request liên tục.</li>
+<li><code>handleSummary</code> thay thế bảng tóm tắt mặc định, và k6 sẽ <strong>không</strong> in bảng mặc định nữa nên phải tự trả về <code>stdout</code>. Cùng lúc ta ghi <code>reports/k6-load-summary.json</code>, file mà CI có thể upload làm artifact.</li>
+<li>Mỗi iteration đều đăng nhập lại, nên endpoint login nằm trong tải đo. Đó là lựa chọn có chủ đích để mô phỏng người dùng thật; nếu chỉ muốn đo CRUD, hãy đăng nhập một lần trong <code>setup()</code> rồi truyền token qua tham số <code>data</code>.</li>
+</ul>
+<h3 id="3-chay-local">3. Chạy local</h3>
+<pre tabindex="0"><code class="language-bash"># Terminal 1: dựng SUT (cần dist/ nên build trước)
+npm run build &amp;&amp; npm run serve
+
+# Terminal 2
+npm run k6:smoke
+BASE_URL=http://localhost:4173 npm run k6:load</code></pre>
+<h3 id="4-stress-va-soak-chi-la-doi-options">4. Stress và soak: chỉ là đổi <code>options</code></h3>
+<pre tabindex="0"><code class="language-js">// stress: leo thang cho tới khi vỡ
+export const options = &#123;
+  stages: [
+    &#123; duration: &#39;1m&#39;, target: 20 },
+    &#123; duration: &#39;1m&#39;, target: 50 },
+    &#123; duration: &#39;1m&#39;, target: 100 },
+    &#123; duration: &#39;1m&#39;, target: 0 },
+  ],
+};
+
+// soak: vừa phải nhưng rất lâu
+export const options = &#123;
+  stages: [
+    &#123; duration: &#39;2m&#39;, target: 15 },
+    &#123; duration: &#39;2h&#39;, target: 15 },
+    &#123; duration: &#39;2m&#39;, target: 0 },
+  ],
+};</code></pre>
+<h3 id="5-chay-trong-ci">5. Chạy trong CI</h3>
+<p>Trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>, job <code>k6</code> chạy song song với job Playwright (cả hai chỉ cần <code>typecheck</code> xanh):</p>
+<pre tabindex="0"><code class="language-yaml">k6:
+  name: k6 smoke
+  needs: typecheck
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with: &#123; node-version: 22, cache: npm }
+    - run: npm ci
+    - run: npm run build
+    - name: Start the SUT and wait for /api/health
+      run: |
+        mkdir -p reports
+        node server/app.mjs &gt; reports/sut.log 2&gt;&amp;1 &amp;
+        for i in $(seq 1 30); do
+          curl -sf http://localhost:4173/api/health &gt; /dev/null &amp;&amp; exit 0
+          sleep 1
+        done
+        cat reports/sut.log &gt;&amp;2; exit 1
+    - uses: grafana/setup-k6-action@v1
+    - name: k6 smoke test
+      run: k6 run k6/smoke.js
+      env:
+        BASE_URL: http://localhost:4173
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: k6-reports
+        path: reports/k6-*</code></pre>
+<p><code>grafana/setup-k6-action</code> cài sẵn binary k6 nên bạn không phải tự tải. Vòng lặp <code>curl</code> chờ <code>/api/health</code> đảm bảo server đã sẵn sàng trước khi k6 bắn request. Khi threshold bị vi phạm, k6 thoát với exit code 99, bước này đỏ và job <code>deploy</code> (cần <code>k6</code>) không chạy. Đây chính là điều ta muốn: hiệu năng trở thành điều kiện để publish, không phải một báo cáo không ai đọc. Bước upload với <code>if: always()</code> giữ lại <code>reports/k6-smoke-summary.json</code> kể cả khi fail.</p>
+<h3 id="6-doc-ket-qua">6. Đọc kết quả</h3>
+<p>Cuối lần chạy bạn sẽ thấy khối như sau (số liệu minh hoạ, rút gọn):</p>
+<pre tabindex="0"><code class="language-text">     ✓ health: status 200
+     ✓ health: status ok
+
+   ✓ checks.........................: 100.00% ✓ 480  ✗ 0
+     http_req_duration..............: avg=2.1ms  min=1.2ms  med=1.9ms  max=9.8ms  p(90)=3.4ms p(95)=4.6ms
+       &#123; expected_response:true }...: avg=2.1ms ...
+   ✓ http_req_failed................: 0.00%   ✓ 0    ✗ 360
+     iterations.....................: 60      1.9/s
+
+running (31.0s), 2/2 VUs, 60 complete and 0 interrupted iterations</code></pre>
+<p>Cách đọc nhanh:</p>
+<ol>
+<li>Dấu <code>✓</code>/<code>✗</code> cạnh một metric cho biết threshold của nó pass hay fail. Hãy tìm <code>✗</code> trước tiên.</li>
+<li>Nhìn <code>p(95)</code> và <code>max</code>, không chỉ <code>avg</code>.</li>
+<li><code>iterations</code> và <code>vus</code> cho biết bạn có thực sự tạo ra tải mong muốn không. Nếu <code>iterations</code> quá thấp, có thể <code>sleep</code> quá dài hoặc server là nút thắt cổ chai.</li>
+<li><code>interrupted iterations</code> lớn nghĩa là iteration chưa kịp xong khi hết giờ, và thường là dấu hiệu server quá chậm.</li>
+</ol>
+<h2 id="loi-thuong-gap">Lỗi thường gặp</h2>
+<ol>
+<li><strong>Chỉ có check, không có threshold.</strong> Test luôn xanh dù mọi request lỗi. Hãy đặt <code>http_req_failed</code> và <code>checks</code> vào <code>thresholds</code>.</li>
+<li><strong>Hard-code URL.</strong> Script chỉ chạy được trên một máy. Luôn dùng <code>__ENV.BASE_URL</code>.</li>
+<li><strong>Không đặt <code>name</code> tag cho URL động.</strong> Metric bị nhân lên theo từng ID, k6 chậm và báo cáo vô nghĩa.</li>
+<li><strong>Quên <code>sleep</code> (think time).</strong> Mỗi VU bắn request liên tục, bạn đo khả năng chịu DoS chứ không phải hành vi người dùng.</li>
+<li><strong>Không phân biệt login nằm trong tải hay ngoài tải.</strong> Đăng nhập mỗi iteration làm login chiếm một phần tải đo; nếu chỉ muốn đo CRUD, đăng nhập một lần ở <code>setup()</code>.</li>
+<li><strong>Gọi <code>/api/test/reset</code> trong k6.</strong> Endpoint này xoá <em>toàn bộ</em> todo và token của mọi người dùng, kể cả các VU khác. Hãy để dữ liệu tự dọn bằng bước delete trong chính iteration.</li>
+<li><strong>Đo trên máy yếu hoặc runner CI chung rồi đặt ngưỡng quá sát.</strong> Threshold p95 &lt; 300ms cho API đơn giản là rộng rãi; đừng đặt 20ms rồi chịu cảnh flaky.</li>
+<li><strong>Chạy k6 và SUT trên cùng một máy rồi kết luận về production.</strong> Số liệu CI chỉ để phát hiện <em>hồi quy tương đối</em>, không phải con số tuyệt đối.</li>
+<li><strong>Dùng thư viện Node trong script.</strong> k6 không chạy trên Node; <code>import</code> chỉ nhận module k6 hoặc URL/ES module thuần.</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Chạy <code>npm run k6:smoke</code> cục bộ rồi cố ý làm nó fail: hạ threshold xuống <code>p(95)&lt;0.1</code> và quan sát exit code (<code>echo $?</code>).</li>
+<li>Thêm một group vào <code>k6/load.js</code> kiểm tra đăng nhập sai mật khẩu, kèm check <code>status === 401</code>. Đảm bảo <code>http_req_failed</code> không bị tính sai (gợi ý: <code>http.setResponseCallback(http.expectedStatuses(200, 201, 204, 401))</code> hoặc tham số <code>responseCallback</code> ở từng request).</li>
+<li>Chạy <code>npm run k6:stress</code> (đã có sẵn <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/k6/stress.js"><code>k6/stress.js</code></a>) và tìm số VU mà p95 bắt đầu vượt 300ms trên máy bạn; đọc thêm live mode và so sánh trước / sau ở bài 09.</li>
+<li>Mở rộng <code>handleSummary</code> để xuất thêm <code>reports/k6-smoke-summary.md</code> (bảng markdown ngắn gồm p95, error rate) rồi ghi nội dung đó vào <code>$GITHUB_STEP_SUMMARY</code> trong CI.</li>
+<li>Thêm job <code>k6-load</code> chạy theo <code>schedule</code> (cron hằng đêm) và <code>workflow_dispatch</code>, không chạy trên mỗi push.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Biết VU là gì, iteration là gì, và RPS là hệ quả.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mọi script có <code>thresholds</code>: <code>http_req_failed</code> &lt; 1%, p95 &lt; 300ms, <code>checks</code> &gt; 99%.</li>
+<li><input type="checkbox" disabled aria-label="To do"> URL lấy từ <code>__ENV.BASE_URL</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> URL động có <code>tags: { name }</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Quyết định có chủ đích: login trong tải hay ở <code>setup()</code>; dữ liệu tạo ra được dọn ngay trong iteration.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Smoke chạy mỗi push; load/stress/soak chạy theo lịch hoặc thủ công.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Hiểu exit code khác 0 khi threshold fail và cách CI dựa vào đó.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Đọc kết quả theo thứ tự: <code>✗</code> trước, rồi p95/max, rồi iterations/VUs.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="04-visual-testing.html">← Visual Testing với toHaveScreenshot — baseline theo OS, Docker image chính thức và workflow update-snapshots</a>
+        <a class="next" rel="next" href="06-docker-for-qa.html">Docker cho QA - môi trường test lặp lại được →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

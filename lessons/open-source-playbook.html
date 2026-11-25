@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OSS Playbook - quy trình đóng góp open source cùng AI agent · Linh.NV</title>
+  <meta name="description" content="OSS Playbook - quy trình đóng góp open source cùng AI agent" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="oss-playbook-quy-trinh-dong-gop-open-source-cung-ai-agent">OSS Playbook: quy trình đóng góp open source cùng AI agent</h1>
+<p>Đóng góp open source là cách nhanh nhất để học cách các đội giỏi viết và kiểm thử code, đồng thời tạo ra bằng chứng công khai về năng lực của bạn. Playbook này mô tả quy trình mà repo này dùng: <strong>tìm issue → hiểu → tái hiện → agent soạn bản nháp → con người review và viết lại → mở PR → xử lý review</strong>. AI giúp bạn nhanh hơn, nhưng <strong>người chịu trách nhiệm cho mỗi dòng trong PR vẫn là bạn</strong>.</p>
+<h2 id="muc-tieu">Mục tiêu</h2>
+<ul>
+<li>Có quy trình lặp lại được từ &quot;tìm issue&quot; đến &quot;PR được merge&quot;.</li>
+<li>Biết chia việc giữa agent (Claude Code) và con người.</li>
+<li>Giữ chuẩn đạo đức: không spam, minh bạch về việc dùng AI, tôn trọng thời gian của maintainer.</li>
+<li>Ghi chép lại mỗi PR để học và để trình bày về sau.</li>
+</ul>
+<h2 id="quy-trinh-tong-quan">Quy trình tổng quan</h2>
+<pre class="mermaid">flowchart LR
+  A[Tìm issue] --&gt; B[Đọc CONTRIBUTING&lt;br/&gt;và chính sách AI]
+  B --&gt; C[Reproduce&lt;br/&gt;trên máy]
+  C --&gt; D[Agent đọc issue + code&lt;br/&gt;soạn nháp fix + test]
+  D --&gt; E[Con người review&lt;br/&gt;chạy test, viết lại]
+  E --&gt; F[Mở PR]
+  F --&gt; G[Xử lý review]
+  G --&gt; H[Merge + ghi chép]</pre>
+<h2 id="buoc-1-tim-issue">Bước 1: Tìm issue</h2>
+<p>Script <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/scripts/find-good-first-issues.mjs"><code>scripts/find-good-first-issues.mjs</code></a> gọi GitHub search API để lấy các issue <code>good first issue</code> đang mở từ các repo ta theo dõi, ghi vào <code>dist/data/oss-issues.json</code> (trang chủ của portfolio hiển thị chúng ở mục OSS). Chạy cục bộ:</p>
+<pre tabindex="0"><code class="language-bash">GITHUB_TOKEN=$(gh auth token) npm run oss:issues
+cat dist/data/oss-issues.json | head</code></pre>
+<p>Workflow <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/actions/workflows/oss-scout.yml"><code>oss-scout</code></a> chạy mỗi tuần (hoặc chạy tay) và cập nhật danh sách rút gọn <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docs/oss/candidates.md"><code>docs/oss/candidates.md</code></a>, mỗi issue có điểm 0-100 để bạn (và agent) chọn nhanh. Điểm cao hơn khi issue mới cập nhật, ít comment (0 comment thấp hơn 1-5 comment một chút vì chưa ai xác nhận nó còn hợp lệ), có nhãn liên quan tới docs/test/types/CI; điểm bị trừ khi có nhãn như <code>stale</code>, <code>blocked</code>, <code>needs-investigation</code> hoặc mô tả quá dài. Điểm chỉ là gợi ý, vẫn phải kiểm tra theo tiêu chí bên dưới.</p>
+<p>Repo nên theo dõi (công cụ bạn dùng hằng ngày nên là nơi bạn đóng góp trước, vì bạn hiểu ngữ cảnh):</p>
+<ul>
+<li><code>microsoft/playwright</code>: test runner, reporters, tài liệu.</li>
+<li><code>microsoft/playwright-mcp</code>: MCP server mà agent của bạn dùng để điều khiển browser.</li>
+<li><code>grafana/k6</code>: công cụ tải. Thêm <code>grafana/k6-docs</code> cho tài liệu.</li>
+<li>Các reporter, plugin và tiện ích quanh Playwright.</li>
+</ul>
+<p>Tìm thủ công cũng được:</p>
+<pre tabindex="0"><code class="language-text">is:issue is:open label:&quot;good first issue&quot; no:assignee repo:microsoft/playwright</code></pre>
+<p>Tiêu chí chọn issue tốt cho người mới:</p>
+<ol>
+<li>Mô tả rõ, có cách tái hiện hoặc kết quả mong đợi cụ thể.</li>
+<li><strong>Chưa có ai nhận</strong> và không có PR đang mở liên kết (kiểm tra cả phần comment lẫn tab &quot;Linked pull requests&quot;).</li>
+<li>Phạm vi nhỏ: một file hoặc một module, có test để làm theo.</li>
+<li>Maintainer còn hoạt động (có phản hồi trong vài tuần gần đây).</li>
+<li>Bạn hiểu <em>vì sao</em> nó là vấn đề. Nếu không, hãy chọn issue khác.</li>
+</ol>
+<p>Nếu issue chưa được nhận, <strong>để lại một comment ngắn</strong> nói bạn muốn làm và cách tiếp cận dự kiến; chờ phản hồi hoặc ít nhất vài ngày trước khi bắt tay vào làm khối lượng lớn.</p>
+<h2 id="buoc-2-doc-contributing-va-chinh-sach-cua-repo">Bước 2: Đọc CONTRIBUTING và chính sách của repo</h2>
+<p>Trước khi viết bất cứ dòng code nào:</p>
+<ul>
+<li>Đọc <code>CONTRIBUTING.md</code>, <code>CODE_OF_CONDUCT.md</code>, mẫu PR/issue (<code>.github/pull_request_template.md</code>).</li>
+<li>Tìm quy ước commit/PR (ví dụ Conventional Commits: <code>fix(test-runner): ...</code>), cách chạy test, linter, và có cần ký CLA hay không (nhiều dự án của Microsoft yêu cầu).</li>
+<li><strong>Tìm chính sách về nội dung do AI tạo ra.</strong> Một số repo cấm, một số yêu cầu khai báo. Nếu có chính sách, tuân thủ nó nguyên văn. Không tìm thấy thì hỏi maintainer trong issue trước khi gửi PR.</li>
+<li>Fork repo, clone, tạo nhánh theo quy ước (<code>fix/issue-1234-short-desc</code>), cài dependencies và <strong>chạy test hiện có để thấy chúng xanh</strong> trước khi sửa.</li>
+</ul>
+<h2 id="buoc-3-reproduce">Bước 3: Reproduce</h2>
+<p>Không reproduce được thì chưa được sửa. Tự tay:</p>
+<ol>
+<li>Viết một test (hoặc đoạn script nhỏ) làm lỗi xuất hiện, và xác nhận nó <strong>fail vì đúng lý do</strong> trong issue.</li>
+<li>Ghi lại phiên bản, hệ điều hành, lệnh chạy.</li>
+<li>Nếu không reproduce được, comment trong issue với thông tin bạn thu thập, đó cũng là đóng góp có giá trị.</li>
+</ol>
+<p>Test fail này sau đó sẽ trở thành test hồi quy đi kèm PR.</p>
+<h2 id="buoc-4-agent-soan-nhap-con-nguoi-dan-dat">Bước 4: Agent soạn nháp, con người dẫn dắt</h2>
+<p>Đây là chỗ Claude Code phát huy tác dụng, nhưng theo <strong>vai trò trợ lý</strong>, không phải người lái.</p>
+<p>Việc agent làm tốt:</p>
+<ul>
+<li>Đọc issue và khảo sát codebase xa lạ: tìm file liên quan, giải thích luồng chạy, liệt kê chỗ có thể gây lỗi.</li>
+<li>Đề xuất vài hướng sửa với ưu và nhược điểm.</li>
+<li>Soạn <strong>bản nháp</strong> fix và test theo phong cách các test lân cận.</li>
+<li>Chạy test cục bộ, đọc log lỗi, gợi ý bước tiếp theo.</li>
+</ul>
+<p>Prompt mẫu (tuỳ chỉnh cho repo mục tiêu):</p>
+<pre tabindex="0"><code class="language-text">Đọc issue &lt;URL&gt; và CONTRIBUTING.md của repo này.
+1. Tóm tắt vấn đề bằng 3 câu, nói rõ hành vi hiện tại và hành vi mong đợi.
+2. Tìm các file liên quan và giải thích luồng code dẫn đến lỗi.
+3. Đề xuất 2 hướng sửa nhỏ nhất có thể; chưa sửa gì.
+Sau khi tôi chọn hướng, viết test fail trước, rồi fix tối thiểu. Không refactor, không đổi
+format ngoài phạm vi, theo đúng phong cách code và quy ước đặt tên xung quanh.</code></pre>
+<p>Việc <strong>con người phải làm</strong>, không giao cho agent:</p>
+<ul>
+<li><strong>Hiểu từng dòng thay đổi.</strong> Nếu bạn không giải thích được vì sao nó đúng thì không được gửi.</li>
+<li>Tự chạy toàn bộ test liên quan, linter, build trên máy bạn; không tin lời &quot;đã test xong&quot; của agent.</li>
+<li><strong>Viết lại</strong> theo ý bạn và theo phong cách dự án: đổi tên cho đúng quy ước, xoá phần thừa, bỏ comment giải thích hiển nhiên, thu nhỏ diff.</li>
+<li>Kiểm tra agent không &quot;bịa&quot;: API không tồn tại, test chỉ pass vì sửa luôn phần kỳ vọng, hay xoá test cũ cho xanh.</li>
+<li>Viết phần mô tả PR bằng lời của bạn.</li>
+</ul>
+<p>Quy tắc an toàn khi để agent làm việc trên máy bạn: chạy trong nhánh riêng, không cấp quyền đẩy (push), duyệt từng lệnh có tác dụng phụ, và không dán secret vào prompt.</p>
+<h2 id="buoc-5-mo-pr">Bước 5: Mở PR</h2>
+<p>Một PR tốt dễ review: <strong>nhỏ, một mục đích, có test, có ngữ cảnh</strong>.</p>
+<p>Mẫu mô tả:</p>
+<pre tabindex="0"><code class="language-markdown">## Summary
+Fixes #1234. &lt;Một–hai câu: vấn đề là gì, sửa thế nào và vì sao cách này.&gt;
+
+## Changes
+- &lt;thay đổi chính 1&gt;
+- Added a regression test that fails before and passes after this change.
+
+## Testing
+- `npm run test -- &lt;đường dẫn test&gt;` : pass
+- Manually verified: &lt;các bước&gt;
+
+## Notes
+- &lt;điểm cần reviewer chú ý, đánh đổi, phương án đã cân nhắc&gt;
+- AI disclosure: I used Claude Code to explore the codebase and draft an initial
+  version of the fix and test. I reviewed, rewrote and ran everything locally, and
+  I&#39;m responsible for the final change.</code></pre>
+<p>Về dòng khai báo AI: đặt nó theo <strong>chính sách của repo</strong>. Nếu repo yêu cầu khai báo hoặc cấm, làm đúng như vậy; nếu không có quy định, vẫn nên trung thực và ngắn gọn. Che giấu thì dễ gây mất niềm tin, khai báo thì hầu như không mất gì.</p>
+<p>Checklist trước khi bấm &quot;Create pull request&quot;:</p>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Liên kết issue bằng <code>Fixes #&lt;số&gt;</code> (hoặc <code>Refs</code> nếu chưa hoàn tất).</li>
+<li><input type="checkbox" disabled aria-label="To do"> Diff nhỏ nhất có thể, không chứa file lạ (lockfile, format hàng loạt).</li>
+<li><input type="checkbox" disabled aria-label="To do"> Test mới fail trước và pass sau khi sửa.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Linter, build và toàn bộ test liên quan xanh.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Commit theo quy ước; đã ký CLA/DCO nếu yêu cầu.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Tự đọc lại diff trên giao diện GitHub như một reviewer.</li>
+</ul>
+<h2 id="buoc-6-xu-ly-review">Bước 6: Xử lý review</h2>
+<ul>
+<li>Phản hồi lịch sự, ngắn gọn, và nhanh trong khoảng vài ngày. Coi mỗi comment là thông tin, không phải sự công kích.</li>
+<li>Sửa theo yêu cầu bằng commit mới (đừng force-push gây khó theo dõi, trừ khi dự án yêu cầu squash/rebase).</li>
+<li>Không đồng ý thì nêu lý do và bằng chứng, rồi tôn trọng quyết định của maintainer. Họ chịu trách nhiệm bảo trì lâu dài.</li>
+<li>Có thể dùng agent để <em>hiểu</em> comment hoặc nháp lời sửa, nhưng bạn đọc và trả lời bằng giọng của mình.</li>
+<li>CI đỏ: đọc log trước khi hỏi, đa số lỗi do chính thay đổi của bạn.</li>
+<li>PR im lặng nhiều tuần: một lời nhắc lịch sự là đủ, không spam.</li>
+<li>Nếu PR bị đóng, hỏi xem có học được gì và tiếp tục. Bị từ chối không phải chuyện cá nhân.</li>
+</ul>
+<h2 id="dao-duc-va-nguyen-tac">Đạo đức và nguyên tắc</h2>
+<ol>
+<li><strong>Không spam PR do AI tạo.</strong> Không chạy hàng loạt agent để mở PR vào mọi issue dễ. Maintainer là con người với thời gian hữu hạn; mỗi PR kém chất lượng là một khoản nợ họ phải trả.</li>
+<li><strong>Bạn là tác giả chịu trách nhiệm.</strong> Nếu bạn không hiểu và không thể bảo vệ thay đổi trong review thì đừng gửi.</li>
+<li><strong>Minh bạch</strong> về việc dùng AI theo chính sách của dự án.</li>
+<li><strong>Tôn trọng việc &quot;nhận issue&quot;.</strong> Đừng gửi PR cho issue người khác đang làm; đừng &quot;nhận&quot; nhiều issue rồi bỏ.</li>
+<li><strong>Chất lượng hơn số lượng.</strong> Một PR được merge, được hiểu kỹ, có giá trị hơn mười PR bị đóng.</li>
+<li><strong>Không chép code</strong> mà bạn không có quyền dùng; tôn trọng giấy phép.</li>
+<li><strong>Lịch sự và kiên nhẫn</strong>, kể cả khi review nghiêm khắc.</li>
+<li><strong>Bảo mật</strong>: không đưa token, thông tin riêng tư vào prompt, commit hay PR. Lỗ hổng bảo mật thì báo theo <code>SECURITY.md</code>, không mở issue công khai.</li>
+</ol>
+<h2 id="template-ghi-chep-moi-pr">Template ghi chép mỗi PR</h2>
+<p>Tạo một ghi chép ngắn cho mỗi lần đóng góp (trong ghi chú cá nhân hoặc một file riêng). Nó giúp bạn nhìn lại quy trình, và là chất liệu thật khi phỏng vấn.</p>
+<pre tabindex="0"><code class="language-markdown"># &lt;repo&gt; #&lt;issue&gt; — &lt;tiêu đề ngắn&gt;
+
+- Link issue: 
+- Link PR: 
+- Ngày bắt đầu / ngày merge: 
+- Trạng thái: draft | open | changes requested | merged | closed
+
+## Vấn đề (3 câu)
+
+## Reproduce
+- Môi trường:
+- Lệnh / test làm lỗi xuất hiện:
+
+## Nguyên nhân gốc
+
+## Cách sửa và lý do chọn
+- Phương án đã cân nhắc:
+
+## Phần agent làm / phần tôi làm
+- Agent: 
+- Tôi: (review, chạy test, viết lại những gì?)
+- Chỗ agent sai hoặc thiếu mà tôi phải sửa:
+
+## Phản hồi từ maintainer
+- 
+
+## Bài học
+- Kỹ thuật:
+- Quy trình:
+- Lần sau tôi sẽ làm khác:</code></pre>
+<h2 id="cach-lap-lai">Cách lặp lại</h2>
+<ol>
+<li>Mỗi tuần chạy <code>npm run oss:issues</code>, chọn tối đa <strong>một</strong> issue phù hợp.</li>
+<li>Dành thời gian đọc code và reproduce nhiều hơn viết code.</li>
+<li>Mở PR nhỏ, theo dõi sát, ghi chép đầy đủ.</li>
+<li>Sau 3-5 PR được merge, bạn hiểu repo đủ để review PR người khác và trả lời issue; đó là mức đóng góp giá trị nhất.</li>
+</ol>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="11-accessibility.html">← Accessibility testing - axe, WCAG và baseline kiểu ratchet</a>
+        <span></span>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+    const dark = (document.documentElement.dataset.theme ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'dark';
+    mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default' });
+  </script>
+</body>
+</html>

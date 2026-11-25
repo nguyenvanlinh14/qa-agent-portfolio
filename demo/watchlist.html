@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-auth="required">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MarketFlow (demo) · Watchlist</title>
+  <script src="boot.js"></script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="stylesheet" href="demo.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%236a47ff'/><path d='M9 21v-6M16 23v-9M23 20v-5' stroke='white' stroke-width='3' stroke-linecap='round'/></svg>" />
+</head>
+<body class="mf-app">
+  <header id="mf-header"></header>
+  <main class="mf-main">
+    <div class="page-head">
+      <h1>Watchlist</h1>
+      <p class="count" data-testid="watchlist-count">&nbsp;</p>
+    </div>
+
+    <div class="mf-table-wrap" role="region" aria-label="Watchlist, scrollable" tabindex="0" id="wrap" hidden>
+      <table class="mf-table">
+        <caption class="sr-only">Your watchlist with simulated prices</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="tk">Ticker</th>
+            <th scope="col" class="num">Ref</th>
+            <th scope="col" class="num">Last</th>
+            <th scope="col" class="num">Chg</th>
+            <th scope="col" class="num">%Chg</th>
+            <th scope="col" class="num">Volume</th>
+            <th scope="col" class="star-col"><span class="sr-only">Remove</span></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" data-testid="empty-state" id="empty" hidden>
+      <h2>Your watchlist is empty</h2>
+      <p>Tap the star next to a ticker on the <a id="to-board" href="board.html">board</a> to follow it here.</p>
+    </div>
+  </main>
+  <footer class="mf-footer"><p class="disclaimer" data-testid="disclaimer">Simulated data for testing demos — not real prices, not investment advice.</p></footer>
+  <script type="module" src="watchlist.js"></script>
+</body>
+</html>

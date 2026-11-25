@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accessibility testing - axe, WCAG và baseline kiểu ratchet · Linh.NV</title>
+  <meta name="description" content="Accessibility testing - axe, WCAG và baseline kiểu ratchet" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="accessibility-testing-axe-wcag-2-1-aa-va-baseline-kieu-ratchet">Accessibility testing: axe, WCAG 2.1 AA và baseline kiểu ratchet</h1>
+<p>Accessibility (a11y) không phải &quot;tính năng phụ&quot;: nút không có tên thì người dùng trình đọc màn hình không bấm được, và chữ tương phản thấp thì người lớn tuổi đọc không ra. Một phần lớn lỗi a11y có thể kiểm tra tự động bằng <strong>axe-core</strong>, chạy ngay trong Playwright. Bài này chỉ cách đưa axe vào bộ test sao cho nó <strong>bảo vệ được chất lượng mà không đỏ vĩnh viễn</strong>.</p>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<ul>
+<li>Quét trang bằng <code>@axe-core/playwright</code>, giới hạn ở các rule WCAG 2.1 A/AA.</li>
+<li>Quét ở <strong>cả light và dark theme</strong>: lỗi tương phản phụ thuộc vào theme.</li>
+<li>Dùng baseline kiểu <strong>ratchet</strong>: lỗi đã biết được chấp nhận có lý do và có giới hạn, còn lỗi mới thì làm test fail.</li>
+<li>Sửa các lỗi hay gặp nhất: tương phản màu, input không có nhãn, vùng cuộn không vào được bằng bàn phím.</li>
+</ul>
+<h2 id="1-axe-trong-playwright-qua-fixture">1. axe trong Playwright, qua fixture</h2>
+<p>Repo cung cấp <code>axe</code> như một fixture (<a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts"><code>tests/fixtures/index.ts</code></a>), nên mọi spec dùng chung một cấu hình:</p>
+<pre tabindex="0"><code class="language-ts">axe: async (&#123; page }, use) =&gt; use(() =&gt; new AxeBuilder(&#123; page }).withTags([...A11Y_TAGS])),</code></pre>
+<pre tabindex="0"><code class="language-ts">const &#123; violations } = await axe().analyze();   // mỗi violation: id, impact, nodes[] (selector của phần tử lỗi)</code></pre>
+<h2 id="2-vi-sao-phai-quet-ca-light-va-dark">2. Vì sao phải quét cả light và dark</h2>
+<p>Lần quét đầu tiên trên site này cho ra: trang chủ có 13 phần tử tương phản kém, CV 18, bài học 15 cộng 8 checkbox không có nhãn. Gần như tất cả nằm ở <strong>light theme</strong>, vì Playwright mặc định dùng light. Nguyên nhân là các token màu light (<code>--accent-2: #0b9a79</code> trên nền <code>#f5f6fc</code> chỉ đạt <strong>3.29:1</strong>, trong khi WCAG AA yêu cầu <strong>4.5:1</strong> cho chữ thường).</p>
+<p>Cách sửa là chỉnh token, không sửa từng phần tử:</p>
+<table>
+<thead>
+<tr>
+<th>Token (light)</th>
+<th>Cũ</th>
+<th>Tỉ lệ</th>
+<th>Mới</th>
+<th>Tỉ lệ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--accent-2</code></td>
+<td><code>#0b9a79</code></td>
+<td>3.29</td>
+<td><code>#087a60</code></td>
+<td>4.91</td>
+</tr>
+<tr>
+<td><code>--ok</code></td>
+<td><code>#14a05a</code></td>
+<td>3.14</td>
+<td><code>#0e7a43</code></td>
+<td>5.01</td>
+</tr>
+<tr>
+<td><code>--danger</code></td>
+<td><code>#d8374f</code></td>
+<td>4.25</td>
+<td><code>#c02640</code></td>
+<td>5.42</td>
+</tr>
+<tr>
+<td><code>--warn</code></td>
+<td><code>#b97a06</code></td>
+<td>3.33</td>
+<td><code>#8a5b00</code></td>
+<td>5.44</td>
+</tr>
+</tbody></table>
+<p>Với chữ màu nhấn đặt trên nền đã pha màu (chip, badge), dùng <code>color-mix(in srgb, var(--accent) 55%, var(--text))</code>. Màu sẽ tự sáng lên ở dark và tối đi ở light, đạt tương phản ở cả hai theme mà không phải viết hai giá trị.</p>
+<p>Hai lỗi còn lại của trang bài học do Markdown sinh ra, nên sửa ở renderer (<a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/scripts/build-site.mjs"><code>scripts/build-site.mjs</code></a>):</p>
+<ul>
+<li>Checkbox của task list (<code>- [ ]</code>) → thêm <code>aria-label=&quot;To do&quot; / &quot;Done&quot;</code>.</li>
+<li>Khối code cuộn ngang → <code>&lt;pre tabindex=&quot;0&quot;&gt;</code> để vào được bằng bàn phím (<code>scrollable-region-focusable</code>).</li>
+</ul>
+<h2 id="3-baseline-kieu-ratchet">3. Baseline kiểu ratchet</h2>
+<p>Bật axe trên một sản phẩm đang chạy thường cho ra hàng chục lỗi. Nếu test đỏ cho tới khi sửa hết thì team sẽ tắt nó đi. Nếu bỏ qua tất cả thì lỗi mới lọt vào. <strong>Ratchet</strong> (bánh cóc) là cách ở giữa: chỉ cho phép chất lượng đi lên.</p>
+<p><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/data/a11y.ts"><code>tests/data/a11y.ts</code></a>:</p>
+<pre tabindex="0"><code class="language-ts">&#123;
+  name: &#39;demo watchlist&#39;,
+  path: &#39;/demo/watchlist.html?seed=42&amp;frozen=1&#39;,
+  known: [&#123;
+    rule: &#39;link-in-text-block&#39;,
+    maxNodes: 1,
+    reason: &#39;Empty-state link is told apart from the text by colour only. Demo app behaviour is frozen; fix needs a human decision.&#39;,
+  }],
+}</code></pre>
+<p>Luật trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/ui/a11y.spec.ts"><code>tests/ui/a11y.spec.ts</code></a>:</p>
+<ul>
+<li>Rule không có trong danh sách → <strong>fail</strong>.</li>
+<li>Rule đã biết nhưng số phần tử lỗi vượt <code>maxNodes</code> → <strong>fail</strong> (lỗi đang lan ra).</li>
+<li>Rule đã biết mà nay không còn → <strong>pass</strong>, kèm annotation &quot;đã sửa, xoá khỏi baseline&quot;, để mức chất lượng mới được khoá lại.</li>
+</ul>
+<p>Mỗi entry phải có <code>reason</code>: ai chấp nhận và vì sao. Một baseline không có lý do thì chỉ là cách giấu lỗi.</p>
+<h2 id="4-axe-khong-thay-duoc-nguoi">4. axe không thay được người</h2>
+<p>axe bắt được khoảng một phần ba các lỗi WCAG: những gì máy đo được (tương phản, nhãn, thuộc tính ARIA, cấu trúc). Những thứ cần người kiểm: thứ tự focus có hợp lý không, thông báo <code>aria-live</code> có đọc đúng lúc không, nội dung có dễ hiểu không. Hãy kiểm tra bằng bàn phím (Tab, Enter, Esc) và một trình đọc màn hình (VoiceOver, NVDA) ở các luồng chính.</p>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Đổi <code>--accent</code> của light theme thành một màu nhạt hơn, chạy <code>npx playwright test tests/ui/a11y.spec.ts</code> và đọc thông báo lỗi.</li>
+<li>Sửa lỗi <code>link-in-text-block</code> của demo (gạch chân link), chạy lại và xoá entry khỏi baseline theo annotation.</li>
+<li>Thêm bước kiểm tra bàn phím: Tab tới nút &quot;Sign in&quot; trên trang đăng nhập demo và nhấn Enter.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Quét theo tag WCAG 2.1 A/AA, ở cả light và dark.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Sửa ở token / renderer trước, không vá từng phần tử.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Baseline có <code>maxNodes</code> và <code>reason</code>; lỗi mới hoặc lỗi lan rộng thì test đỏ.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Sửa xong thì xoá khỏi baseline để khoá mức chất lượng mới.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Vẫn kiểm tra bàn phím và trình đọc màn hình bằng tay ở các luồng chính.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="10-video-evidence.html">← Bug evidence - video có giọng đọc, phụ đề karaoke và dedupe</a>
+        <span></span>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

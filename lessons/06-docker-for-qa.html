@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Docker cho QA - môi trường test lặp lại được · Linh.NV</title>
+  <meta name="description" content="Docker cho QA - môi trường test lặp lại được" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="docker-cho-qa-moi-truong-test-lap-lai-duoc">Docker cho QA: môi trường test lặp lại được</h1>
+<p>&quot;Chạy trên máy tôi thì xanh.&quot; Câu này là kẻ thù số một của automation. Docker giải quyết nó bằng cách đóng gói hệ điều hành, thư viện hệ thống, font, browser và phiên bản Node thành một <strong>image</strong> bất biến, để test chạy ở đâu cũng cho cùng kết quả. Bài này dựa trên đúng các file của repo: <code>docker/Dockerfile</code>, <code>docker-compose.yml</code> và cách CI dùng cùng một image.</p>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<ul>
+<li>Giải thích vì sao QA cần Docker, đặc biệt cho visual testing.</li>
+<li>Hiểu image <code>mcr.microsoft.com/playwright:v1.64.1-noble</code> và vì sao phải khoá phiên bản.</li>
+<li>Đọc và sửa được Dockerfile cho test framework.</li>
+<li>Dựng stack <code>sut</code> + <code>tests</code> + <code>k6</code> bằng docker compose với healthcheck, <code>depends_on</code>, volumes và profile.</li>
+<li>Chạy test trong container ở GitHub Actions và hiểu những khác biệt so với chạy trên runner trần.</li>
+</ul>
+<h2 id="khai-niem">Khái niệm</h2>
+<h3 id="vi-sao-qa-nen-dung-docker">Vì sao QA nên dùng Docker</h3>
+<ol>
+<li><strong>Reproducible</strong>: cùng image, cùng kết quả. Bạn đính kèm lệnh <code>docker compose run tests</code> vào bug report thay vì &quot;hãy cài giống tôi&quot;.</li>
+<li><strong>Baseline visual ổn định</strong>: ảnh chụp màn hình phụ thuộc vào font, anti-aliasing, phiên bản Chromium. Baseline tạo trên macOS sẽ lệch vài pixel so với Linux. Nếu cả CI lẫn máy dev đều chạy cùng image Linux thì baseline luôn khớp (xem bài 04).</li>
+<li><strong>Cách ly</strong>: SUT, test và công cụ tải chạy trong mạng riêng, không tranh port với thứ khác trên máy.</li>
+<li><strong>Onboarding nhanh</strong>: máy mới chỉ cần Docker, không cần cài Node, browser hay k6.</li>
+<li><strong>Gần CI</strong>: càng ít khác biệt giữa local và CI, càng ít &quot;fail ở CI mà local xanh&quot;.</li>
+</ol>
+<h3 id="image-container-volume-network">Image, container, volume, network</h3>
+<ul>
+<li><strong>Image</strong>: khuôn đọc-chỉ, build một lần. <strong>Container</strong>: một thể hiện đang chạy của image.</li>
+<li><strong>Volume / bind mount</strong>: thư mục chia sẻ giữa máy chủ và container. Với test, đây là cách lấy <code>playwright-report/</code> và <code>reports/</code> ra ngoài, vì mọi thứ ghi bên trong container sẽ mất khi nó dừng.</li>
+<li><strong>Network</strong>: compose tạo mạng riêng, các service gọi nhau bằng tên service (<code>http://sut:4173</code>), không dùng <code>localhost</code> (trong container, <code>localhost</code> là chính nó).</li>
+</ul>
+<h3 id="image-playwright-chinh-thuc">Image Playwright chính thức</h3>
+<pre tabindex="0"><code class="language-text">mcr.microsoft.com/playwright:v1.64.1-noble</code></pre>
+<ul>
+<li><code>v1.64.1</code> phải <strong>trùng khớp</strong> với phiên bản <code>@playwright/test</code> trong <code>package.json</code> (repo ghim chính xác <code>1.64.1</code>). Lệch phiên bản thì Playwright không tìm thấy browser đã cài sẵn và báo lỗi <code>Executable doesn&#39;t exist</code>.</li>
+<li><code>noble</code> là Ubuntu 24.04. Cùng tag nghĩa là cùng font và cùng thư viện render, nên baseline giống nhau.</li>
+<li>Image đã chứa Chromium, Firefox, WebKit và Node, bạn <strong>không</strong> chạy <code>playwright install</code> trong container.</li>
+</ul>
+<h2 id="vi-du-chay-duoc">Ví dụ chạy được</h2>
+<h3 id="1-dockerfile-docker-dockerfile">1. Dockerfile: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docker/Dockerfile"><code>docker/Dockerfile</code></a></h3>
+<pre tabindex="0"><code class="language-dockerfile">FROM mcr.microsoft.com/playwright:v1.64.1-noble
+
+WORKDIR /app
+
+# Cài dependencies trước để layer này được cache cho tới khi lockfile đổi.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+ENV CI=1
+EXPOSE 4173
+
+# Mặc định: build site rồi chạy cả suite (SUT do webServer của Playwright khởi động).
+CMD [&quot;npm&quot;, &quot;test&quot;]</code></pre>
+<p>Thứ tự lệnh rất quan trọng cho tốc độ build: file thay đổi nhiều (code) đặt sau file thay đổi ít (lockfile). Repo có <code>.dockerignore</code> để loại <code>node_modules</code>, <code>dist</code>, <code>playwright-report</code>, <code>reports</code>... khỏi build context, vừa nhẹ vừa tránh ghi đè <code>node_modules</code> của container bằng bản của máy chủ. Lưu ý <code>ENV CI=1</code>: Playwright dùng nó để bật <code>retries</code>, <code>forbidOnly</code>, <code>workers</code> như trên CI thật.</p>
+<h3 id="2-docker-compose-docker-compose-yml">2. docker compose: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/docker-compose.yml"><code>docker-compose.yml</code></a></h3>
+<pre tabindex="0"><code class="language-yaml">x-app: &amp;app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  image: qa-agent-portfolio:local
+
+services:
+  # System under test: portfolio site + demo REST API (server/app.mjs)
+  sut:
+    &lt;&lt;: *app
+    command: [&quot;sh&quot;, &quot;-c&quot;, &quot;npm run build &amp;&amp; node server/app.mjs&quot;]
+    environment:
+      PORT: &quot;4173&quot;
+    ports:
+      - &quot;4173:4173&quot;
+    healthcheck:
+      test: [&quot;CMD&quot;, &quot;node&quot;, &quot;-e&quot;, &quot;fetch(&#39;http://localhost:4173/api/health&#39;).then(r =&gt; process.exit(r.ok ? 0 : 1)).catch(() =&gt; process.exit(1))&quot;]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  # Playwright suite, nhắm vào container SUT (webServer bị bỏ qua khi có BASE_URL)
+  tests:
+    &lt;&lt;: *app
+    command: [&quot;npx&quot;, &quot;playwright&quot;, &quot;test&quot;]
+    depends_on:
+      sut:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://sut:4173
+      CI: &quot;1&quot;
+    init: true
+    ipc: host
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./reports:/app/reports
+      - ./test-results:/app/test-results
+
+  # k6 smoke (tuỳ chọn): docker compose --profile perf run --rm k6
+  k6:
+    image: grafana/k6:1.4.0
+    profiles: [&quot;perf&quot;]
+    depends_on:
+      sut:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://sut:4173
+    command: [&quot;run&quot;, &quot;/work/k6/smoke.js&quot;]
+    volumes:
+      - ./k6:/work/k6:ro
+      - ./reports:/work/reports</code></pre>
+<p>(Đã lược <code>expose</code>, <code>user</code>, <code>working_dir</code>; xem file thật.) Giải thích từng quyết định:</p>
+<ul>
+<li><strong><code>x-app: &amp;app</code></strong> là YAML anchor: <code>sut</code> và <code>tests</code> dùng chung một image <code>qa-agent-portfolio:local</code>, build một lần. <code>sut</code> chỉ khác ở <code>command</code>.</li>
+<li><strong><code>healthcheck</code></strong> trên <code>sut</code>: Docker chạy lệnh kiểm tra định kỳ và gắn trạng thái <code>healthy</code>. Image Playwright không cần <code>curl</code>, vì đã có Node nên ta dùng <code>fetch</code> của Node.</li>
+<li><strong><code>depends_on</code> + <code>condition: service_healthy</code></strong>: <code>tests</code> và <code>k6</code> chỉ khởi động khi SUT thực sự trả lời <code>/api/health</code>. Dùng <code>depends_on</code> trần chỉ chờ container <em>bắt đầu</em>, chưa chắc server đã nghe port. Đó là nguyên nhân kinh điển của lỗi <code>ECONNREFUSED</code> chập chờn.</li>
+<li><strong><code>BASE_URL: http://sut:4173</code></strong>: <code>playwright.config.ts</code> khi thấy <code>BASE_URL</code> sẽ <strong>bỏ qua <code>webServer</code></strong> và test thẳng vào service <code>sut</code>. Một cấu hình, hai chế độ (local tự khởi động server, compose dùng server ngoài).</li>
+<li><strong><code>volumes</code></strong>: report ghi vào <code>/app/playwright-report</code> hiện ra ở thư mục cùng tên trên máy bạn. Mở <code>playwright-report/index.html</code> xem như bình thường. Mount <code>test-results/</code> để có cả trace và ảnh chụp khi fail.</li>
+<li><strong><code>ipc: host</code></strong> và <strong><code>init: true</code></strong>: khuyến nghị của Playwright khi chạy Chromium trong Docker (tránh crash do bộ nhớ chia sẻ, và dọn tiến trình zombie).</li>
+<li><strong><code>profiles: [&quot;perf&quot;]</code></strong>: service <code>k6</code> mặc định <em>không</em> chạy. Chỉ khi bật profile nó mới xuất hiện, nên <code>docker compose up</code> thông thường không kéo thêm k6. Script k6 mount chế độ chỉ đọc (<code>:ro</code>), còn <code>reports/</code> để ghi file summary.</li>
+</ul>
+<h3 id="3-cac-lenh-hay-dung">3. Các lệnh hay dùng</h3>
+<pre tabindex="0"><code class="language-bash"># Chạy toàn bộ test trong container, trả exit code của tests
+docker compose up --build --abort-on-container-exit --exit-code-from tests
+
+# Chạy một project hoặc một file
+docker compose run --rm tests npx playwright test --project=api
+docker compose run --rm tests npx playwright test tests/ui/login.spec.ts
+
+# Chạy k6 smoke (bật profile perf)
+docker compose --profile perf run --rm k6
+
+# Cập nhật baseline visual bằng đúng môi trường Linux của CI
+docker compose run --rm tests npx playwright test --project=visual --update-snapshots
+
+# Dọn dẹp
+docker compose down --volumes --remove-orphans</code></pre>
+<p>Lệnh <code>--update-snapshots</code> ở trên giải quyết đúng bài toán nêu ở đầu: dev dùng macOS/Windows vẫn tạo được baseline giống hệt CI mà không cần Linux thật. (Ảnh được ghi vào container; muốn lấy ra máy chủ, hãy mount thêm <code>tests/visual/__screenshots__</code>, hoặc đơn giản hơn là dùng workflow <code>update-snapshots</code> ở bài 07.)</p>
+<h3 id="4-container-trong-github-actions">4. Container trong GitHub Actions</h3>
+<p>Có hai cách chạy test trong Docker ở CI. Repo dùng cách thứ nhất ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>:</p>
+<pre tabindex="0"><code class="language-yaml">test:
+  name: Playwright (ui + api + visual)
+  needs: typecheck
+  runs-on: ubuntu-latest
+  # Cùng image với docker/Dockerfile và update-snapshots.yml, nên ảnh chụp khớp từng pixel.
+  container:
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+  env:
+    HOME: /root
+  steps:
+    - uses: actions/checkout@v4
+    - run: npm ci
+    - run: npm test            # pretest chạy build trước
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/</code></pre>
+<p>Cách thứ hai là <code>docker compose</code> ngay trong job (<code>run: docker compose up --build --abort-on-container-exit --exit-code-from tests</code>), phù hợp khi bạn muốn CI chạy y hệt local, kể cả nhiều service. Cách thứ nhất đơn giản hơn: toàn bộ job nằm trong image, <code>actions/checkout</code> và upload-artifact vẫn hoạt động, và <code>webServer</code> vẫn khởi chạy <code>node server/app.mjs</code> ngay trong container, nên không cần service <code>sut</code> riêng.</p>
+<p>Lưu ý khi dùng <code>container:</code> ở Actions:</p>
+<ul>
+<li><p>Job chạy bằng user <code>root</code> trong container; <code>HOME: /root</code> giúp các browser (đặc biệt Firefox) có thư mục home hợp lệ.</p>
+</li>
+<li><p>Nếu bước nào chạy <code>git</code> (như workflow commit baseline), cần <code>git config --global --add safe.directory &quot;$GITHUB_WORKSPACE&quot;</code> vì chủ sở hữu thư mục checkout khác user trong container.</p>
+</li>
+<li><p>Image đã kèm Node, nên job không cần <code>actions/setup-node</code>.</p>
+</li>
+<li><p>Job k6 dùng <code>grafana/setup-k6-action</code> trên runner trần là đủ (xem bài 05), không cần container.</p>
+</li>
+</ul>
+<h2 id="loi-thuong-gap">Lỗi thường gặp</h2>
+<ol>
+<li><strong>Lệch phiên bản image và <code>@playwright/test</code>.</strong> Nâng một mà quên một. Giải pháp: khi nâng Playwright, đổi tag image trong <code>docker/Dockerfile</code>, <code>ci.yml</code>, <code>update-snapshots.yml</code> trong cùng một PR.</li>
+<li><strong>Dùng <code>localhost</code> để gọi service khác.</strong> Trong <code>tests</code>, <code>localhost</code> là chính container <code>tests</code>. Dùng <code>http://sut:4173</code>.</li>
+<li><strong><code>depends_on</code> không có healthcheck.</strong> Test khởi chạy khi SUT chưa nghe port, dẫn đến lỗi chập chờn.</li>
+<li><strong>Quên mount volume cho report.</strong> Test chạy xong, container bị xoá, báo cáo biến mất theo.</li>
+<li><strong>Bind mount đè <code>node_modules</code>.</strong> Mount cả <code>.:/app</code> làm <code>node_modules</code> Linux bị thay bằng bản macOS. Chỉ mount thư mục output, hoặc thêm anonymous volume <code>/app/node_modules</code>.</li>
+<li><strong>Thiếu <code>ipc: host</code> hoặc <code>--shm-size</code>.</strong> Chromium crash ngẫu nhiên với lỗi liên quan bộ nhớ chia sẻ.</li>
+<li><strong>Chạy <code>playwright install</code> trong image chính thức.</strong> Vừa chậm vừa vô nghĩa vì browser đã có sẵn đúng phiên bản.</li>
+<li><strong>Dùng tag <code>latest</code> cho image.</strong> Mất tính lặp lại, baseline có thể đổi mà không ai biết. Repo ghim cả <code>grafana/k6:1.4.0</code> vì lý do này.</li>
+<li><strong>Chạy test song song gọi <code>/api/test/reset</code></strong> trên SUT dùng chung: nó xoá dữ liệu của mọi worker.</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Chạy <code>docker compose up --build --abort-on-container-exit --exit-code-from tests</code> và mở <code>playwright-report/index.html</code> được tạo ra ở máy bạn.</li>
+<li>Cố ý bỏ khối <code>healthcheck</code> và <code>condition: service_healthy</code>, chạy lại vài lần để thấy lỗi kết nối chập chờn, rồi khôi phục lại.</li>
+<li>Thêm <code>.dockerignore</code> hợp lý và so sánh thời gian build lần hai (có cache) với lần đầu.</li>
+<li>Chạy k6 qua compose: <code>docker compose --profile perf run --rm k6</code>. Sau đó đổi lệnh thành <code>run /scripts/load.js</code>.</li>
+<li>Dùng Docker để tạo lại baseline visual, so sánh với baseline CI tạo ra và giải thích vì sao chúng khớp.</li>
+<li>Thêm service <code>tests-firefox</code> (hoặc một biến môi trường <code>PROJECT</code>) để chạy cùng suite trên browser khác.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Biết ba lý do: reproducible, baseline visual, cách ly.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Tag image <code>v1.64.1-noble</code> khớp với <code>@playwright/test</code> 1.64.1.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dockerfile copy lockfile và <code>npm ci</code> trước khi copy code.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Service <code>sut</code> có healthcheck, <code>tests</code> dùng <code>depends_on: service_healthy</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> <code>BASE_URL=http://sut:4173</code> trong compose, không dùng <code>localhost</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Report được mount ra máy chủ qua volumes.</li>
+<li><input type="checkbox" disabled aria-label="To do"> k6 nằm trong profile <code>perf</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> CI dùng <code>container:</code> với cùng image và upload artifact kể cả khi fail (<code>if: always()</code>).</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mọi chỗ ghi phiên bản Playwright được nâng đồng thời.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="05-k6-performance.html">← k6 Performance - đo tải API với VUs, thresholds và CI</a>
+        <a class="next" rel="next" href="07-cicd-architecture.html">Kiến trúc CI/CD cho test - nhanh, tin cậy, có báo cáo →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

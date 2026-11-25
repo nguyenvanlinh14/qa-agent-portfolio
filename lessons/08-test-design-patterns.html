@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Design patterns trong test automation - POM, Builder, Fixture, Strategy và hơn thế · Linh.NV</title>
+  <meta name="description" content="Design patterns trong test automation - POM, Builder, Fixture, Strategy và hơn thế" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="design-patterns-trong-test-automation">Design patterns trong test automation</h1>
+<blockquote>
+<p><strong>Lưu ý:</strong> demo app hiện là MarketFlow; các ví dụ <code>TodoPage</code> trong bài minh họa cùng những pattern đó.</p>
+</blockquote>
+<p>Test là code, và code test bị bỏ mặc sẽ thối rữa còn nhanh hơn code sản phẩm. Design pattern không phải để &quot;cho đẹp&quot;; mỗi pattern là một câu trả lời đã được kiểm chứng cho một nỗi đau cụ thể: locator lặp ở 40 chỗ, dữ liệu test rối như tơ vò, setup lặp đi lặp lại, hay mỗi test đăng nhập một kiểu. Bài này đi qua sáu pattern (POM, Screenplay, Builder, Factory, Fixture, Strategy), một anti-pattern (Singleton) và cách chọn giữa chúng, với code TypeScript gắn vào các thư mục thật của repo: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/pages"><code>tests/pages</code></a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/data"><code>tests/data</code></a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts"><code>tests/fixtures</code></a>.</p>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<ul>
+<li>Nhận ra nỗi đau mà mỗi pattern giải quyết và biết khi nào <em>không</em> nên dùng nó.</li>
+<li>Viết Page Object sạch, Builder/Factory cho dữ liệu, fixture tự dọn dẹp.</li>
+<li>Dùng Strategy để chọn cách đăng nhập (UI, API, storageState) theo ngữ cảnh.</li>
+<li>Biết vì sao Singleton gây hại trong test chạy song song.</li>
+<li>Có bảng quyết định để chọn pattern cho tình huống thực tế.</li>
+</ul>
+<h2 id="khai-niem-va-vi-du">Khái niệm và ví dụ</h2>
+<h3 id="1-page-object-model-pom">1. Page Object Model (POM)</h3>
+<p><strong>Nỗi đau</strong>: locator và thao tác lặp ở nhiều test; UI đổi một nút, phải sửa 30 file.
+<strong>Ý tưởng</strong>: mỗi trang (hoặc vùng) là một class, che giấu locator và đưa ra các hành động ở mức <em>nghiệp vụ</em>.</p>
+<pre tabindex="0"><code class="language-ts">// tests/pages/base.page.ts
+import type &#123; Locator, Page } from &#39;@playwright/test&#39;;
+
+export abstract class BasePage &#123;
+  /** Path relative to baseURL, e.g. &#39;/&#39; or &#39;/demo/&#39;. */
+  abstract readonly path: string;
+
+  constructor(protected readonly page: Page) &#123;}
+
+  async goto(): Promise&lt;void&gt; &#123;
+    await this.page.goto(this.path);
+  }
+}</code></pre>
+<pre tabindex="0"><code class="language-ts">// tests/pages/login.page.ts (rút gọn)
+import &#123; expect, type Locator, type Page } from &#39;@playwright/test&#39;;
+import &#123; BasePage } from &#39;./base.page&#39;;
+import type &#123; Credentials } from &#39;../data/factories&#39;;
+
+export class LoginPage extends BasePage &#123;
+  readonly path = &#39;/demo/&#39;;
+  readonly email: Locator;
+  readonly password: Locator;
+  readonly submit: Locator;
+  readonly error: Locator;
+
+  constructor(page: Page) &#123;
+    super(page);
+    this.email = page.getByLabel(&#39;Email&#39;);
+    this.password = page.getByLabel(&#39;Password&#39;);
+    this.submit = page.getByRole(&#39;button&#39;, &#123; name: &#39;Sign in&#39; });
+    this.error = page.getByRole(&#39;alert&#39;);
+  }
+
+  async login(&#123; email, password }: Credentials): Promise&lt;void&gt; &#123;
+    await this.email.fill(email);
+    await this.password.fill(password);
+    await this.submit.click();
+  }
+
+  async expectLoggedIn(): Promise&lt;void&gt; &#123;
+    await expect(this.page).toHaveURL(/\/demo\/todos\.html$/);
+  }
+}</code></pre>
+<p>Hai file thật nằm ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/base.page.ts"><code>tests/pages/base.page.ts</code></a> và <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/login.page.ts"><code>tests/pages/login.page.ts</code></a>; cùng thư mục còn <code>home.page.ts</code>, <code>todo.page.ts</code>, <code>lesson.page.ts</code>. Để ý <code>expectLoggedIn</code> là một helper <code>expect</code> nhỏ, chỉ xác nhận trạng thái <em>do chính hành động vừa làm gây ra</em>, còn nghiệp vụ lớn thì để test quyết định.</p>
+<p>Quy tắc vàng của POM:</p>
+<ul>
+<li>Page Object <strong>không chứa assertion về nghiệp vụ lớn</strong>; chỉ nên có các helper <code>expectX</code> nhỏ, còn quyết định pass/fail thuộc về test.</li>
+<li>Trả về locator hoặc dữ liệu, đừng nuốt lỗi bằng <code>try/catch</code>.</li>
+<li>Dùng locator theo vai trò (<code>getByRole</code>, <code>getByLabel</code>) trước, <code>data-testid</code> sau, CSS/XPath cuối cùng.</li>
+<li>Một Page Object đại diện một khái niệm giao diện, không phải một &quot;God class&quot; cho cả ứng dụng.</li>
+</ul>
+<p>Chi tiết xem bài 02.</p>
+<h3 id="2-screenplay">2. Screenplay</h3>
+<p><strong>Nỗi đau</strong>: POM phình to khi luồng nghiệp vụ chạy xuyên nhiều trang, hoặc khi nhiều vai trò (admin, khách) cùng làm một việc theo cách khác nhau.
+<strong>Ý tưởng</strong>: nghĩ theo <em>diễn viên</em> (Actor) có <em>khả năng</em> (Ability: duyệt web, gọi API), thực hiện <em>nhiệm vụ</em> (Task) gồm các <em>hành động</em> (Action), rồi đặt <em>câu hỏi</em> (Question) về trạng thái.</p>
+<pre tabindex="0"><code class="language-ts">// Ví dụ tối giản, không cần thư viện.
+type Ability = &#123; page: import(&#39;@playwright/test&#39;).Page };
+
+class Actor &#123;
+  constructor(public readonly name: string, private readonly abilities: Ability) &#123;}
+  async attemptsTo(...tasks: Array&lt;(a: Ability) =&gt; Promise&lt;void&gt;&gt;) &#123;
+    for (const task of tasks) await task(this.abilities);
+  }
+  async asks&lt;T&gt;(question: (a: Ability) =&gt; Promise&lt;T&gt;) &#123;
+    return question(this.abilities);
+  }
+}
+
+// Task: thành phần nghiệp vụ, đọc như văn xuôi.
+const LogInAs = (email: string, password: string) =&gt; async (&#123; page }: Ability) =&gt; &#123;
+  await page.goto(&#39;/demo/&#39;);
+  await page.getByLabel(&#39;Email&#39;).fill(email);
+  await page.getByLabel(&#39;Password&#39;).fill(password);
+  await page.getByRole(&#39;button&#39;, &#123; name: &#39;Sign in&#39; }).click();
+};
+const AddTodo = (title: string) =&gt; async (&#123; page }: Ability) =&gt; &#123;
+  await page.getByLabel(&#39;New todo&#39;, &#123; exact: true }).fill(title);
+  await page.getByRole(&#39;button&#39;, &#123; name: &#39;Add&#39;, exact: true }).click();
+};
+// Question
+const TodoTitles = async (&#123; page }: Ability) =&gt;
+  page.getByRole(&#39;list&#39;, &#123; name: &#39;Todo list&#39; }).getByRole(&#39;listitem&#39;).allTextContents();
+
+// Dùng trong test:
+//   const linh = new Actor(&#39;Linh&#39;, &#123; page });
+//   await linh.attemptsTo(LogInAs(&#39;qa@demo.dev&#39;, &#39;Passw0rd!&#39;), AddTodo(&#39;Write lesson&#39;));
+//   expect((await linh.asks(TodoTitles)).join()).toContain(&#39;Write lesson&#39;);</code></pre>
+<p>Screenplay tăng khả năng đọc và tái sử dụng ở quy mô lớn, nhưng thêm nhiều khái niệm. Với một ứng dụng nhỏ như TaskFlow, <strong>POM + fixture là đủ</strong>; hãy cân nhắc Screenplay khi suite có nhiều vai trò, luồng dài và nhiều đội cùng viết.</p>
+<h3 id="3-builder">3. Builder</h3>
+<p><strong>Nỗi đau</strong>: tạo một object phức tạp mà chỉ cần đổi một vài trường; các test truyền cả đống tham số vô nghĩa.
+<strong>Ý tưởng</strong>: dựng object từng bước với giá trị mặc định hợp lệ, test chỉ nêu điều <em>khác biệt</em>.</p>
+<pre tabindex="0"><code class="language-ts">// tests/data/todo-builder.ts (rút gọn)
+import &#123; uniqueTitle } from &#39;./factories&#39;;
+
+export interface TodoInput &#123;
+  title: string;
+  done: boolean;
+}
+
+export class TodoBuilder &#123;
+  private title = uniqueTitle();
+  private isDone = false;
+
+  withTitle(title: string): this &#123;
+    this.title = title;
+    return this;
+  }
+
+  /** Đúng `length` ký tự; giới hạn của API là 120. */
+  withTitleLength(length: number): this &#123;
+    this.title = &#39;x&#39;.repeat(length);
+    return this;
+  }
+
+  done(): this &#123;
+    this.isDone = true;
+    return this;
+  }
+
+  build(): TodoInput &#123;
+    return &#123; title: this.title, done: this.isDone };
+  }
+}
+
+export const aTodo = (): TodoBuilder =&gt; new TodoBuilder();
+
+// Test chỉ nói điều quan trọng:
+//   const &#123; title } = aTodo().withTitleLength(121).build();
+//   expect((await qaApi.createTodo(title)).status).toBe(422);</code></pre>
+<p>Giá trị mặc định có tính duy nhất (hậu tố UUID ngắn trong <code>uniqueTitle()</code>) giúp các test chạy song song không đụng nhau. Bản đầy đủ nằm ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/data/todo-builder.ts"><code>tests/data/todo-builder.ts</code></a>. Biên giá trị (120/121 ký tự) khớp đúng validation của <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/server/app.mjs"><code>server/app.mjs</code></a>.</p>
+<h3 id="4-factory">4. Factory</h3>
+<p><strong>Nỗi đau</strong>: cần tạo nhiều loại object khác nhau, hoặc dữ liệu đã nằm sẵn trên server (qua API).
+<strong>Ý tưởng</strong>: một hàm/đối tượng tạo ra sản phẩm đúng loại; ở test, factory thường &quot;tạo thật&quot; qua API để dựng tiền điều kiện.</p>
+<pre tabindex="0"><code class="language-ts">// tests/data/factories.ts (rút gọn)
+import &#123; randomUUID } from &#39;node:crypto&#39;;
+
+export interface Credentials &#123;
+  email: string;
+  password: string;
+}
+
+/** Hậu tố ngẫu nhiên ngắn: mỗi test tạo dữ liệu riêng, an toàn khi chạy song song. */
+export function uniqueSuffix(): string &#123;
+  return randomUUID().slice(0, 8);
+}
+
+/** Ví dụ: &quot;Write smoke test [3fa9c1d2]&quot;. */
+export function uniqueTitle(prefix = &#39;Todo&#39;): string &#123;
+  return `$&#123;prefix} [$&#123;uniqueSuffix()}]`;
+}
+
+export const users = &#123;
+  qa: &#123; email: &#39;qa@demo.dev&#39;, password: &#39;Passw0rd!&#39; } satisfies Credentials,
+  dev: &#123; email: &#39;dev@demo.dev&#39;, password: &#39;Passw0rd!&#39; } satisfies Credentials,
+};
+
+/** Các &quot;biến thể xấu&quot; tạo theo yêu cầu. */
+export function wrongPasswordUser(): Credentials &#123;
+  return &#123; email: users.qa.email, password: `wrong-$&#123;uniqueSuffix()}` };
+}
+export function unknownUser(): Credentials &#123;
+  return &#123; email: `nobody-$&#123;uniqueSuffix()}@demo.dev`, password: &#39;Passw0rd!&#39; };
+}</code></pre>
+<p>Factory ở đây là các hàm sinh dữ liệu theo <em>loại</em> (user hợp lệ, sai mật khẩu, không tồn tại); file thật ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/data/factories.ts"><code>tests/data/factories.ts</code></a>. Khi cần dựng tiền điều kiện trên server, test gọi factory rồi đưa kết quả cho <code>ApiClient</code> (<code>qaApi.createTodo(aTodo().build().title)</code>).</p>
+<p>Builder và Factory hay đi cùng nhau: <strong>Builder</strong> lo <em>hình dạng</em> của object, <strong>Factory</strong> lo <em>việc tạo ra nó ở đâu</em> (trong bộ nhớ, qua API, qua DB).</p>
+<h3 id="5-fixture">5. Fixture</h3>
+<p><strong>Nỗi đau</strong>: setup/teardown lặp lại; <code>beforeEach</code>/<code>afterEach</code> rải rác; test phải biết quá nhiều cách khởi tạo.
+<strong>Ý tưởng</strong>: khai báo &quot;thứ test cần&quot;, framework dựng trước và dọn sau. Playwright có sẵn cơ chế này, và nó thay thế phần lớn <code>beforeEach/afterEach</code>.</p>
+<pre tabindex="0"><code class="language-ts">// tests/fixtures/index.ts (rút gọn)
+import &#123; test as base, expect } from &#39;@playwright/test&#39;;
+import &#123; ApiClient } from &#39;./api-client&#39;;
+import &#123; users } from &#39;../data/factories&#39;;
+import &#123; LoginPage, TodoPage } from &#39;../pages&#39;;
+
+interface Fixtures &#123;
+  loginPage: LoginPage;
+  todoPage: TodoPage;
+  api: ApiClient;   // chưa đăng nhập
+  qaApi: ApiClient; // đã đăng nhập là qa@demo.dev
+}
+
+export const test = base.extend&lt;Fixtures&gt;(&#123;
+  loginPage: async (&#123; page }, use) =&gt; use(new LoginPage(page)),
+  todoPage: async (&#123; page }, use) =&gt; use(new TodoPage(page)),
+  api: async (&#123; request }, use) =&gt; use(new ApiClient(request)),
+  qaApi: async (&#123; request }, use) =&gt; use(await new ApiClient(request).signIn(users.qa)),
+});
+
+export &#123; expect };</code></pre>
+<p>File thật: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/fixtures/index.ts"><code>tests/fixtures/index.ts</code></a>. Fixture cũng có thể có bước dọn sau <code>use()</code>. Ví dụ một fixture tạo todo và xoá nó khi test kết thúc (kể cả khi test fail):</p>
+<pre tabindex="0"><code class="language-ts">seededTodo: async (&#123; qaApi }, use) =&gt; &#123;
+  const todo = unwrap(await qaApi.createTodo(uniqueTitle(&#39;seed&#39;)));
+  await use(todo);
+  await qaApi.deleteTodo(todo.id);
+},</code></pre>
+<p>Dùng trong test, không còn thấy <code>new</code>, không còn hook (ví dụ dưới là bản rút gọn, xem <code>tests/ui/todos.spec.ts</code> để có bản thật):</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect } from &#39;../fixtures&#39;;
+import &#123; uniqueTitle } from &#39;../data/factories&#39;;
+
+test(&#39;add and toggle a todo @smoke&#39;, async (&#123; todoPage }) =&gt; &#123;
+  const title = uniqueTitle(&#39;Toggle me&#39;);
+  await todoPage.open();
+  await todoPage.add(title);
+  await todoPage.toggle(title);
+  await expect(todoPage.item(title)).toBeVisible();
+});</code></pre>
+<p>Fixture có thể có phạm vi <code>test</code> (mặc định) hoặc <code>worker</code> (dựng một lần cho mỗi worker, nhanh hơn nhưng phải bất biến). Nó cũng <em>lazy</em>: fixture không được test nào dùng thì không chạy.</p>
+<h3 id="6-strategy-chon-cach-dang-nhap">6. Strategy: chọn cách đăng nhập</h3>
+<p><strong>Nỗi đau</strong>: có ba cách đăng nhập (qua UI, qua API, dùng <code>storageState</code> đã lưu), và mỗi test tự chọn rồi copy code.
+<strong>Ý tưởng</strong>: định nghĩa một interface chung, nhiều cài đặt hoán đổi được, và chọn cài đặt tại <em>một chỗ</em>.</p>
+<pre tabindex="0"><code class="language-ts">// ví dụ minh hoạ: tests/fixtures/auth-strategies.ts
+import type &#123; Page } from &#39;@playwright/test&#39;;
+import &#123; LoginPage } from &#39;../pages&#39;;
+import &#123; users } from &#39;../data/factories&#39;;
+
+export interface AuthStrategy &#123;
+  readonly name: string;
+  /** Làm cho `page` ở trạng thái đã đăng nhập. */
+  signIn(page: Page): Promise&lt;void&gt;;
+}
+
+/** Đi qua form đăng nhập thật. Chậm, nhưng dùng cho chính test login. */
+export const uiLogin: AuthStrategy = &#123;
+  name: &#39;ui&#39;,
+  async signIn(page) &#123;
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(users.qa);
+    await login.expectLoggedIn();
+  },
+};
+
+/**
+ * Bỏ qua form: ghi trực tiếp phiên vào localStorage trước khi trang tải.
+ * Demo của repo lưu phiên ở khoá `taskflow.session` (xem site/demo/demo.js).
+ */
+export const seededSession: AuthStrategy = &#123;
+  name: &#39;seeded-session&#39;,
+  async signIn(page) &#123;
+    await page.addInitScript((email) =&gt; &#123;
+      localStorage.setItem(&#39;taskflow.session&#39;, JSON.stringify(&#123; email, at: Date.now() }));
+    }, users.qa.email);
+  },
+};
+
+/** Dùng file storageState do project `setup` tạo ra; project đã nạp nó nên không phải làm gì. */
+export const storageStateLogin: AuthStrategy = &#123;
+  name: &#39;storageState&#39;,
+  async signIn() &#123;},
+};
+
+export function pickStrategy(): AuthStrategy &#123;
+  switch (process.env.AUTH_STRATEGY) &#123;
+    case &#39;ui&#39;: return uiLogin;
+    case &#39;seeded&#39;: return seededSession;
+    default: return storageStateLogin;
+  }
+}</code></pre>
+<p>Lưu ý: file <code>auth-strategies.ts</code> là ví dụ minh hoạ, repo hiện dùng cách thứ ba (project <code>setup</code> trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/setup/auth.setup.ts"><code>tests/setup/auth.setup.ts</code></a> đăng nhập một lần và lưu <code>storageState</code>). Demo giữ phiên trong <code>localStorage</code> nên cách thứ hai khả thi; còn việc đăng nhập bằng API (Bearer token) áp dụng cho <code>/api/*</code> qua <code>qaApi</code>, không áp dụng cho UI của demo. Điểm cốt lõi là test chỉ gọi <code>strategy.signIn(page)</code> và không cần biết cách nó hoạt động. Nguyên tắc chung:</p>
+<table>
+<thead>
+<tr>
+<th>Tình huống</th>
+<th>Strategy nên dùng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Test của chính màn hình login</td>
+<td><code>uiLogin</code></td>
+</tr>
+<tr>
+<td>Test cần đăng nhập nhưng không xoay quanh login</td>
+<td><code>storageStateLogin</code> (mặc định)</td>
+</tr>
+<tr>
+<td>Cần phiên/user riêng theo từng test, không muốn tốn thời gian qua form</td>
+<td><code>seededSession</code></td>
+</tr>
+</tbody></table>
+<h3 id="7-singleton-anti-pattern-trong-test">7. Singleton: anti-pattern trong test</h3>
+<p>Singleton (một instance toàn cục dùng chung) rất dễ bị cám dỗ: <code>Database.getInstance()</code>, <code>BrowserManager.getInstance()</code>, một <code>TestContext</code> toàn cục. Trong test nó gây hại vì:</p>
+<ul>
+<li><strong>Trạng thái dùng chung</strong> giữa các test làm test phụ thuộc thứ tự và phá vỡ cách ly.</li>
+<li><strong>Chạy song song hỏng</strong>: Playwright chia test cho nhiều worker (mỗi worker là một process riêng), và <code>fullyParallel</code> còn trộn thứ tự test. Singleton vừa không chia sẻ được giữa process, vừa tạo cảm giác sai lầm rằng nó chia sẻ được.</li>
+<li>Khó thay thế khi test (khó mock), khó đọc (phụ thuộc ẩn).</li>
+</ul>
+<p>Thay thế bằng <strong>fixture</strong>: vòng đời rõ ràng (per-test hoặc per-worker), có teardown, và được &quot;tiêm&quot; qua tham số của test. Ví dụ điển hình trong repo: endpoint <code>/api/test/reset</code> xoá <em>toàn bộ</em> dữ liệu, một dạng trạng thái toàn cục, nên chỉ được dùng ở bước tuần tự, không gọi từ test chạy song song.</p>
+<h3 id="khi-nao-dung-gi">Khi nào dùng gì</h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Giải quyết</th>
+<th>Dùng khi</th>
+<th>Tránh khi</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>POM</strong></td>
+<td>Locator/hành động lặp</td>
+<td>Hầu như mọi UI test</td>
+<td>Chỉ có 1-2 test, quá ít để trừu tượng hoá</td>
+</tr>
+<tr>
+<td><strong>Screenplay</strong></td>
+<td>Luồng nhiều trang/vai trò</td>
+<td>Suite lớn, nhiều đội, ngôn ngữ nghiệp vụ</td>
+<td>Dự án nhỏ, đội mới học</td>
+</tr>
+<tr>
+<td><strong>Builder</strong></td>
+<td>Object nhiều trường</td>
+<td>Payload phức tạp, test biên</td>
+<td>Object 1-2 trường</td>
+</tr>
+<tr>
+<td><strong>Factory</strong></td>
+<td>Tạo dữ liệu đúng loại/chỗ</td>
+<td>Tiền điều kiện qua API/DB</td>
+<td>Khi chỉ cần một literal</td>
+</tr>
+<tr>
+<td><strong>Fixture</strong></td>
+<td>Setup/teardown, dependency</td>
+<td>Luôn luôn trong Playwright</td>
+<td>Khi lạm dụng thành &quot;God fixture&quot;</td>
+</tr>
+<tr>
+<td><strong>Strategy</strong></td>
+<td>Nhiều cách làm một việc</td>
+<td>Login, môi trường, nhà cung cấp</td>
+<td>Chỉ có một cách duy nhất</td>
+</tr>
+<tr>
+<td><strong>Singleton</strong></td>
+<td>(không nên)</td>
+<td>Hầu như không bao giờ trong test</td>
+<td>Test song song, cần cách ly</td>
+</tr>
+</tbody></table>
+<h2 id="loi-thuong-gap">Lỗi thường gặp</h2>
+<ol>
+<li><strong>Page Object chứa <code>expect</code> nghiệp vụ và logic rẽ nhánh</strong>, trở thành nơi giấu test.</li>
+<li><strong>God Page / God fixture</strong> làm mọi thứ. Hãy tách theo khái niệm.</li>
+<li><strong>Builder mặc định không duy nhất</strong>, hai worker tạo cùng title và đụng nhau.</li>
+<li><strong>Fixture tạo dữ liệu nhưng không dọn</strong>, các lần chạy sau thấy &quot;rác&quot; của lần trước.</li>
+<li><strong>Kế thừa sâu</strong> (<code>AdminTodoPage extends TodoPage extends BasePage …</code>). Ưu tiên composition.</li>
+<li><strong>Strategy trở thành <code>if (env)</code> rải khắp nơi</strong> thay vì chọn ở một điểm duy nhất.</li>
+<li><strong>Trừu tượng hoá sớm.</strong> Hãy đợi lần lặp thứ ba rồi mới rút pattern.</li>
+<li><strong>Dùng module-level <code>let</code> làm &quot;trạng thái chia sẻ&quot;</strong> giữa các test (Singleton trá hình).</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Mở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/tree/main/tests/pages"><code>tests/pages</code></a> và tìm một chỗ Page Object đang làm quá nhiều. Tách nó thành hai class (ví dụ <code>TodoList</code> component và <code>TodoPage</code>).</li>
+<li>Dùng <code>aTodo().withTitleLength(n)</code> viết test API kiểm tra ranh giới 120/121 ký tự (201 vs 422).</li>
+<li>Viết fixture <code>authedPage</code> dùng <code>pickStrategy()</code>; chạy cùng một test với <code>AUTH_STRATEGY=ui</code> và <code>seeded</code>, so sánh thời gian.</li>
+<li>Viết fixture cấp <code>worker</code> cung cấp một user duy nhất cho cả worker, và giải thích vì sao nó phải bất biến.</li>
+<li>Viết lại một luồng &quot;đăng nhập, thêm todo, kiểm tra&quot; theo kiểu Screenplay, rồi so sánh với phiên bản POM: bạn thấy dễ đọc/ dễ bảo trì hơn ở đâu, tệ hơn ở đâu?</li>
+<li>Tìm trong code (hoặc cố tình viết) một Singleton gây flaky khi chạy <code>--workers=4</code> và thay bằng fixture.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Locator chỉ nằm trong Page Object, test đọc như đặc tả hành vi.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Assertion nghiệp vụ nằm ở test, không nằm trong Page Object.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dữ liệu mặc định hợp lệ và duy nhất qua Builder; Factory quyết định chỗ tạo.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Fixture có teardown, chọn đúng phạm vi <code>test</code> hay <code>worker</code>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Cách đăng nhập chọn bằng Strategy ở một điểm duy nhất.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Không có Singleton hay biến toàn cục có thể thay đổi trong test.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Ưu tiên composition hơn kế thừa; trừu tượng hoá khi đã lặp ba lần.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Biết bảng &quot;khi nào dùng gì&quot; và có thể giải thích lựa chọn của mình.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a class="prev" rel="prev" href="07-cicd-architecture.html">← Kiến trúc CI/CD cho test - nhanh, tin cậy, có báo cáo</a>
+        <a class="next" rel="next" href="09-live-mode.html">Live mode - theo dõi test và tải ngay khi đang chạy →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Agents trong QA — Claude Code, Playwright MCP và quy trình plan → generate → review → heal → triage · Linh.NV</title>
+  <meta name="description" content="AI Agents trong QA — Claude Code, Playwright MCP và quy trình plan → generate → review → heal → triage" />
+  <script>
+    // Apply the saved theme before first paint (no flash). Storage may be blocked: ignore.
+    // The Playwright report on this origin owns localStorage 'theme' (dark-mode | light-mode | system);
+    // keep ours under a separate key and move old 'dark' / 'light' values off it.
+    try {
+      const s = localStorage, legacy = s.getItem('theme');
+      if (legacy === 'dark' || legacy === 'light') { s.removeItem('theme'); if (!s.getItem('linhqa-theme')) s.setItem('linhqa-theme', legacy); }
+      const t = s.getItem('linhqa-theme'); if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round'/></svg>" />
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></symbol>
+  </defs></svg>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../">Linh<span>.</span>NV</a>
+      <ul>
+        <li><a href="../#lessons">Lessons</a></li>
+        <li><a href="../report/">Report</a></li>
+        <li><a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio">GitHub</a></li>
+      </ul>
+      <a class="nav-in" href="https://www.linkedin.com/in/linh-nguyen-7495333b6/" rel="noopener" aria-label="LinkedIn" data-testid="nav-linkedin"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 11v6M12 17v-6M12 13.5c0-1.7 1.2-2.5 2.5-2.5s2.5.8 2.5 2.5V17" /><circle class="f" cx="8" cy="7.8" r="1" /></svg><span>LinkedIn</span></a>
+      <button class="theme-toggle" type="button" data-testid="theme-toggle" aria-label="Toggle dark / light theme">
+        <svg class="ic sun"><use href="#i-sun" /></svg><svg class="ic moon"><use href="#i-moon" /></svg>
+      </button>
+    </div>
+  </nav>
+  <main>
+    <div class="wrap">
+      <article class="doc" data-testid="lesson-content">
+<h1 id="ai-agents-trong-qa">AI Agents trong QA</h1>
+<h2 id="muc-tieu-bai-hoc">Mục tiêu bài học</h2>
+<p>Sau bài này bạn sẽ:</p>
+<ul>
+<li>Phân biệt được <strong>chatbot hỏi–đáp</strong> với <strong>agent</strong> (có công cụ, có vòng lặp, có thể sửa file và chạy lệnh).</li>
+<li>Biết đặt &quot;luật chơi&quot; cho agent bằng <code>CLAUDE.md</code>, sub-agent và danh sách tool hạn chế.</li>
+<li>Hiểu vì sao <strong>Playwright MCP</strong> dùng accessibility snapshot thay vì để model &quot;đoán selector&quot;.</li>
+<li>Nắm quy trình của Playwright Test Agents (planner / generator / healer) và cách repo này áp dụng.</li>
+<li>Đặt <strong>human-in-the-loop</strong> đúng chỗ, và nhận ra các rủi ro: hallucination, làm yếu assertion, lộ secret.</li>
+</ul>
+<h2 id="1-khai-niem">1. Khái niệm</h2>
+<h3 id="agent-khac-gi-voi-quot-hoi-ai-viet-giup-mot-doan-code-quot">Agent khác gì với &quot;hỏi AI viết giúp một đoạn code&quot;?</h3>
+<p>Khi bạn dán lỗi vào chatbot, nó chỉ trả lời bằng văn bản. Một <strong>agent</strong> như Claude Code thì khác: nó đọc được repo, chạy được <code>npx playwright test</code>, nhìn thấy log lỗi, sửa file rồi chạy lại cho đến khi đạt điều kiện dừng. Sức mạnh đến từ vòng lặp <em>quan sát → hành động → kiểm tra</em>, và rủi ro cũng đến từ chính vòng lặp đó: agent có thể &quot;sửa cho xanh&quot; bằng cách làm test trở nên vô nghĩa.</p>
+<p>Vì vậy, làm việc với agent trong QA không phải là &quot;bảo AI viết test&quot;, mà là <strong>thiết kế một hệ thống có hàng rào</strong>: ngữ cảnh rõ ràng, quyền hạn hẹp, và con người duyệt ở những điểm quyết định.</p>
+<h3 id="claude-md-bo-nho-dai-han-cua-du-an">CLAUDE.md — bộ nhớ dài hạn của dự án</h3>
+<p><code>CLAUDE.md</code> nằm ở gốc repo và được Claude Code nạp vào ngữ cảnh mỗi phiên làm việc. Đây là nơi ghi các quy ước mà một QA senior sẽ nói với người mới ngày đầu tiên. Xem file thật: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/CLAUDE.md">CLAUDE.md</a>. Một số quy tắc trong đó:</p>
+<pre tabindex="0"><code class="language-markdown">1. Locator priority: getByRole &gt; getByLabel &gt; getByTestId &gt; CSS.
+2. No hard sleeps. Never use waitForTimeout ... Rely on auto-waiting and web-first assertions.
+4. One behaviour per test. Small and independent.
+5. Test data comes from tests/data/ (factories/builders such as TodoBuilder).
+8. Specs import `test` and `expect` from tests/fixtures, not from @playwright/test.
+9. Never weaken an assertion to make a test pass. A red test is information.
+10. Never call /api/test/reset from tests that run in parallel.</code></pre>
+<p>Hai điểm đáng học. Thứ nhất, quy tắc nào bạn phải nhắc agent đến lần thứ hai thì hãy đưa vào <code>CLAUDE.md</code>. Thứ hai, quy tắc tốt <strong>giải thích hậu quả</strong> (&quot;it clears ALL todos for everyone&quot;) chứ không chỉ cấm; agent (và đồng nghiệp mới) tuân thủ tốt hơn khi hiểu lý do.</p>
+<h3 id="sub-agent-chuyen-mon-hoa-va-thu-hep-quyen">Sub-agent — chuyên môn hóa và thu hẹp quyền</h3>
+<p>Một agent &quot;làm được tất cả&quot; khó kiểm soát. Claude Code cho phép định nghĩa sub-agent trong <code>.claude/agents/*.md</code>, mỗi cái có mô tả, prompt riêng và danh sách tool được phép. Repo này có bốn vai:</p>
+<table>
+<thead>
+<tr>
+<th>Sub-agent</th>
+<th>Vai trò</th>
+<th>Ranh giới</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>test-planner</code></td>
+<td>Khám phá app bằng trình duyệt MCP, viết kế hoạch Markdown vào <code>specs/plans/</code></td>
+<td>Không viết code test</td>
+</tr>
+<tr>
+<td><code>test-generator</code></td>
+<td>Biến kế hoạch đã duyệt thành spec theo POM/fixture/builder, rồi chạy</td>
+<td>Chỉ ghi trong <code>tests/</code></td>
+</tr>
+<tr>
+<td><code>test-healer</code></td>
+<td>Sửa test đỏ do UI đổi</td>
+<td>Chỉ sửa locator/điều hướng; <strong>cấm</strong> đổi assertion</td>
+</tr>
+<tr>
+<td><code>flaky-triager</code></td>
+<td>Phân loại lỗi: product bug / test bug / flaky / environment</td>
+<td>Chỉ đọc</td>
+</tr>
+</tbody></table>
+<p>Mở file thật để xem cách viết: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/agents/test-healer.md">test-healer.md</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/agents/test-planner.md">test-planner.md</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/agents/test-generator.md">test-generator.md</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/agents/flaky-triager.md">flaky-triager.md</a>. Phần quan trọng nhất là frontmatter <code>tools:</code> (whitelist công cụ) và mục &quot;Hard limits&quot;:</p>
+<pre tabindex="0"><code class="language-markdown">---
+name: test-healer
+description: Repairs a failing Playwright spec after a UI change ... Cannot change assertions or expected values.
+tools: Read, Grep, Glob, Edit, Bash, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, ...
+---
+## Hard limits
+- You may change locators, navigation steps and page-object actions.
+- You may NOT change, remove or loosen any assertion, expected value, matcher ...
+- You may NOT add `waitForTimeout`, `test.skip`, `test.fixme` or `.retry`.
+- Maximum 3 repair attempts per test. After that, stop and report what you learned.</code></pre>
+<p>Lưu ý <code>test-healer</code> chỉ có <code>Edit</code> (sửa file có sẵn), không có <code>Write</code> để tạo file mới, và chỉ được dùng một tập con công cụ trình duyệt của MCP: đó là nguyên tắc <em>least privilege</em> áp cho agent. Giới hạn &quot;tối đa 3 lần thử&quot; chặn vòng lặp sửa vô tận.</p>
+<h3 id="slash-command-dong-goi-thao-tac-lap-lai">Slash command — đóng gói thao tác lặp lại</h3>
+<p>Thao tác lặp lại được đóng thành lệnh trong <code>.claude/commands/</code>: <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/commands/gen-test.md">/gen-test</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/commands/heal.md">/heal</a>, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.claude/commands/triage.md">/triage</a>. Bên trong chỉ là một prompt có <code>$ARGUMENTS</code>, nhưng cả team gọi cùng một quy trình thay vì mỗi người một kiểu. Ví dụ <code>/gen-test</code> ép thứ tự: planner → <strong>dừng chờ bạn duyệt kế hoạch</strong> → generator → <code>--repeat-each=3</code> → typecheck → không commit.</p>
+<h2 id="2-playwright-mcp-nhin-bang-accessibility-snapshot">2. Playwright MCP: nhìn bằng accessibility snapshot</h2>
+<p><strong>MCP (Model Context Protocol)</strong> là chuẩn để agent gọi công cụ bên ngoài. Repo khai báo server <code>@playwright/mcp</code> trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.mcp.json">.mcp.json</a>:</p>
+<pre tabindex="0"><code class="language-json">&#123;
+  &quot;mcpServers&quot;: &#123;
+    &quot;playwright&quot;: &#123;
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@playwright/mcp@latest&quot;]
+    }
+  }
+}</code></pre>
+<p>Cách tiếp cận cũ là đưa HTML hoặc screenshot cho model rồi nhờ nó đoán selector. HTML thật rất dài và nhiều nhiễu; ảnh thì model phải suy ra vị trí. Kết quả là selector &quot;nghe hợp lý&quot; nhưng không tồn tại. Playwright MCP làm khác: nó trả về <strong>accessibility snapshot</strong>, tức cây ngữ nghĩa mà trình duyệt dựng cho trình đọc màn hình. Với trang đăng nhập của demo app, snapshot có dạng:</p>
+<pre tabindex="0"><code class="language-yaml">- heading &quot;TaskFlow&quot; [level=1]
+- textbox &quot;Email&quot; [ref=e5]
+- textbox &quot;Password&quot; [ref=e7]
+- button &quot;Sign in&quot; [ref=e9]</code></pre>
+<p>Mỗi phần tử có <code>role</code>, tên truy cập và một <code>ref</code> duy nhất. Agent click bằng <code>ref</code>, nên <strong>không phải đoán</strong>; khi chuyển sang viết test, nó dùng luôn role + name, đúng thứ tự ưu tiên locator ở bài 2. Đó chính là những dòng bạn thấy trong <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/login.page.ts">tests/pages/login.page.ts</a>:</p>
+<pre tabindex="0"><code class="language-ts">this.email = page.getByLabel(&#39;Email&#39;);
+this.password = page.getByLabel(&#39;Password&#39;);
+this.submit = page.getByRole(&#39;button&#39;, &#123; name: &#39;Sign in&#39; });</code></pre>
+<p>Bonus: nếu một nút không xuất hiện trong snapshot hoặc không có tên, rất có thể người dùng đọc màn hình cũng không dùng được nó. Đó là một phát hiện về accessibility, không chỉ về test.</p>
+<h2 id="3-playwright-test-agents-planner-generator-healer">3. Playwright Test Agents: planner → generator → healer</h2>
+<p>Từ Playwright 1.56, bộ công cụ chính thức &quot;Test Agents&quot; gồm ba agent có prompt và tool được tinh chỉnh sẵn. Một lệnh để dựng chúng cho Claude Code:</p>
+<pre tabindex="0"><code class="language-bash">npx playwright init-agents --loop=claude</code></pre>
+<p>Lệnh sinh ra định nghĩa agent planner / generator / healer trong <code>.claude/agents/</code>, cấu hình MCP, một thư mục cho kế hoạch test và một <code>seed.spec.ts</code> làm điểm khởi đầu (ví dụ: đã đăng nhập sẵn). Luồng làm việc:</p>
+<ol>
+<li><strong>Planner</strong> mở app qua MCP, khám phá và viết kế hoạch Markdown: kịch bản, bước, kết quả mong đợi.</li>
+<li><strong>Generator</strong> đọc kế hoạch, thao tác thật trên trình duyệt để xác nhận từng bước, rồi xuất file <code>.spec.ts</code>.</li>
+<li><strong>Healer</strong> chạy test đỏ, xem trace/console/DOM, vá locator hoặc timing và chạy lại.</li>
+</ol>
+<p>Repo này không dùng nguyên bản sinh ra, mà viết lại bốn agent của riêng mình để <strong>gắn với luật của dự án</strong>: planner ghi vào <code>specs/plans/</code>, generator phải dùng page object + <code>tests/data</code>, healer bị cấm đụng vào assertion. Bài học: agent mặc định là điểm khởi đầu, còn &quot;chất lượng&quot; nằm ở phần ràng buộc bạn thêm vào.</p>
+<h2 id="4-vi-du-chay-duoc-tu-ke-hoach-den-test">4. Ví dụ chạy được: từ kế hoạch đến test</h2>
+<p>Chạy server (<code>npm run serve</code>, sau <code>npm run build</code> để có <code>dist/</code>) rồi mở Claude Code trong repo.</p>
+<p><strong>Bước 1 — Plan.</strong></p>
+<pre tabindex="0"><code class="language-text">/gen-test todo filtering</code></pre>
+<p>Lệnh này gọi <code>test-planner</code>, agent mở <code>http://localhost:4173/demo/</code>, đăng nhập bằng tài khoản demo công khai <code>qa@demo.dev</code> / <code>Passw0rd!</code>, đi qua luồng thêm / đánh dấu / lọc / xóa và ghi <code>specs/plans/todo-filtering.md</code>. Phần đầu ra có dạng (rút gọn):</p>
+<pre tabindex="0"><code class="language-markdown">## Scenario: Active filter hides done todos  [@regression]
+Steps:
+1. Add &quot;Open item&quot; and &quot;Finished item&quot;.
+2. Tick the checkbox &quot;Toggle Finished item&quot;.
+3. Press the &quot;Active&quot; filter button.
+Expected: &quot;Open item&quot; is listed, &quot;Finished item&quot; is not.</code></pre>
+<p><strong>Bước 2 — Duyệt kế hoạch (con người).</strong> <code>/gen-test</code> dừng tại đây. Hãy hỏi: thiếu case âm tính nào? (tiêu đề trống, tiêu đề toàn khoảng trắng, reload có giữ dữ liệu không.) Bổ sung rồi mới cho đi tiếp.</p>
+<p><strong>Bước 3 — Generate.</strong> <code>test-generator</code> sinh spec theo POM, fixture và builder của repo. Kết quả phải giống phong cách của <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/ui/todos.spec.ts">tests/ui/todos.spec.ts</a>:</p>
+<pre tabindex="0"><code class="language-ts">import &#123; test, expect } from &#39;../fixtures&#39;;
+import &#123; aTodo } from &#39;../data&#39;;
+
+test.describe(&#39;Todos&#39;, () =&gt; &#123;
+  test.beforeEach(async (&#123; todoPage }) =&gt; &#123;
+    await todoPage.open();
+  });
+
+  test(&#39;@regression active filter hides done todos&#39;, async (&#123; todoPage }) =&gt; &#123;
+    const open = aTodo().withPrefix(&#39;Open&#39;).build().title;
+    const finished = aTodo().withPrefix(&#39;Finished&#39;).build().title;
+    await todoPage.add(open);
+    await todoPage.add(finished);
+    await todoPage.toggle(finished);
+    await todoPage.filter(&#39;Active&#39;);
+    await expect(todoPage.item(open)).toBeVisible();
+    await expect(todoPage.item(finished)).toHaveCount(0);
+  });
+});</code></pre>
+<p><strong>Bước 4 — Review.</strong> Bạn đọc diff như đọc PR của đồng nghiệp, với checklist ở cuối <code>CLAUDE.md</code>: assertion có kiểm tra hành vi thật không, có <code>waitForTimeout</code> lọt vào không, dữ liệu có đi qua builder không, tag có đủ không.</p>
+<p><strong>Bước 5 — Heal.</strong> Giả sử dev đổi nhãn nút &quot;Add&quot; thành &quot;Add task&quot; và test đỏ:</p>
+<pre tabindex="0"><code class="language-text">/heal tests/ui/todos.spec.ts</code></pre>
+<p>Healer chạy test, đọc lỗi, mở trang bằng MCP, thấy nút mới trong snapshot và sửa <code>addButton</code> ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/tests/pages/todo.page.ts">tests/pages/todo.page.ts</a>, <strong>một chỗ duy nhất</strong> nhờ POM. Nếu thay vào đó nó muốn đổi <code>toHaveCount(0)</code> thành <code>toHaveCount(1)</code> cho khớp, đó là dấu hiệu bug sản phẩm hoặc agent đang lách luật: từ chối.</p>
+<p><strong>Bước 6 — Triage trong CI.</strong> Khi CI đỏ, <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/scripts/ai-triage.mjs">scripts/ai-triage.mjs</a> đọc <code>reports/results.json</code>, gom các test thất bại hoặc flaky kèm thông báo lỗi (đã cắt gọn), gọi Anthropic Messages API khi có <code>ANTHROPIC_API_KEY</code>, và ghi kết quả vào <code>$GITHUB_STEP_SUMMARY</code>. Không có key thì chỉ liệt kê lỗi; script không bao giờ thoát mã khác 0 nên triage không làm vỡ pipeline. Prompt hệ thống của script cấm gợi ý &quot;thêm sleep&quot; hay &quot;nới assertion&quot;. Xem pipeline ở <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.github/workflows/ci.yml">.github/workflows/ci.yml</a>; workflow <a href="https://github.com/nguyenvanlinh14/qa-agent-portfolio/blob/main/.github/workflows/claude.yml">claude.yml</a> cho phép gọi <code>@claude</code> trên PR/issue để review.</p>
+<p>Thử ở máy local:</p>
+<pre tabindex="0"><code class="language-bash">npx playwright test --project=api
+npm run ai:triage          # không key: chỉ liệt kê lỗi</code></pre>
+<p>Triage chỉ <strong>gợi ý</strong> phân loại và bước tiếp theo; nó không tự sửa code, không tự rerun vô hạn, không tự đóng ticket.</p>
+<h2 id="5-human-in-the-loop-duyet-o-dau">5. Human-in-the-loop: duyệt ở đâu?</h2>
+<p>Không cần duyệt từng dòng, nhưng phải có <strong>cổng kiểm soát</strong> ở những chỗ rủi ro cao:</p>
+<table>
+<thead>
+<tr>
+<th>Điểm</th>
+<th>Câu hỏi con người trả lời</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sau <em>plan</em></td>
+<td>Kịch bản có đúng nghiệp vụ không? Thiếu case âm tính nào?</td>
+</tr>
+<tr>
+<td>Sau <em>generate</em></td>
+<td>Assertion có ý nghĩa không? Có theo POM/fixture/builder không?</td>
+</tr>
+<tr>
+<td>Sau <em>heal</em></td>
+<td>Chỉ đổi locator? Expected value còn nguyên?</td>
+</tr>
+<tr>
+<td>Sau <em>triage</em></td>
+<td>&quot;Flaky&quot; thật, hay đang che một bug có điều kiện?</td>
+</tr>
+<tr>
+<td>Trước <em>merge</em></td>
+<td>CI xanh + ít nhất một người đã đọc diff.</td>
+</tr>
+</tbody></table>
+<p>Quy tắc đơn giản: agent <strong>đề xuất</strong>, con người <strong>chịu trách nhiệm</strong>. Agent không commit lên <code>main</code>, không đẩy snapshot, không đụng secrets của CI; mọi thay đổi đi qua pull request như code của người.</p>
+<h2 id="6-gioi-han-va-rui-ro">6. Giới hạn và rủi ro</h2>
+<ul>
+<li><strong>Hallucination</strong>: agent bịa API, bịa selector hoặc bịa &quot;bug&quot;. Giảm thiểu bằng MCP snapshot, bắt chạy test thật, và không tin kết quả chưa được thực thi.</li>
+<li><strong>Làm yếu assertion</strong>: lỗi nguy hiểm nhất. Test xanh nhưng không còn bảo vệ gì. Cấm trong prompt (xem <code>test-healer</code>) <em>và</em> kiểm tra bằng review: tìm trong diff <code>expect</code> bị xóa, <code>.skip</code>, matcher bị nới (<code>toHaveText</code> → <code>toBeTruthy</code>), timeout bị tăng.</li>
+<li><strong>Lộ secret</strong>: không dán token/credentials thật vào prompt. Repo chỉ có tài khoản demo công khai; <code>ANTHROPIC_API_KEY</code> chỉ nằm ở GitHub Secrets.</li>
+<li><strong>Quyền quá rộng</strong>: cho agent <code>Bash</code> không giới hạn trên máy có credentials production là thảm họa. Dùng whitelist tool, chạy trong container/CI.</li>
+<li><strong>Chi phí và nhiễu</strong>: log dài tốn tiền và làm loãng kết quả; script triage giới hạn số lỗi và độ dài thông báo gửi đi.</li>
+<li><strong>Dữ liệu nhạy cảm trong report</strong>: trace và screenshot có thể chứa dữ liệu thật; chỉ cho agent đọc report từ môi trường test.</li>
+<li><strong>Non-determinism</strong>: cùng một prompt có thể ra hai kết quả khác nhau. Vì thế &quot;đúng&quot; phải được xác nhận bằng test chạy được, không bằng việc agent nói là đúng.</li>
+</ul>
+<h2 id="loi-thuong-gap-anti-patterns">Lỗi thường gặp / anti-patterns</h2>
+<ol>
+<li><strong>&quot;Làm cho test pass&quot;</strong> mà không ràng buộc. Hãy nói rõ <em>được sửa gì, cấm sửa gì</em>.</li>
+<li><strong>Sinh hàng loạt test rồi commit luôn</strong>: 40 test không ai đọc là nợ kỹ thuật. Sinh từng nhóm nhỏ, review từng nhóm.</li>
+<li><strong>Không có <code>CLAUDE.md</code></strong>: mỗi lần agent viết một phong cách khác nhau, tự chế locator, thêm <code>sleep</code>.</li>
+<li><strong>Prompt mơ hồ</strong> (&quot;test trang login&quot;): thiếu tiêu chí chấp nhận, agent chọn case dễ nhất.</li>
+<li><strong>Tin triage tuyệt đối</strong>: nhãn &quot;flaky&quot; của AI chỉ là giả thuyết; xác nhận bằng <code>--repeat-each</code> và đọc trace.</li>
+<li><strong>Dán HTML thay vì dùng MCP</strong>: tốn token và dễ ra selector sai.</li>
+<li><strong>Một agent làm mọi việc</strong>: không tách vai nên không có chốt chặn giữa &quot;viết&quot; và &quot;sửa&quot;.</li>
+<li><strong>Cho agent cập nhật screenshot baseline</strong> để CI xanh: biến visual test thành vô nghĩa (xem bài 4).</li>
+</ol>
+<h2 id="bai-tap-thuc-hanh">Bài tập thực hành</h2>
+<ol>
+<li>Đọc <code>CLAUDE.md</code> và thêm một quy tắc mới (ví dụ: &quot;mọi test API phải kiểm tra cả status code lẫn shape của body&quot;). Nhờ agent sinh một test API và xem nó có tuân thủ không.</li>
+<li>Chạy <code>/gen-test todo filtering</code> trong Claude Code. Trước khi duyệt kế hoạch, <strong>tự bạn</strong> bổ sung 3 case âm tính mà planner bỏ sót.</li>
+<li>Trong thư mục thử nghiệm riêng, chạy <code>npx playwright init-agents --loop=claude</code> và so sánh các file sinh ra với <code>.claude/agents/</code> của repo. Khác nhau ở đâu, vì sao repo cần thêm ràng buộc?</li>
+<li>Cố tình đổi nhãn nút &quot;Sign in&quot; trong bản sao của <code>site/demo/index.html</code>, chạy <code>/heal tests/ui/login.spec.ts</code> và kiểm tra diff: agent chỉ sửa locator ở <code>login.page.ts</code>?</li>
+<li>Làm hỏng một assertion (đổi <code>toHaveCount(0)</code> thành <code>toHaveCount(1)</code>) rồi nhờ healer sửa. Nó báo bug hay sửa số cho khớp? Hoàn thiện phần &quot;Hard limits&quot; cho đến khi nó luôn chọn cách đầu.</li>
+<li>Chạy <code>npm run ai:triage</code> khi có và không có <code>ANTHROPIC_API_KEY</code>; ghi lại hành vi khác nhau.</li>
+</ol>
+<h2 id="checklist-tom-tat">Checklist tóm tắt</h2>
+<ul>
+<li><input type="checkbox" disabled aria-label="To do"> Có <code>CLAUDE.md</code> ghi quy ước: locator, không <code>waitForTimeout</code>, builder, tag, không nới assertion.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Sub-agent chia vai (planner / generator / healer / triager) và <strong>giới hạn tool</strong>.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Dùng Playwright MCP (accessibility snapshot) thay vì dán HTML để đoán selector.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Quy trình plan → generate → review → heal → triage; có người duyệt sau mỗi bước quan trọng.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Healer bị cấm đổi expected value, xóa assertion, thêm <code>skip</code>/<code>waitForTimeout</code>; tối đa 3 lần thử.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Secrets chỉ nằm trong GitHub Secrets / biến môi trường, không vào prompt hay repo.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Triage trong CI chỉ gợi ý, bỏ qua êm khi thiếu key, không tự động sửa.</li>
+<li><input type="checkbox" disabled aria-label="To do"> Mọi thay đổi của agent đi qua PR và CI trước khi merge.</li>
+</ul>
+
+      </article>
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <span></span>
+        <a class="next" rel="next" href="02-playwright-pom.html">Playwright + Page Object Model — fixtures, storageState, projects và web-first assertions →</a>
+      </nav>
+    </div>
+  </main>
+  <script>
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+      root.dataset.theme = dark ? 'light' : 'dark';
+      try { localStorage.setItem('linhqa-theme', root.dataset.theme); } catch {}
+    });
+  </script>
+  
+</body>
+</html>

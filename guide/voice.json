@@ -1,0 +1,108 @@
+{
+  "clips": {
+    "en": {
+      "intro": {
+        "file": "audio/en/intro.m4a",
+        "ms": 11767,
+        "hash": "9a197328f1ba"
+      },
+      "reels": {
+        "file": "audio/en/reels.m4a",
+        "ms": 9647,
+        "hash": "b6a062de03ca"
+      },
+      "agents": {
+        "file": "audio/en/agents.m4a",
+        "ms": 13287,
+        "hash": "b96e8b151606"
+      },
+      "workflow": {
+        "file": "audio/en/workflow.m4a",
+        "ms": 11127,
+        "hash": "60e92e59b894"
+      },
+      "framework": {
+        "file": "audio/en/framework.m4a",
+        "ms": 9767,
+        "hash": "6ccee3197ec3"
+      },
+      "ci": {
+        "file": "audio/en/ci.m4a",
+        "ms": 12327,
+        "hash": "3045a536209d"
+      },
+      "observe": {
+        "file": "audio/en/observe.m4a",
+        "ms": 11567,
+        "hash": "de405b0ef69d"
+      },
+      "services": {
+        "file": "audio/en/services.m4a",
+        "ms": 11367,
+        "hash": "3a1ed0320362"
+      },
+      "lessons": {
+        "file": "audio/en/lessons.m4a",
+        "ms": 7487,
+        "hash": "4c6b8d605373"
+      },
+      "oss": {
+        "file": "audio/en/oss.m4a",
+        "ms": 9047,
+        "hash": "e8f5499194fb"
+      }
+    },
+    "vi": {
+      "intro": {
+        "file": "audio/vi/intro.m4a",
+        "ms": 12647,
+        "hash": "472fcbbee42d"
+      },
+      "reels": {
+        "file": "audio/vi/reels.m4a",
+        "ms": 10247,
+        "hash": "cc6f1ddc4b01"
+      },
+      "agents": {
+        "file": "audio/vi/agents.m4a",
+        "ms": 14207,
+        "hash": "1c90bbfa738c"
+      },
+      "workflow": {
+        "file": "audio/vi/workflow.m4a",
+        "ms": 10847,
+        "hash": "45cd320e42d5"
+      },
+      "framework": {
+        "file": "audio/vi/framework.m4a",
+        "ms": 10127,
+        "hash": "548524a0e1fd"
+      },
+      "ci": {
+        "file": "audio/vi/ci.m4a",
+        "ms": 12727,
+        "hash": "d3eecee61f7a"
+      },
+      "observe": {
+        "file": "audio/vi/observe.m4a",
+        "ms": 11287,
+        "hash": "269171139e2b"
+      },
+      "services": {
+        "file": "audio/vi/services.m4a",
+        "ms": 12247,
+        "hash": "2255c511e229"
+      },
+      "lessons": {
+        "file": "audio/vi/lessons.m4a",
+        "ms": 7087,
+        "hash": "d6ce7852b34f"
+      },
+      "oss": {
+        "file": "audio/vi/oss.m4a",
+        "ms": 11007,
+        "hash": "593478e663f0"
+      }
+    }
+  }
+}
