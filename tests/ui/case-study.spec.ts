@@ -9,8 +9,10 @@ import {
   EMAIL_PATTERN,
   NOT_CONFIDENTIAL_TEXT,
   PHONE_PATTERN,
-  TRIAGE_EXAMPLE,
-  WORKFLOW_FIGURES,
+  DEMO_FIXED_FIGURES,
+  DEMO_STAT_LABELS,
+  DEMO_STATS_NOTE,
+  PROJECT_ONLY_DETAILS,
   WORKFLOW_NAMES,
 } from '../data';
 
@@ -59,15 +61,33 @@ test.describe('Case study page', () => {
     await expect(caseStudyPage.stampStrokes.first()).toHaveCSS('stroke-dashoffset', '0px');
   });
 
-  test('@regression results show the headline numbers', async ({ caseStudyPage }) => {
-    for (const { label, value } of WORKFLOW_FIGURES) {
-      await expect(caseStudyPage.stat(label)).toContainText(value.replace('~', ''));
+  test('@regression results show the demo figures under their labels', async ({ caseStudyPage }) => {
+    await expect(caseStudyPage.stat(DEMO_STAT_LABELS.total)).toHaveText(/^\d+\s*automated tests$/);
+    await expect(caseStudyPage.stat(DEMO_STAT_LABELS.demo)).toHaveText(/^\d+\s*on MarketFlow pages$/);
+    await expect(caseStudyPage.stat(DEMO_STAT_LABELS.api)).toHaveText(/^\d+\s*API tests$/);
+    await expect(caseStudyPage.stat(DEMO_STAT_LABELS.tags)).toHaveText(/^\d+ \/ \d+\s*smoke \/ regression$/);
+    for (const { label, value } of DEMO_FIXED_FIGURES) {
+      await expect(caseStudyPage.stat(label)).toContainText(value);
     }
   });
 
-  test('@regression results keep the triage example numbers', async ({ caseStudyPage }) => {
-    await expect(caseStudyPage.results).toContainText(TRIAGE_EXAMPLE.immediate);
-    await expect(caseStudyPage.results).toContainText(TRIAGE_EXAMPLE.paused);
+  test('@regression results say the figures were measured on the demo', async ({ caseStudyPage }) => {
+    await expect(caseStudyPage.statsNote).toHaveText(DEMO_STATS_NOTE);
+  });
+
+  test('@regression smoke and regression counts add up to the total', async ({ caseStudyPage }) => {
+    // Read the build-time counts to build the expected total; the assertion itself stays web-first.
+    const [smoke = Number.NaN, regression = Number.NaN] = ((await caseStudyPage.stat(DEMO_STAT_LABELS.tags).locator('b').textContent()) ?? '')
+      .split('/')
+      .map((n) => Number(n.trim()));
+    await expect(caseStudyPage.stat(DEMO_STAT_LABELS.total).locator('b')).toHaveText(String(smoke + regression));
+  });
+
+  test('@regression case study no longer publishes client project figures', async ({ caseStudyPage }) => {
+    await expect(caseStudyPage.article).toBeVisible();
+    for (const detail of PROJECT_ONLY_DETAILS) {
+      await expect(caseStudyPage.article).not.toContainText(detail);
+    }
   });
 
   test('@regression case study contains no email address or phone number', async ({ caseStudyPage }) => {

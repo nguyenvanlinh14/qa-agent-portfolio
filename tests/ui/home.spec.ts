@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { REPORT_THEME_KEY, SITE_THEME_KEY, BLUEPRINT_STYLE, GITHUB_PROFILE_URL, ISO_LAYERS, LANE_NAMES, LINKEDIN_PROFILE_URL, WORKFLOW_FIGURES, WORKFLOW_NAMES, loadContributions } from '../data';
+import { REPORT_THEME_KEY, SITE_THEME_KEY, BLUEPRINT_STYLE, GITHUB_PROFILE_URL, ISO_LAYERS, LANE_NAMES, LINKEDIN_PROFILE_URL, DEMO_FIXED_FIGURES, DEMO_STAT_LABELS, DEMO_STATS_NOTE, PROJECT_ONLY_DETAILS, WORKFLOW_NAMES, loadContributions } from '../data';
 
 const contributions = loadContributions();
 
@@ -59,10 +59,30 @@ test.describe('Portfolio home', () => {
     }
   });
 
-  test('@regression workflow stats show the project figures', async ({ homePage }) => {
+  test('@regression workflow stats show the demo figures under their labels', async ({ homePage }) => {
     await expect(homePage.workflowStats).toBeVisible();
-    for (const { label, value } of WORKFLOW_FIGURES) {
+    for (const label of [DEMO_STAT_LABELS.total, DEMO_STAT_LABELS.demo, DEMO_STAT_LABELS.api]) {
+      await expect(homePage.workflowStat(label).locator('[data-count]')).toHaveAttribute('data-count', /^\d+$/);
+    }
+    for (const { label, value } of DEMO_FIXED_FIGURES) {
       await expect(homePage.workflowStat(label)).toContainText(value);
+    }
+  });
+
+  test('@regression workflow stats say they were measured on the demo', async ({ homePage }) => {
+    await expect(homePage.workflowStatsNote).toHaveText(DEMO_STATS_NOTE);
+  });
+
+  test('@regression workflow smoke and regression counts add up to the total', async ({ homePage }) => {
+    // data-count holds the final value (the visible text counts up from 0); used only to build the expected total.
+    const [smoke = Number.NaN, regression = Number.NaN] = await homePage.workflowStat(DEMO_STAT_LABELS.tags).locator('[data-count]').evaluateAll((els) => els.map((el) => Number(el.getAttribute('data-count'))));
+    await expect(homePage.workflowStat(DEMO_STAT_LABELS.total).locator('[data-count]')).toHaveAttribute('data-count', String(smoke + regression));
+  });
+
+  test('@regression workflow section no longer publishes client project figures', async ({ homePage }) => {
+    await expect(homePage.workflowSection).toBeVisible();
+    for (const detail of PROJECT_ONLY_DETAILS) {
+      await expect(homePage.workflowSection).not.toContainText(detail);
     }
   });
 

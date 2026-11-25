@@ -277,13 +277,14 @@
         </div>
 
         <div class="stats wf-stats" data-testid="workflow-stats">
-          <div class="stat" data-testid="workflow-stat"><b><i data-count="82">82</i>%</b><span>sub-features automated</span></div>
-          <div class="stat" data-testid="workflow-stat"><b>~<i data-count="1890" data-group>1,890</i></b><span>automated cases</span></div>
-          <div class="stat" data-testid="workflow-stat"><b data-count="69">69</b><span>UI regression flows</span></div>
-          <div class="stat" data-testid="workflow-stat"><b><i data-count="17">17</i>/17</b><span>tickets passed on TEST</span></div>
-          <div class="stat" data-testid="workflow-stat"><b data-count="14">14</b><span>closed with PROD evidence</span></div>
-          <div class="stat" data-testid="workflow-stat"><b><i data-count="22">22</i><small> min</small></b><span>full TEST regression</span></div>
+          <div class="stat" data-testid="workflow-stat"><b data-count="{{TEST_COUNT}}">{{TEST_COUNT}}</b><span>automated tests</span></div>
+          <div class="stat" data-testid="workflow-stat"><b data-count="{{DEMO_TEST_COUNT}}">{{DEMO_TEST_COUNT}}</b><span>on MarketFlow pages</span></div>
+          <div class="stat" data-testid="workflow-stat"><b data-count="{{API_TEST_COUNT}}">{{API_TEST_COUNT}}</b><span>API tests</span></div>
+          <div class="stat" data-testid="workflow-stat"><b><i data-count="{{SMOKE_COUNT}}">{{SMOKE_COUNT}}</i> / <i data-count="{{REGRESSION_COUNT}}">{{REGRESSION_COUNT}}</i></b><span>smoke / regression</span></div>
+          <div class="stat" data-testid="workflow-stat"><b>~<i data-count="2">2</i><small> min</small></b><span>full CI test run</span></div>
+          <div class="stat" data-testid="workflow-stat"><b>&lt;&nbsp;<i data-count="300">300</i><small> ms</small></b><span>p95 gate (k6)</span></div>
         </div>
+        <p class="stats-note" data-testid="workflow-stats-note">Measured on this public repo and the MarketFlow demo app (simulated data), CI run of 29 Oct 2026.</p>
 
         <div class="cta">
           <a class="btn primary" href="case-study.html" data-testid="cta-case-study">Case study<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>

@@ -34,6 +34,7 @@ export class HomePage extends BasePage {
   readonly workflowHeading: Locator;
   readonly workflows: Locator;
   readonly workflowStats: Locator;
+  readonly workflowStatsNote: Locator;
   readonly caseStudyCta: Locator;
   readonly navWorkflowLink: Locator;
   readonly hero: Locator;
@@ -78,6 +79,7 @@ export class HomePage extends BasePage {
     this.workflowHeading = this.workflowSection.getByRole('heading', { level: 2, name: 'Agents in production' });
     this.workflows = this.workflowSection.getByTestId('workflow');
     this.workflowStats = this.workflowSection.getByTestId('workflow-stats');
+    this.workflowStatsNote = this.workflowSection.getByTestId('workflow-stats-note');
     this.caseStudyCta = page.getByTestId('cta-case-study');
     this.hero = page.getByRole('banner');
     this.particles = page.getByTestId('hero-particles');
