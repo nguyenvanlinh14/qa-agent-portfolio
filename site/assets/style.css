@@ -625,6 +625,7 @@ h3.mini {
 .wf-stats { grid-template-columns: repeat(6, 1fr); gap: 12px; }
 .wf-stats .stat { padding: 16px 10px 14px; }
 .wf-stats .stat b { font-size: clamp(2rem, 3.2vw, 2.5rem); white-space: nowrap; }
+.stats-note { margin: 10px 0 0; text-align: center; }
 .wf-stats .stat i { font-style: normal; }
 .wf-stats .stat b small { font: 700 0.42em var(--mono); letter-spacing: 0; margin-left: 2px; }
 .wf-stats .stat span { font-size: 0.64rem; letter-spacing: 0.1em; line-height: 1.45; }
@@ -838,7 +839,7 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
 .stamp-fig .m-stamp-test { fill: #2459d6; }
 .stamp-fig .m-stamp-prod { fill: #c4283a; }
 .stamp-fig .m-label { fill: #fff; font: 700 13px var(--mono); }
-.stamp-fig figcaption, .case .note { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+.stamp-fig figcaption, .case .note, .stats-note { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
 .stamp-fig figcaption { margin-top: 6px; }
 
 .case-stats { grid-template-columns: repeat(3, 1fr); margin: 16px 0 20px; }

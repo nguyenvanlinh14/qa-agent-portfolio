@@ -282,6 +282,7 @@ function countTests() {
     const total = Number(out.match(/Total:\s*(\d+)\s+tests?/)?.[1]);
     if (!Number.isFinite(total)) throw new Error('no total');
     const titles = [];
+    const tests = [];
     let setup = 0;
     for (const line of out.split(/\r?\n/)) {
       const m = line.match(/^\s*\[([^\]]+)\]\s*›\s*(.*)$/);
@@ -291,9 +292,11 @@ function countTests() {
         continue;
       }
       const parts = m[2].split(' › ');
-      titles.push(`[${m[1]}] ${parts.slice(1).join(' › ') || parts[0]}`);
+      const title = parts.slice(1).join(' › ') || parts[0];
+      titles.push(`[${m[1]}] ${title}`);
+      tests.push({ project: m[1], file: parts[0].replace(/:\d+(?::\d+)?$/, ''), title });
     }
-    return { count: Math.max(0, total - setup), titles };
+    return { count: Math.max(0, total - setup), titles, tests };
   } catch {
     return countTestsByRegex();
   }
@@ -301,6 +304,7 @@ function countTests() {
 
 function countTestsByRegex() {
   const titles = [];
+  const tests = [];
   const walk = (dir, project) => {
     if (!existsSync(dir)) return;
     for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -308,14 +312,18 @@ function countTestsByRegex() {
       if (e.isDirectory()) walk(p, project);
       else if (/\.spec\.[cm]?[jt]s$/.test(e.name)) {
         const src = readFileSync(p, 'utf8');
-        for (const m of src.matchAll(/\btest(?:\.\w+)?\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g)) titles.push(`[${project}] ${m[2]}`);
+        const file = `${project}/${e.name}`;
+        for (const m of src.matchAll(/\btest(?:\.\w+)?\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g)) {
+          titles.push(`[${project}] ${m[2]}`);
+          tests.push({ project, file, title: m[2] });
+        }
       }
     }
   };
   for (const e of existsSync(at('tests')) ? readdirSync(at('tests'), { withFileTypes: true }) : []) {
     if (e.isDirectory() && e.name !== 'setup') walk(at('tests', e.name), e.name);
   }
-  return { count: titles.length, titles };
+  return { count: titles.length, titles, tests };
 }
 
 function readReport() {
@@ -466,11 +474,24 @@ const perfContent = `  <main>
 writeFileSync(join(DIST, 'perf', 'index.html'), pageShell({ title: 'k6 dashboards', content: perfContent, depth: 1 }).replace('lang="vi"', 'lang="en"'));
 
 const listed = countTests();
+
+// Headline figures for the home page and case study, measured on this repo (so they never drift from the suite).
+// MarketFlow tests: the demo page specs, plus the a11y / visual checks whose title names a demo page ("demo board ...").
+const DEMO_PAGES = 'login|board|watchlist|screener|stock';
+const DEMO_SPECS = new RegExp(`(?:^|/)(?:${DEMO_PAGES})\\.spec\\.ts$`);
+const DEMO_TITLE = new RegExp(`\\bdemo (?:market )?(?:${DEMO_PAGES})\\b`, 'i');
+const demoStats = {
+  DEMO_TEST_COUNT: listed.tests.filter((t) => DEMO_SPECS.test(t.file) || DEMO_TITLE.test(t.title)).length,
+  API_TEST_COUNT: listed.tests.filter((t) => t.project === 'api').length,
+  SMOKE_COUNT: listed.tests.filter((t) => t.title.includes('@smoke')).length,
+  REGRESSION_COUNT: listed.tests.filter((t) => t.title.includes('@regression')).length,
+};
 const report = reportParts(listed);
 const values = {
   REPO_URL: esc(REPO_URL),
   REPO_SLUG: esc(REPO_SLUG),
   TEST_COUNT: listed.count,
+  ...demoStats,
   LESSON_COUNT: lessons.length,
   BUILD_INFO: esc(buildInfo()),
   LESSONS: lessons

@@ -19,6 +19,7 @@ export class CaseStudyPage extends BasePage {
   readonly emailOrPhoneLinks: Locator;
   /** Raster images would be screenshots from the project; the page may only contain drawn SVG. getByRole('img') also matches SVGs, so the tag is the only way. */
   readonly rasterImages: Locator;
+  readonly statsNote: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -34,6 +35,7 @@ export class CaseStudyPage extends BasePage {
     this.note = page.getByTestId('case-note');
     this.emailOrPhoneLinks = page.locator('a[href^="mailto:" i], a[href^="tel:" i]');
     this.rasterImages = this.article.locator('img');
+    this.statsNote = page.getByTestId('case-stats-note');
   }
 
   /** A top-level section heading (h2). */

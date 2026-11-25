@@ -169,7 +169,7 @@
           <div class="tech">
             <h3>UI smoke regression with a UI guard</h3>
             <p>
-              One real user flow per feature and role: 69 tests across 2 sites and 6 roles. After every step a guard checks
+              One real user flow per feature and role. After every step a guard checks
               that there is no error text on screen, no API 5xx or unexpected 4xx, and no JavaScript or console error. On
               failure it takes a screenshot. I introduced it after the sprint where the API-level regression missed the toast
               error on a successful delete.
@@ -288,28 +288,28 @@
 
         <section id="results" data-testid="case-results">
           <h2>Results</h2>
-          <div class="stats case-stats" data-testid="case-stats">
-            <div class="stat" data-testid="case-stat"><b>82%</b><span>sub-features automated</span></div>
-            <div class="stat" data-testid="case-stat"><b>~1,890</b><span>automated cases</span></div>
-            <div class="stat" data-testid="case-stat"><b>69</b><span>UI regression flows</span></div>
-            <div class="stat" data-testid="case-stat"><b>17/17</b><span>tickets passed on TEST</span></div>
-            <div class="stat" data-testid="case-stat"><b>14</b><span>closed with PROD evidence</span></div>
-            <div class="stat" data-testid="case-stat"><b>22<small> min</small></b><span>full TEST regression</span></div>
-          </div>
           <ul>
-            <li><b>Coverage:</b> 110 tracked sub-features, 90 automated (82%, or 87% including partial), about 1,890 automated test cases.</li>
-            <li><b>UI regression:</b> grew from 42 to 69 tests (admin site 13 flows, user site 10 flows × roles). New areas: AI chat, datasets, condition presets, draft rules, notifications, audit log, language and theme switch, account settings.</li>
-            <li><b>Release of 28 Oct 2026:</b> 17 tickets in scope, pulled automatically. TEST: 17/17 tickets passed; regression 53 passed, 16 not applicable, 0 failed. PROD UAT: 46 passed, 4 not applicable.</li>
-            <li><b>Closed by the agent:</b> 14 tickets were commented with PROD evidence and closed. 3 stayed open with evidence for me: one not verifiable with a Premium test account, one only partly checkable on PROD, and one where maintenance mode cannot be switched on PROD.</li>
-            <li><b>Run time:</b> a full TEST regression takes about 22 minutes. A PROD UAT run (smoke plus ticket evidence) takes about 15 minutes.</li>
-            <li><b>Re-verification:</b> all 5 dataset and AI-chat fixes were confirmed, and the agent raised open questions: a duplicate file name re-upload is not skipped, and ingesting about 7.5 MB takes about 15 minutes.</li>
+            <li><b>Coverage as a gate:</b> every new script is registered in the coverage map, and CI fails a pull request when the map and the suite drift apart.</li>
+            <li><b>Releases:</b> the release scope is pulled automatically. Tickets that pass on PROD are commented with evidence and closed by the agent; anything not verifiable on PROD stays open, with evidence, for me.</li>
+            <li><b>Unattended regression:</b> the full UI regression runs in the background, and every data change it makes is restored and checked.</li>
+            <li><b>Re-verification:</b> fixes are re-checked with the same evidence rules, and the agent raises open questions instead of guessing.</li>
           </ul>
-          <h3>Triage example: 404 on Backtest</h3>
+          <h3>Triage example: an intermittent 404</h3>
           <p>
-            Timed reproductions narrowed a “404 on Backtest” bug down to a race. It only happens when the user clicks within
-            about 1 s of switching tabs: 7 of 7 attempts failed when clicking immediately, 0 of 10 failed after a pause of 1–3 s.
-            That finding set the severity correctly.
+            Timed reproductions narrowed an intermittent 404 down to a race: it only happened when the user clicked right after
+            switching tabs, never after a short pause. That finding set the severity correctly.
           </p>
+          <h3>The same practices on the public demo</h3>
+          <p>The client project's own figures are not published. These are measured on the public repo, which anyone can check.</p>
+          <div class="stats case-stats" data-testid="case-stats">
+            <div class="stat" data-testid="case-stat"><b>{{TEST_COUNT}}</b><span>automated tests</span></div>
+            <div class="stat" data-testid="case-stat"><b>{{DEMO_TEST_COUNT}}</b><span>on MarketFlow pages</span></div>
+            <div class="stat" data-testid="case-stat"><b>{{API_TEST_COUNT}}</b><span>API tests</span></div>
+            <div class="stat" data-testid="case-stat"><b>{{SMOKE_COUNT}} / {{REGRESSION_COUNT}}</b><span>smoke / regression</span></div>
+            <div class="stat" data-testid="case-stat"><b>~2<small> min</small></b><span>full CI test run</span></div>
+            <div class="stat" data-testid="case-stat"><b>&lt;&nbsp;300<small> ms</small></b><span>p95 gate (k6)</span></div>
+          </div>
+          <p class="note" data-testid="case-stats-note">Measured on this public repo and the MarketFlow demo app (simulated data), CI run of 29 Oct 2026.</p>
         </section>
 
         <section id="tools" data-testid="case-tools">
@@ -340,7 +340,7 @@
         </section>
 
         <div class="case-end">
-          <p class="note" data-testid="case-note">Details anonymised; numbers are from the project, October 2026.</p>
+          <p class="note" data-testid="case-note">Details anonymised. The project's own figures are not published; the numbers above are measured on the public demo.</p>
           <div class="cta">
             <a class="btn primary" href="./#workflow">Agents in production<svg class="ic" aria-hidden="true"><use href="#i-arrow" /></svg></a>
             <a class="btn" href="cv.html">CV</a>
